@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_test_01
+  m_EditorClassIdentifier: 
+  cardId: test_01
+  description: The king has not opened his eyes in three days. The council asks you
+    to hold the realm together until he wakes.
+  speakerId: ver
+  dayAdvance: 2
+  leftChoiceText: Call the council at once
+  leftTag: summon_council
+  leftResourceChange:
+    values:
+    - id: favor
+      value: 1
+  leftNextCardId: test_02
+  leftNotifyFlag: meet_companion
+  rightChoiceText: Seal the palace and control access
+  rightTag: seal_palace
+  rightResourceChange:
+    values:
+    - id: army
+      value: 1
+    - id: gold
+      value: -1
+  rightNextCardId: test_02
+  rightNotifyFlag: meet_companion
+  returnToMainCard: 0
+  isEnding: 0
+  endingType: 0
+  isCompanion: 0
+  companionTriggerFlag: 
+  companionSystemPrompt: 
+  companionGreeting: 

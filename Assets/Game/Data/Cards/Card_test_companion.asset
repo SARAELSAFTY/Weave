@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_test_companion
+  m_EditorClassIdentifier: 
+  cardId: test_companion
+  description: A familiar shadow steps from the colonnade. Wren offers counsel —
+    and a private ear — before the next decree hardens into law.
+  speakerId: wre
+  dayAdvance: 0
+  leftChoiceText: Send Wren to gather whispers
+  leftTag: companion_gather
+  leftResourceChange:
+    values:
+    - id: favor
+      value: 1
+  leftNextCardId: 
+  leftNotifyFlag: 
+  rightChoiceText: Keep Wren close at court
+  rightTag: companion_close
+  rightResourceChange:
+    values:
+    - id: army
+      value: 1
+  rightNextCardId: 
+  rightNotifyFlag: 
+  returnToMainCard: 0
+  isEnding: 0
+  endingType: 0
+  isCompanion: 1
+  companionTriggerFlag: meet_companion
+  companionSystemPrompt: You are Spymaster Wren, the player's quiet companion in a
+    medieval council drama. You are dry, loyal, and observant. You know court politics
+    and soft power. Never break character. Never invent resource numbers the player
+    did not mention. Encourage reflection on their last decision without nagging.
+  companionGreeting: I was listening. Your last move already has the halls talking
+    — shall we speak before you face the next petition?

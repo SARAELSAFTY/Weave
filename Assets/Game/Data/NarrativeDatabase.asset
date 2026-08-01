@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c9ad9e3b8ad4b6da6e0a01a6f2ce002, type: 3}
+  m_Name: NarrativeDatabase
+  m_EditorClassIdentifier: 
+  startingCardId: test_01
+  cards:
+  - {fileID: 11400000, guid: 7cbaaa64fe8679247b4dfd072f01f338, type: 2}
+  - {fileID: 11400000, guid: 7a67ef900a3f09649ace9047943e132f, type: 2}
+  - {fileID: 11400000, guid: a8e9dd0581c33c44fb9c10b66cff0ff2, type: 2}
+  - {fileID: 11400000, guid: c0a1ce00000000000000000000000005, type: 2}
+  speakers:
+  - {fileID: 11400000, guid: 94b1109a025a9c440a6076c1fb958bee, type: 2}
+  - {fileID: 11400000, guid: 34afce739ba373149974a29f399a2f58, type: 2}
+  - {fileID: 11400000, guid: b6823924057638649aed815271757b91, type: 2}
+  - {fileID: 11400000, guid: d918dee24f608b3459630e4856bd9d07, type: 2}
+  chains: []
