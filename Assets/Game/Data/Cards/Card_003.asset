@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_003
+  m_EditorClassIdentifier: 
+  cardId: Card_003
+  description: "Trade is brisk but riots erupt in the poorest quarter of the capital.
+    Quartermaster Elian requests emergency grain imports from the eastern ports \u2014
+    it will drain the treasury, but Marshal Rosa argues the army can restore order
+    for a fraction of the cost if you let her act first."
+  speakerId: eli
+  dayAdvance: 1
+  leftChoiceText: Buy eastern grain
+  leftResourceChange:
+    values:
+    - id: gold
+      value: -12
+    - id: food
+      value: 12
+  leftNextCardId: Card_004
+  rightChoiceText: Send in the Marshal
+  rightResourceChange:
+    values:
+    - id: gold
+      value: -3
+    - id: favor
+      value: -10
+    - id: army
+      value: 8
+  rightNextCardId: Card_004

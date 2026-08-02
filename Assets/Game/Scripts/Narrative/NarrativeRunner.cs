@@ -26,7 +26,6 @@ public class NarrativeRunner
     private readonly Dictionary<string, CardData> cardsById = new Dictionary<string, CardData>();
     private readonly Dictionary<string, CouncilMemberData> speakersById = new Dictionary<string, CouncilMemberData>();
     private readonly NarrativeState state = new NarrativeState();
-    private CardChainRunner chainRunner;
 
     public CardData CurrentCard { get; private set; }
     public int Day => state.Day;
@@ -55,7 +54,6 @@ public class NarrativeRunner
 
         BuildCardLookup();
         BuildSpeakerLookup();
-        chainRunner = new CardChainRunner(resourceState, database.chains);
 
         if (!cardsById.TryGetValue(database.startingCardId, out CardData startCard))
         {
@@ -86,9 +84,7 @@ public class NarrativeRunner
         resourceState.Apply(change);
         state.Advance(CurrentCard.dayAdvance);
 
-        string resolvedNextId = chainRunner.ResolveNextCardId(CurrentCard, selectedNextCardId);
-
-        if (string.IsNullOrEmpty(resolvedNextId) || !cardsById.TryGetValue(resolvedNextId, out CardData nextCard))
+        if (string.IsNullOrEmpty(selectedNextCardId) || !cardsById.TryGetValue(selectedNextCardId, out CardData nextCard))
         {
             return new NarrativeStepResult(null,
                 $"'{CurrentCard.cardId}' has no valid next card to show.");

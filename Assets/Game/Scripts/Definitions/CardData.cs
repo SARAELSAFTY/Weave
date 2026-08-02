@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 // Data asset defining a single card's text, speaker, and choice outcomes.
 [CreateAssetMenu(
@@ -18,7 +17,7 @@ public class CardData : ScriptableObject
     [Tooltip("ID of character speaking this card.")]
     public string speakerId;
     [Min(0), Tooltip("Days time advances when played.")]
-    public int dayAdvance;
+    public int dayAdvance = 1;
 
     [Header("Left Choice")]
     [Tooltip("Text shown when swiping left.")]
@@ -36,10 +35,6 @@ public class CardData : ScriptableObject
     [Tooltip("Card ID to load when choosing right.")]
     public string rightNextCardId;
 
-    [Header("Chain / Ending")]
-    [FormerlySerializedAs("isResumePoint")]
-    [Tooltip("Returns to main story after chain ends.")]
-    public bool returnToMainCard;
-    [Tooltip("Playing this card ends the game.")]
-    public bool isEnding;
+    // Card is automatically an ending card if it has no outgoing choice links
+    public bool isEnding => string.IsNullOrEmpty(leftNextCardId) && string.IsNullOrEmpty(rightNextCardId);
 }

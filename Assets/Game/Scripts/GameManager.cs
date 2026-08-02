@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField, Tooltip("Card UI component in scene.")] private CardView cardView;
     [SerializeField, Tooltip("Tracks kingdom resource values.")] private ResourceState resourceState;
-    [SerializeField, Tooltip("Story database containing cards and chains.")] private NarrativeDatabase narrativeDatabase;
+    [SerializeField, Tooltip("Story database containing cards.")] private NarrativeDatabase narrativeDatabase;
     [SerializeField, Min(0.05f), Tooltip("Card exit animation duration in seconds.")] private float cardExitDuration = 0.25f;
     [SerializeField, Tooltip("UI text element showing the current day.")] private DayDisplay dayDisplay;
 

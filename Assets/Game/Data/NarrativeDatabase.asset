@@ -12,15 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c9ad9e3b8ad4b6da6e0a01a6f2ce002, type: 3}
   m_Name: NarrativeDatabase
   m_EditorClassIdentifier: 
-  startingCardId: test_01
+  startingCardId: Card_001
   cards:
-  - {fileID: 11400000, guid: 7cbaaa64fe8679247b4dfd072f01f338, type: 2}
-  - {fileID: 11400000, guid: 7a67ef900a3f09649ace9047943e132f, type: 2}
-  - {fileID: 11400000, guid: a8e9dd0581c33c44fb9c10b66cff0ff2, type: 2}
-  - {fileID: 11400000, guid: c0a1ce00000000000000000000000005, type: 2}
+  - {fileID: 11400000, guid: 3a528952673b95345b8be98ff15dc2ba, type: 2}
+  - {fileID: 11400000, guid: 0242cb119345cd04d8951b0132ab741f, type: 2}
+  - {fileID: 11400000, guid: df432556ff6ee964eacece4942547257, type: 2}
+  - {fileID: 11400000, guid: 292ce16deaf4c6245a386473df3245e3, type: 2}
   speakers:
   - {fileID: 11400000, guid: 94b1109a025a9c440a6076c1fb958bee, type: 2}
   - {fileID: 11400000, guid: 34afce739ba373149974a29f399a2f58, type: 2}
   - {fileID: 11400000, guid: b6823924057638649aed815271757b91, type: 2}
   - {fileID: 11400000, guid: d918dee24f608b3459630e4856bd9d07, type: 2}
-  chains: []
+  editorGraphPositions:
+  - cardId: Card_001
+    position: {x: 60, y: 60}
+  - cardId: Card_002
+    position: {x: 380, y: 60}
+  - cardId: Card_003
+    position: {x: 380, y: 300}
+  - cardId: Card_004
+    position: {x: 700, y: 180}

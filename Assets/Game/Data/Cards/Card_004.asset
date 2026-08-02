@@ -10,29 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Card_test_ending
+  m_Name: Card_004
   m_EditorClassIdentifier: 
-  cardId: test_ending
-  description: The king wakes and takes the throne back. The council is bruised,
-    but the kingdom stands.
+  cardId: Card_004
+  description: Winter arrives. The crisis has passed — for now. History will remember
+    how you chose to govern when the realm was hungry and afraid. The council watches
+    your next move. Your reign continues.
   speakerId: ver
-  dayAdvance: 0
+  dayAdvance: 3
   leftChoiceText: 
-  leftTag: 
   leftResourceChange:
     values: []
   leftNextCardId: 
-  leftNotifyFlag: 
   rightChoiceText: 
-  rightTag: 
   rightResourceChange:
     values: []
   rightNextCardId: 
-  rightNotifyFlag: 
-  returnToMainCard: 0
-  isEnding: 1
-  endingType: 1
-  isCompanion: 0
-  companionTriggerFlag: 
-  companionSystemPrompt: 
-  companionGreeting: 

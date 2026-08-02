@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_002
+  m_EditorClassIdentifier: 
+  cardId: Card_002
+  description: The rations hold. Spymaster Wren intercepts a report — the northern
+    lords are exploiting the food scarcity to recruit disaffected farmers into their
+    private armies. You can send troops to suppress recruitment, or offer the lords
+    a seat at the council table to buy their loyalty.
+  speakerId: wre
+  dayAdvance: 1
+  leftChoiceText: Dispatch troops north
+  leftResourceChange:
+    values:
+    - id: gold
+      value: -8
+    - id: army
+      value: 5
+    - id: favor
+      value: -3
+  leftNextCardId: Card_004
+  rightChoiceText: Offer a council seat
+  rightResourceChange:
+    values:
+    - id: army
+      value: -5
+    - id: favor
+      value: 5
+  rightNextCardId: Card_004
