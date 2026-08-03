@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: Card_003
   m_EditorClassIdentifier: 
   cardId: Card_003
-  description: "Trade is brisk but riots erupt in the poorest quarter of the capital.
-    Quartermaster Elian requests emergency grain imports from the eastern ports \u2014
-    it will drain the treasury, but Marshal Rosa argues the army can restore order
-    for a fraction of the cost if you let her act first."
+  description: Trade is brisk but riots erupt in the poorest quarter. Quartermaster Elian requests emergency grain imports.
   speakerId: eli
   dayAdvance: 1
   leftChoiceText: Buy eastern grain
@@ -26,14 +23,12 @@ MonoBehaviour:
       value: -12
     - id: food
       value: 12
-  leftNextCardId: Card_004
-  rightChoiceText: Send in the Marshal
+  leftNextCardId: Card_005
+  rightChoiceText: Send in Marshal
   rightResourceChange:
     values:
     - id: gold
       value: -3
-    - id: favor
-      value: -10
     - id: army
       value: 8
   rightNextCardId: Card_004

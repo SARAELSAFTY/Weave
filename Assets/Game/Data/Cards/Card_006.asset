@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Card_004
+  m_Name: Card_006
   m_EditorClassIdentifier: 
-  cardId: Card_004
-  description: Winter arrives. The crisis has passed — for now. History will remember how you chose to govern.
-  speakerId: ros
-  dayAdvance: 3
+  cardId: Card_006
+  description: The western trade routes are secured. Merchants rejoice and prosperity returns to the kingdom.
+  speakerId: ver
+  dayAdvance: 1
   leftChoiceText: 
   leftResourceChange:
     values: []

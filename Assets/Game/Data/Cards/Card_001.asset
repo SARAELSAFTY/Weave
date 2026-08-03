@@ -13,9 +13,7 @@ MonoBehaviour:
   m_Name: Card_001
   m_EditorClassIdentifier: 
   cardId: Card_001
-  description: The harvest season has been poor. The people grow restless and the
-    granaries are half-empty. Chancellor Verrin urges you to impose rations before
-    winter bites — but the merchant guilds warn that price controls will collapse trade.
+  description: The harvest season has been poor. Chancellor Verrin urges you to impose rations before winter bites — but the merchant guilds warn that price controls will collapse trade.
   speakerId: ver
   dayAdvance: 1
   leftChoiceText: Impose rations
@@ -26,7 +24,7 @@ MonoBehaviour:
     - id: favor
       value: 10
   leftNextCardId: Card_002
-  rightChoiceText: Let the market decide
+  rightChoiceText: Let market decide
   rightResourceChange:
     values:
     - id: gold

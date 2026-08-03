@@ -18,17 +18,35 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0242cb119345cd04d8951b0132ab741f, type: 2}
   - {fileID: 11400000, guid: df432556ff6ee964eacece4942547257, type: 2}
   - {fileID: 11400000, guid: 292ce16deaf4c6245a386473df3245e3, type: 2}
+  - {fileID: 11400000, guid: 22222222222222222222222222222205, type: 2}
+  - {fileID: 11400000, guid: 22222222222222222222222222222206, type: 2}
   speakers:
-  - {fileID: 11400000, guid: 94b1109a025a9c440a6076c1fb958bee, type: 2}
-  - {fileID: 11400000, guid: 34afce739ba373149974a29f399a2f58, type: 2}
-  - {fileID: 11400000, guid: b6823924057638649aed815271757b91, type: 2}
-  - {fileID: 11400000, guid: d918dee24f608b3459630e4856bd9d07, type: 2}
+  - {fileID: 11400000, guid: 11111111111111111111111111111101, type: 2}
+  - {fileID: 11400000, guid: 11111111111111111111111111111102, type: 2}
+  - {fileID: 11400000, guid: 11111111111111111111111111111103, type: 2}
+  - {fileID: 11400000, guid: 11111111111111111111111111111104, type: 2}
+  - {fileID: 11400000, guid: 11111111111111111111111111111105, type: 2}
   editorGraphPositions:
   - cardId: Card_001
-    position: {x: 60, y: 60}
+    position: {x: 28, y: 177}
   - cardId: Card_002
-    position: {x: 380, y: 60}
+    position: {x: 370, y: 60}
   - cardId: Card_003
-    position: {x: 380, y: 300}
+    position: {x: 370, y: 290}
   - cardId: Card_004
-    position: {x: 700, y: 180}
+    position: {x: 1199, y: 434}
+  - cardId: Card_005
+    position: {x: 848, y: 79}
+  - cardId: Card_006
+    position: {x: 1312, y: 65}
+  editorSpeakerPositions:
+  - memberId: eli
+    position: {x: -309, y: 53}
+  - memberId: ver
+    position: {x: -260, y: 260}
+  - memberId: wre
+    position: {x: -260, y: 460}
+  - memberId: ros
+    position: {x: -260, y: 660}
+  - memberId: Speaker_005
+    position: {x: -260, y: 860}

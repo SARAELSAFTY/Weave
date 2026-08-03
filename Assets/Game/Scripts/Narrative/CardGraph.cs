@@ -5,7 +5,7 @@ using UnityEditor;
 #endif
 
 // Shared card-graph queries used by both runtime (NarrativeRunner) and editor tools
-// (CardGraphValidator, CardDataEditor, CardGraphWindow). Keeping this in one place means
+// (CardDataEditor, CardGraphWindow, CardNode). Keeping this in one place means
 // "how do we look up a card by ID" and "what counts as a broken link" only need fixing once.
 public static class CardGraph
 {

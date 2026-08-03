@@ -5,16 +5,18 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Editor window shell: owns the toolbar (database picker, starting-card picker, new-card
-// and validate buttons) and hosts a CardGraphView for the actual node graph.
+// Editor window shell: owns the toolbar (database picker, starting-card picker, new-card button)
+// and hosts a CardGraphView for the actual node graph.
 public class CardGraphWindow : EditorWindow
 {
     private const string NewCardFolder = "Assets/Game/Data/Cards";
+    private const string NewSpeakerFolder = "Assets/Game/Data/Speakers";
 
     private NarrativeDatabase currentDatabase;
     private CardGraphView graphView;
+    private Button newDatabaseButton;
     private Button newCardButton;
-    private Button validateButton;
+    private Button newSpeakerButton;
     private ObjectField databaseField;
     private DropdownField startingCardDropdown;
 
@@ -72,8 +74,8 @@ public class CardGraphWindow : EditorWindow
             allowSceneObjects = false,
             value = currentDatabase
         };
-        databaseField.style.width = 260;
-        databaseField.style.marginRight = 12;
+        databaseField.style.width = 240;
+        databaseField.style.marginRight = 6;
         databaseField.RegisterValueChangedCallback(evt =>
         {
             currentDatabase = evt.newValue as NarrativeDatabase;
@@ -81,6 +83,16 @@ public class CardGraphWindow : EditorWindow
             PopulateGraph();
         });
         toolbar.Add(databaseField);
+
+        newDatabaseButton = new Button(OnCreateNewDatabaseClicked) { text = "+ New DB" };
+        newDatabaseButton.style.height = 24;
+        newDatabaseButton.style.paddingLeft = 8;
+        newDatabaseButton.style.paddingRight = 8;
+        newDatabaseButton.style.marginRight = 12;
+        newDatabaseButton.style.backgroundColor = new StyleColor(new Color(0.20f, 0.55f, 0.35f));
+        newDatabaseButton.style.color = new StyleColor(Color.white);
+        newDatabaseButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+        toolbar.Add(newDatabaseButton);
 
         startingCardDropdown = new DropdownField("Starting Card:", new List<string> { "(None)" }, 0);
         startingCardDropdown.style.width = 240;
@@ -102,11 +114,14 @@ public class CardGraphWindow : EditorWindow
         newCardButton.style.unityFontStyleAndWeight = FontStyle.Bold;
         toolbar.Add(newCardButton);
 
-        validateButton = new Button(OnValidateClicked) { text = "Validate" };
-        validateButton.style.height = 24;
-        validateButton.style.paddingLeft = 10;
-        validateButton.style.paddingRight = 10;
-        toolbar.Add(validateButton);
+        newSpeakerButton = new Button(OnCreateNewSpeakerClicked) { text = "+ New Speaker" };
+        newSpeakerButton.style.height = 24;
+        newSpeakerButton.style.paddingLeft = 12;
+        newSpeakerButton.style.paddingRight = 12;
+        newSpeakerButton.style.backgroundColor = new StyleColor(new Color(0.10f, 0.45f, 0.65f));
+        newSpeakerButton.style.color = new StyleColor(Color.white);
+        newSpeakerButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+        toolbar.Add(newSpeakerButton);
 
         return toolbar;
     }
@@ -134,7 +149,7 @@ public class CardGraphWindow : EditorWindow
     {
         bool hasDb = currentDatabase != null;
         newCardButton?.SetEnabled(hasDb);
-        validateButton?.SetEnabled(hasDb);
+        newSpeakerButton?.SetEnabled(hasDb);
         startingCardDropdown?.SetEnabled(hasDb);
 
         if (hasDb)
@@ -237,14 +252,118 @@ public class CardGraphWindow : EditorWindow
         return inDatabase || onDisk;
     }
 
-    private void OnValidateClicked()
+    private void OnCreateNewSpeakerClicked()
     {
         if (currentDatabase == null)
         {
             return;
         }
 
-        EditorApplication.ExecuteMenuItem("CONTEXT/NarrativeDatabase/Validate Card Links");
-        Debug.Log($"[Card Graph] Validated '{currentDatabase.name}'. Check Console for detailed diagnostic log.");
+        if (!Directory.Exists(NewSpeakerFolder))
+        {
+            Directory.CreateDirectory(NewSpeakerFolder);
+            AssetDatabase.Refresh();
+        }
+
+        string speakerName = FindNextUnusedSpeakerName();
+        string assetPath = Path.Combine(NewSpeakerFolder, speakerName + ".asset");
+
+        CouncilMemberData newSpeaker = ScriptableObject.CreateInstance<CouncilMemberData>();
+        newSpeaker.name = speakerName;
+        newSpeaker.memberId = speakerName;
+        AssetDatabase.CreateAsset(newSpeaker, assetPath);
+
+        Undo.RecordObject(currentDatabase, "Add New Speaker");
+        currentDatabase.speakers ??= new List<CouncilMemberData>();
+        currentDatabase.speakers.Add(newSpeaker);
+
+        // Auto-assign to currently selected card if one is active
+        CardData selectedCard = Selection.activeObject as CardData;
+        if (selectedCard != null)
+        {
+            Undo.RecordObject(selectedCard, "Assign New Speaker");
+            selectedCard.speakerId = newSpeaker.memberId;
+            EditorUtility.SetDirty(selectedCard);
+        }
+
+        EditorUtility.SetDirty(currentDatabase);
+        AssetDatabase.SaveAssets();
+
+        PopulateGraph();
+
+        Selection.activeObject = newSpeaker;
+        EditorGUIUtility.PingObject(newSpeaker);
+    }
+
+    public void OnCreateNewDatabaseClicked()
+    {
+        string databaseFolder = "Assets/Game/Data";
+        if (!Directory.Exists(databaseFolder))
+        {
+            Directory.CreateDirectory(databaseFolder);
+            AssetDatabase.Refresh();
+        }
+
+        string databaseName = FindNextUnusedDatabaseName(databaseFolder);
+        string assetPath = Path.Combine(databaseFolder, databaseName + ".asset");
+
+        NarrativeDatabase newDb = ScriptableObject.CreateInstance<NarrativeDatabase>();
+        newDb.name = databaseName;
+        AssetDatabase.CreateAsset(newDb, assetPath);
+        AssetDatabase.SaveAssets();
+
+        currentDatabase = newDb;
+        if (databaseField != null)
+        {
+            databaseField.value = newDb;
+        }
+
+        UpdateToolbarState();
+        PopulateGraph();
+
+        Selection.activeObject = newDb;
+        EditorGUIUtility.PingObject(newDb);
+    }
+
+    private static string FindNextUnusedDatabaseName(string folder)
+    {
+        string defaultPath = Path.Combine(folder, "NarrativeDatabase.asset");
+        if (!File.Exists(defaultPath))
+        {
+            return "NarrativeDatabase";
+        }
+
+        int index = 1;
+        string dbName;
+        do
+        {
+            dbName = $"NarrativeDatabase_{index:D3}";
+            index++;
+        }
+        while (File.Exists(Path.Combine(folder, dbName + ".asset")));
+
+        return dbName;
+    }
+
+    private string FindNextUnusedSpeakerName()
+    {
+        int index = 1;
+        string speakerName;
+        do
+        {
+            speakerName = $"Speaker_{index:D3}";
+            index++;
+        }
+        while (SpeakerNameInUse(speakerName));
+
+        return speakerName;
+    }
+
+    private bool SpeakerNameInUse(string speakerName)
+    {
+        bool inDatabase = currentDatabase.speakers != null &&
+            currentDatabase.speakers.Exists(s => s != null && (s.memberId == speakerName || s.name == speakerName));
+        bool onDisk = File.Exists(Path.Combine(NewSpeakerFolder, speakerName + ".asset"));
+        return inDatabase || onDisk;
     }
 }

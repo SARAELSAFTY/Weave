@@ -10,25 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Card_002
+  m_Name: Card_005
   m_EditorClassIdentifier: 
-  cardId: Card_002
-  description: Spymaster Wren intercepts a report — northern lords are recruiting disaffected farmers. Dispatch troops or offer a council seat?
-  speakerId: wre
-  dayAdvance: 1
-  leftChoiceText: Dispatch troops
+  cardId: Card_005
+  description: Bandits threaten the trade routes on the western border. Captain Thorne requests additional patrols to keep the roads safe for merchants.
+  speakerId: Speaker_005
+  dayAdvance: 2
+  leftChoiceText: Fund Western Patrols
   leftResourceChange:
     values:
     - id: gold
-      value: -8
-    - id: army
-      value: 5
-  leftNextCardId: Card_004
-  rightChoiceText: Offer council seat
+      value: -10
+    - id: favor
+      value: 15
+  leftNextCardId: Card_006
+  rightChoiceText: Ignore the Border
   rightResourceChange:
     values:
-    - id: army
-      value: -5
-    - id: favor
+    - id: gold
       value: 5
-  rightNextCardId: Card_005
+    - id: favor
+      value: -15
+  rightNextCardId: Card_004

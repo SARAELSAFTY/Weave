@@ -163,10 +163,7 @@ public class CardNode : Node
             }
         };
 
-        if (!string.IsNullOrEmpty(card.speakerId) || card.dayAdvance > 0)
-        {
-            body.Add(BuildMetaRow(card));
-        }
+        body.Add(BuildMetaRow(card));
 
         body.Add(new Label(Truncate(card.description, DescriptionPreviewLength, "(No description)"))
         {
@@ -181,20 +178,63 @@ public class CardNode : Node
         return body;
     }
 
-    private static VisualElement BuildMetaRow(CardData card)
+    private VisualElement BuildMetaRow(CardData card)
     {
         VisualElement row = new VisualElement
         {
-            style = { flexDirection = FlexDirection.Row, justifyContent = Justify.SpaceBetween, marginBottom = 4 }
+            style =
+            {
+                flexDirection = FlexDirection.Row,
+                justifyContent = Justify.SpaceBetween,
+                alignItems = Align.Center,
+                marginBottom = 4
+            }
         };
 
-        if (!string.IsNullOrEmpty(card.speakerId))
+        VisualElement speakerContainer = new VisualElement
         {
-            row.Add(new Label($"Speaker: {card.speakerId}")
+            style = { flexDirection = FlexDirection.Row, alignItems = Align.Center }
+        };
+
+        speakerContainer.Add(new Label("Speaker:")
+        {
+            style = { fontSize = 10, color = new StyleColor(new Color(0.7f, 0.75f, 0.9f)), marginRight = 4 }
+        });
+
+        List<string> speakerChoices = new List<string> { "(None)" };
+        NarrativeDatabase db = parentGraphView?.Database;
+        if (db != null && db.speakers != null)
+        {
+            foreach (CouncilMemberData speaker in db.speakers)
             {
-                style = { fontSize = 10, color = new StyleColor(new Color(0.7f, 0.75f, 0.9f)) }
-            });
+                if (speaker != null && !string.IsNullOrEmpty(speaker.memberId) && !speakerChoices.Contains(speaker.memberId))
+                {
+                    speakerChoices.Add(speaker.memberId);
+                }
+            }
         }
+
+        string currentSpeaker = !string.IsNullOrEmpty(card.speakerId) && speakerChoices.Contains(card.speakerId)
+            ? card.speakerId
+            : "(None)";
+
+        PopupField<string> speakerPopup = new PopupField<string>(speakerChoices, currentSpeaker);
+        speakerPopup.style.fontSize = 10;
+        speakerPopup.style.height = 18;
+        speakerPopup.style.maxWidth = 110;
+        speakerPopup.RegisterValueChangedCallback(evt =>
+        {
+            string newSpeakerId = evt.newValue == "(None)" ? string.Empty : evt.newValue;
+            if (card.speakerId != newSpeakerId)
+            {
+                Undo.RecordObject(card, "Assign Card Speaker");
+                card.speakerId = newSpeakerId;
+                EditorUtility.SetDirty(card);
+            }
+        });
+
+        speakerContainer.Add(speakerPopup);
+        row.Add(speakerContainer);
 
         if (card.dayAdvance > 0)
         {
@@ -288,6 +328,25 @@ public class CardNode : Node
         {
             evt.menu.AppendAction("Set as Starting Card", _ => parentGraphView.SetStartingCard(Card),
                 isStartCard ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+
+            NarrativeDatabase db = parentGraphView?.Database;
+            if (db != null && db.speakers != null)
+            {
+                evt.menu.AppendAction("Assign Speaker/None", _ => AssignSpeaker(""),
+                    string.IsNullOrEmpty(Card.speakerId) ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+
+                foreach (CouncilMemberData speaker in db.speakers)
+                {
+                    if (speaker != null && !string.IsNullOrEmpty(speaker.memberId))
+                    {
+                        string id = speaker.memberId;
+                        string label = !string.IsNullOrEmpty(speaker.displayName) ? $"{speaker.displayName} ({id})" : id;
+                        evt.menu.AppendAction($"Assign Speaker/{label}", _ => AssignSpeaker(id),
+                            Card.speakerId == id ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+                    }
+                }
+            }
+
             evt.menu.AppendAction("Ping Asset in Project", _ =>
             {
                 Selection.activeObject = Card;
@@ -295,6 +354,19 @@ public class CardNode : Node
             });
             evt.menu.AppendAction("Open Asset in Inspector", _ => AssetDatabase.OpenAsset(Card));
         }));
+    }
+
+    private void AssignSpeaker(string speakerId)
+    {
+        if (Card == null || Card.speakerId == speakerId)
+        {
+            return;
+        }
+
+        Undo.RecordObject(Card, "Assign Card Speaker");
+        Card.speakerId = speakerId;
+        EditorUtility.SetDirty(Card);
+        parentGraphView?.Populate(parentGraphView.Database);
     }
 
     private void OnMouseDown(MouseDownEvent evt)

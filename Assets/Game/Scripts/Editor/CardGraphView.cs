@@ -24,9 +24,12 @@ public class CardGraphView : GraphView
     // layout survives closing/reopening the window and Unity domain reloads. This dictionary is
     // just an in-memory mirror, rebuilt from the asset every Populate(), for fast lookup.
     private readonly Dictionary<string, Vector2> positionsByCardId = new Dictionary<string, Vector2>();
+    private readonly Dictionary<string, Vector2> positionsByMemberId = new Dictionary<string, Vector2>();
 
     // Set before Populate() so the new card node is placed at the viewport centre.
     private CardData pendingNewCard;
+
+    public NarrativeDatabase Database => database;
 
     public void SetPendingNewCard(CardData card)
     {
@@ -79,27 +82,31 @@ public class CardGraphView : GraphView
             RemoveElement(element);
         }
 
-        if (database == null || database.cards == null || database.cards.Count == 0)
+        if ((database == null) || ((database.cards == null || database.cards.Count == 0) && (database.speakers == null || database.speakers.Count == 0)))
         {
             emptyNoticeLabel.style.display = DisplayStyle.Flex;
             emptyNoticeLabel.text = database == null
-                ? "Select a NarrativeDatabase asset in the top toolbar to view and edit the card graph."
-                : "Database has no cards. Click '+ New Card' in the toolbar to create one.";
+                ? "Select a NarrativeDatabase asset in the top toolbar to view and edit the graph."
+                : "Database has no cards or speakers. Click '+ New Card' or '+ New Speaker' in the toolbar to create content.";
             isPopulating = false;
             return;
         }
 
         emptyNoticeLabel.style.display = DisplayStyle.None;
 
-        foreach (CardData c in database.cards)
+        if (database.cards != null)
         {
-            CardGraph.SyncIdToAssetName(c);
+            foreach (CardData c in database.cards)
+            {
+                CardGraph.SyncIdToAssetName(c);
+            }
         }
 
         Dictionary<string, CardData> cardsById = CardGraph.BuildLookup(database);
         Dictionary<string, CardNode> nodesByCardId = new Dictionary<string, CardNode>();
         List<CardNode> nodeList = CreateNodes(cardsById, nodesByCardId);
         DrawEdges(nodeList, nodesByCardId);
+        CreateSpeakerNodes();
 
         isPopulating = false;
     }
@@ -107,16 +114,27 @@ public class CardGraphView : GraphView
     private void LoadPositionsFromDatabase()
     {
         positionsByCardId.Clear();
-        if (database?.editorGraphPositions == null)
+        positionsByMemberId.Clear();
+
+        if (database?.editorGraphPositions != null)
         {
-            return;
+            foreach (NarrativeDatabase.CardGraphPosition entry in database.editorGraphPositions)
+            {
+                if (!string.IsNullOrEmpty(entry.cardId))
+                {
+                    positionsByCardId[entry.cardId] = entry.position;
+                }
+            }
         }
 
-        foreach (NarrativeDatabase.CardGraphPosition entry in database.editorGraphPositions)
+        if (database?.editorSpeakerPositions != null)
         {
-            if (!string.IsNullOrEmpty(entry.cardId))
+            foreach (NarrativeDatabase.SpeakerGraphPosition entry in database.editorSpeakerPositions)
             {
-                positionsByCardId[entry.cardId] = entry.position;
+                if (!string.IsNullOrEmpty(entry.memberId))
+                {
+                    positionsByMemberId[entry.memberId] = entry.position;
+                }
             }
         }
     }
@@ -217,6 +235,44 @@ public class CardGraphView : GraphView
         window.PopulateGraph();
     }
 
+    private static readonly Vector2 DefaultSpeakerNodeSize = new Vector2(240, 170);
+
+    private void CreateSpeakerNodes()
+    {
+        if (database?.speakers == null)
+        {
+            return;
+        }
+
+        int i = 0;
+        foreach (CouncilMemberData speaker in database.speakers)
+        {
+            if (speaker == null)
+            {
+                continue;
+            }
+
+            SpeakerNode speakerNode = new SpeakerNode(speaker, this);
+            Vector2 pos = ResolveSpeakerNodePosition(speaker, i);
+            speakerNode.SetPosition(new Rect(pos, DefaultSpeakerNodeSize));
+            AddElement(speakerNode);
+            i++;
+        }
+    }
+
+    private Vector2 ResolveSpeakerNodePosition(CouncilMemberData speaker, int indexInList)
+    {
+        string id = !string.IsNullOrEmpty(speaker.memberId) ? speaker.memberId : speaker.name;
+        if (!string.IsNullOrEmpty(id) && positionsByMemberId.TryGetValue(id, out Vector2 savedPos))
+        {
+            return savedPos;
+        }
+
+        Vector2 defaultPos = new Vector2(-260, indexInList * 210 + 60);
+        SaveSpeakerPositionToDatabase(id, defaultPos);
+        return defaultPos;
+    }
+
     private void SaveCurrentNodePositions()
     {
         if (database == null)
@@ -229,6 +285,18 @@ public class CardGraphView : GraphView
             if (node.Card != null && !string.IsNullOrEmpty(node.Card.cardId))
             {
                 SavePositionToDatabase(node.Card.cardId, node.GetPosition().position);
+            }
+        }
+
+        foreach (SpeakerNode node in graphElements.OfType<SpeakerNode>())
+        {
+            if (node.Speaker != null)
+            {
+                string id = !string.IsNullOrEmpty(node.Speaker.memberId) ? node.Speaker.memberId : node.Speaker.name;
+                if (!string.IsNullOrEmpty(id))
+                {
+                    SaveSpeakerPositionToDatabase(id, node.GetPosition().position);
+                }
             }
         }
     }
@@ -277,6 +345,50 @@ public class CardGraphView : GraphView
         if (index >= 0)
         {
             database.editorGraphPositions.RemoveAt(index);
+            EditorUtility.SetDirty(database);
+        }
+    }
+
+    private void SaveSpeakerPositionToDatabase(string memberId, Vector2 position)
+    {
+        if (database == null || string.IsNullOrEmpty(memberId))
+        {
+            return;
+        }
+
+        positionsByMemberId[memberId] = position;
+        database.editorSpeakerPositions ??= new List<NarrativeDatabase.SpeakerGraphPosition>();
+        int index = database.editorSpeakerPositions.FindIndex(e => e.memberId == memberId);
+        NarrativeDatabase.SpeakerGraphPosition entry = new NarrativeDatabase.SpeakerGraphPosition
+        {
+            memberId = memberId,
+            position = position
+        };
+
+        if (index >= 0)
+        {
+            database.editorSpeakerPositions[index] = entry;
+        }
+        else
+        {
+            database.editorSpeakerPositions.Add(entry);
+        }
+
+        EditorUtility.SetDirty(database);
+    }
+
+    private void RemoveSpeakerPositionFromDatabase(string memberId)
+    {
+        if (database?.editorSpeakerPositions == null || string.IsNullOrEmpty(memberId))
+        {
+            return;
+        }
+
+        positionsByMemberId.Remove(memberId);
+        int index = database.editorSpeakerPositions.FindIndex(e => e.memberId == memberId);
+        if (index >= 0)
+        {
+            database.editorSpeakerPositions.RemoveAt(index);
             EditorUtility.SetDirty(database);
         }
     }
@@ -381,6 +493,16 @@ public class CardGraphView : GraphView
                         elementsToRemove.Remove(cardNode);
                     }
                     break;
+                case SpeakerNode speakerNode:
+                    if (TryDeleteSpeaker(speakerNode))
+                    {
+                        anyChange = true;
+                    }
+                    else
+                    {
+                        elementsToRemove.Remove(speakerNode);
+                    }
+                    break;
             }
         }
 
@@ -439,6 +561,57 @@ public class CardGraphView : GraphView
         }
 
         window.RefreshStartingCardDropdownOptions();
+        return true;
+    }
+
+    private bool TryDeleteSpeaker(SpeakerNode speakerNode)
+    {
+        CouncilMemberData speakerToDelete = speakerNode.Speaker;
+        if (speakerToDelete == null)
+        {
+            return true;
+        }
+
+        bool confirm = EditorUtility.DisplayDialog(
+            "Delete Speaker",
+            $"Delete Speaker '{speakerToDelete.name}'? This cannot be undone.",
+            "Delete",
+            "Cancel");
+
+        if (!confirm)
+        {
+            return false;
+        }
+
+        string memberId = speakerToDelete.memberId;
+        RemoveSpeakerPositionFromDatabase(memberId);
+
+        if (database?.cards != null && !string.IsNullOrEmpty(memberId))
+        {
+            foreach (CardData c in database.cards)
+            {
+                if (c != null && c.speakerId == memberId)
+                {
+                    Undo.RecordObject(c, "Clear Speaker Assignment");
+                    c.speakerId = string.Empty;
+                    EditorUtility.SetDirty(c);
+                }
+            }
+        }
+
+        if (database?.speakers != null)
+        {
+            Undo.RecordObject(database, "Remove Speaker From Database");
+            database.speakers.Remove(speakerToDelete);
+            EditorUtility.SetDirty(database);
+        }
+
+        string path = AssetDatabase.GetAssetPath(speakerToDelete);
+        if (!string.IsNullOrEmpty(path))
+        {
+            AssetDatabase.DeleteAsset(path);
+        }
+
         return true;
     }
 

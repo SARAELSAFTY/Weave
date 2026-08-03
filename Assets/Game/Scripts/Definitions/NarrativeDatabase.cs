@@ -16,6 +16,13 @@ public class NarrativeDatabase : ScriptableObject
         public Vector2 position;
     }
 
+    [System.Serializable]
+    public struct SpeakerGraphPosition
+    {
+        public string memberId;
+        public Vector2 position;
+    }
+
     [Header("Entry Point")]
     [Tooltip("First card ID shown when game starts.")]
     public string startingCardId;
@@ -28,4 +35,6 @@ public class NarrativeDatabase : ScriptableObject
 
     [HideInInspector]
     public List<CardGraphPosition> editorGraphPositions = new List<CardGraphPosition>();
+    [HideInInspector]
+    public List<SpeakerGraphPosition> editorSpeakerPositions = new List<SpeakerGraphPosition>();
 }

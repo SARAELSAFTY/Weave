@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -30,7 +31,41 @@ public class CardDataEditor : Editor
         // Content
         EditorGUILayout.LabelField("Card Content", EditorStyles.boldLabel);
         card.description = EditorGUILayout.TextArea(card.description, GUILayout.MinHeight(50));
-        card.speakerId = EditorGUILayout.TextField("Speaker Id", card.speakerId);
+        NarrativeDatabase database = FindOwningDatabase(card);
+        if (database == null)
+        {
+            card.speakerId = EditorGUILayout.TextField("Speaker Id", card.speakerId);
+        }
+        else
+        {
+            List<string> speakerIds = new List<string> { "(None)" };
+            if (database.speakers != null)
+            {
+                foreach (CouncilMemberData speaker in database.speakers)
+                {
+                    if (speaker != null && !string.IsNullOrEmpty(speaker.memberId) && !speakerIds.Contains(speaker.memberId))
+                    {
+                        speakerIds.Add(speaker.memberId);
+                    }
+                }
+            }
+
+            int selectedIndex = 0;
+            if (!string.IsNullOrEmpty(card.speakerId))
+            {
+                int matchIndex = speakerIds.IndexOf(card.speakerId);
+                if (matchIndex >= 0)
+                {
+                    selectedIndex = matchIndex;
+                }
+            }
+
+            int newIndex = EditorGUILayout.Popup("Speaker Id", selectedIndex, speakerIds.ToArray());
+            if (newIndex != selectedIndex)
+            {
+                card.speakerId = newIndex == 0 ? string.Empty : speakerIds[newIndex];
+            }
+        }
         card.dayAdvance = Mathf.Max(0, EditorGUILayout.IntField("Day Advance", card.dayAdvance));
 
         EditorGUILayout.Space(6);
@@ -97,5 +132,33 @@ public class CardDataEditor : Editor
             EditorUtility.SetDirty(card);
             CardGraphWindow.RefreshOpenWindows();
         }
+    }
+
+    private static NarrativeDatabase FindOwningDatabase(CardData cardData)
+    {
+        string[] guids = AssetDatabase.FindAssets("t:NarrativeDatabase");
+        NarrativeDatabase fallbackDb = null;
+
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            NarrativeDatabase db = AssetDatabase.LoadAssetAtPath<NarrativeDatabase>(path);
+            if (db == null)
+            {
+                continue;
+            }
+
+            if (fallbackDb == null)
+            {
+                fallbackDb = db;
+            }
+
+            if (db.cards != null && db.cards.Contains(cardData))
+            {
+                return db;
+            }
+        }
+
+        return fallbackDb;
     }
 }
