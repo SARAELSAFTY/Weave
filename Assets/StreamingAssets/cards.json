@@ -1,0 +1,154 @@
+{
+    "cards": [
+        {
+            "cardId": "Card_001",
+            "description": "The harvest season has been poor. Chancellor Verrin urges you to impose rations before winter bites — but the merchant guilds warn that price controls will collapse trade.",
+            "speakerId": "ver",
+            "dayAdvance": 1,
+            "leftChoiceText": "Impose rations",
+            "leftNextCardId": "Card_002",
+            "leftResourceChange": [
+                {
+                    "id": "gold",
+                    "value": -5
+                },
+                {
+                    "id": "favor",
+                    "value": 10
+                }
+            ],
+            "rightChoiceText": "Let market decide",
+            "rightNextCardId": "Card_003",
+            "rightResourceChange": [
+                {
+                    "id": "gold",
+                    "value": 10
+                },
+                {
+                    "id": "favor",
+                    "value": -8
+                }
+            ],
+            "isEnding": false
+        },
+        {
+            "cardId": "Card_002",
+            "description": "Spymaster Wren intercepts a report — northern lords are recruiting disaffected farmers. Dispatch troops or offer a council seat?",
+            "speakerId": "wre",
+            "dayAdvance": 1,
+            "leftChoiceText": "Dispatch troops",
+            "leftNextCardId": "Card_004",
+            "leftResourceChange": [
+                {
+                    "id": "gold",
+                    "value": -8
+                },
+                {
+                    "id": "army",
+                    "value": 5
+                }
+            ],
+            "rightChoiceText": "Offer council seat",
+            "rightNextCardId": "Card_005",
+            "rightResourceChange": [
+                {
+                    "id": "army",
+                    "value": -5
+                },
+                {
+                    "id": "favor",
+                    "value": 5
+                }
+            ],
+            "isEnding": false
+        },
+        {
+            "cardId": "Card_003",
+            "description": "Trade is brisk but riots erupt in the poorest quarter. Quartermaster Elian requests emergency grain imports.",
+            "speakerId": "eli",
+            "dayAdvance": 1,
+            "leftChoiceText": "Buy eastern grain",
+            "leftNextCardId": "Card_005",
+            "leftResourceChange": [
+                {
+                    "id": "gold",
+                    "value": -12
+                },
+                {
+                    "id": "food",
+                    "value": 12
+                }
+            ],
+            "rightChoiceText": "Send in Marshal",
+            "rightNextCardId": "Card_004",
+            "rightResourceChange": [
+                {
+                    "id": "gold",
+                    "value": -3
+                },
+                {
+                    "id": "army",
+                    "value": 8
+                }
+            ],
+            "isEnding": false
+        },
+        {
+            "cardId": "Card_004",
+            "description": "Winter arrives. The crisis has passed — for now. History will remember how you chose to govern.",
+            "speakerId": "ros",
+            "dayAdvance": 3,
+            "leftChoiceText": "",
+            "leftNextCardId": "",
+            "leftResourceChange": [],
+            "rightChoiceText": "",
+            "rightNextCardId": "",
+            "rightResourceChange": [],
+            "isEnding": true
+        },
+        {
+            "cardId": "Card_005",
+            "description": "Bandits threaten the trade routes on the western border. Captain Thorne requests additional patrols to keep the roads safe for merchants.",
+            "speakerId": "Speaker_005",
+            "dayAdvance": 2,
+            "leftChoiceText": "Fund Western Patrols",
+            "leftNextCardId": "Card_006",
+            "leftResourceChange": [
+                {
+                    "id": "gold",
+                    "value": -10
+                },
+                {
+                    "id": "favor",
+                    "value": 15
+                }
+            ],
+            "rightChoiceText": "Ignore the Border",
+            "rightNextCardId": "Card_004",
+            "rightResourceChange": [
+                {
+                    "id": "gold",
+                    "value": 5
+                },
+                {
+                    "id": "favor",
+                    "value": -15
+                }
+            ],
+            "isEnding": false
+        },
+        {
+            "cardId": "Card_006",
+            "description": "The western trade routes are secured. Merchants rejoice and prosperity returns to the kingdom.",
+            "speakerId": "ver",
+            "dayAdvance": 1,
+            "leftChoiceText": "",
+            "leftNextCardId": "",
+            "leftResourceChange": [],
+            "rightChoiceText": "",
+            "rightNextCardId": "",
+            "rightResourceChange": [],
+            "isEnding": true
+        }
+    ]
+}

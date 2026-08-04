@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Card_002
   m_EditorClassIdentifier: 
   cardId: Card_002
-  description: Spymaster Wren intercepts a report — northern lords are recruiting disaffected farmers. Dispatch troops or offer a council seat?
+  description: "Spymaster Wren intercepts a report \u2014 northern lords are recruiting
+    disaffected farmers. Dispatch troops or offer a council seat?"
   speakerId: wre
   dayAdvance: 1
   leftChoiceText: Dispatch troops

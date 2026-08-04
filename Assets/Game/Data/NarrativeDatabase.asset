@@ -25,28 +25,21 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 11111111111111111111111111111102, type: 2}
   - {fileID: 11400000, guid: 11111111111111111111111111111103, type: 2}
   - {fileID: 11400000, guid: 11111111111111111111111111111104, type: 2}
-  - {fileID: 11400000, guid: 11111111111111111111111111111105, type: 2}
   editorGraphPositions:
   - cardId: Card_001
-    position: {x: 28, y: 177}
+    position: {x: 23, y: 121}
   - cardId: Card_002
-    position: {x: 370, y: 60}
+    position: {x: 558, y: -92}
   - cardId: Card_003
-    position: {x: 370, y: 290}
+    position: {x: 554, y: 308}
   - cardId: Card_004
-    position: {x: 1199, y: 434}
-  - cardId: Card_005
-    position: {x: 848, y: 79}
-  - cardId: Card_006
-    position: {x: 1312, y: 65}
+    position: {x: 1160, y: 80}
   editorSpeakerPositions:
   - memberId: eli
     position: {x: -309, y: 53}
   - memberId: ver
-    position: {x: -260, y: 260}
+    position: {x: -303, y: 243}
   - memberId: wre
-    position: {x: -260, y: 460}
+    position: {x: -304, y: 452}
   - memberId: ros
-    position: {x: -260, y: 660}
-  - memberId: Speaker_005
-    position: {x: -260, y: 860}
+    position: {x: -298, y: 624}
