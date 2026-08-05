@@ -1,0 +1,369 @@
+using System.Collections.Generic;
+using System.IO;
+using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+// Editor window shell: owns the toolbar (database picker, starting-card picker, new-card button)
+// and hosts a CardGraphView for the actual node graph.
+public class CardGraphWindow : EditorWindow
+{
+    private const string NewCardFolder = "Assets/Game/Data/Cards";
+    private const string NewSpeakerFolder = "Assets/Game/Data/Speakers";
+
+    private NarrativeDatabase currentDatabase;
+    private CardGraphView graphView;
+    private Button newDatabaseButton;
+    private Button newCardButton;
+    private Button newSpeakerButton;
+    private ObjectField databaseField;
+    private DropdownField startingCardDropdown;
+
+    [MenuItem("Weave/Card Graph")]
+    public static void OpenWindow()
+    {
+        CardGraphWindow window = GetWindow<CardGraphWindow>("Card Graph");
+        window.minSize = new Vector2(900, 650);
+        window.titleContent = new GUIContent("Card Graph", EditorGUIUtility.IconContent("d_Project").image);
+    }
+
+    // Called by CardDataEditor / CardAssetPostprocessor whenever a card changes outside this window.
+    public static void RefreshOpenWindows()
+    {
+        foreach (CardGraphWindow window in Resources.FindObjectsOfTypeAll<CardGraphWindow>())
+        {
+            window.PopulateGraph();
+        }
+    }
+
+    private void OnEnable()
+    {
+        ConstructUI();
+    }
+
+    private void ConstructUI()
+    {
+        rootVisualElement.Clear();
+        rootVisualElement.Add(BuildToolbar());
+
+        graphView = new CardGraphView(this);
+        graphView.StretchToParentSize();
+        graphView.style.top = 36;
+        rootVisualElement.Add(graphView);
+
+        UpdateToolbarState();
+        PopulateGraph();
+    }
+
+    private Toolbar BuildToolbar()
+    {
+        Toolbar toolbar = new Toolbar();
+        toolbar.style.height = 36;
+        toolbar.style.paddingLeft = 8;
+        toolbar.style.paddingRight = 8;
+        toolbar.style.paddingTop = 4;
+        toolbar.style.paddingBottom = 4;
+        toolbar.style.backgroundColor = new StyleColor(new Color(0.13f, 0.14f, 0.16f));
+        toolbar.style.borderBottomWidth = 1;
+        toolbar.style.borderBottomColor = new StyleColor(new Color(0.22f, 0.23f, 0.26f));
+
+        databaseField = new ObjectField("Database:")
+        {
+            objectType = typeof(NarrativeDatabase),
+            allowSceneObjects = false,
+            value = currentDatabase
+        };
+        databaseField.style.width = 240;
+        databaseField.style.marginRight = 6;
+        databaseField.RegisterValueChangedCallback(evt =>
+        {
+            currentDatabase = evt.newValue as NarrativeDatabase;
+            UpdateToolbarState();
+            PopulateGraph();
+        });
+        toolbar.Add(databaseField);
+
+        newDatabaseButton = new Button(OnCreateNewDatabaseClicked) { text = "+ New DB" };
+        newDatabaseButton.style.height = 24;
+        newDatabaseButton.style.paddingLeft = 8;
+        newDatabaseButton.style.paddingRight = 8;
+        newDatabaseButton.style.marginRight = 12;
+        newDatabaseButton.style.backgroundColor = new StyleColor(new Color(0.20f, 0.55f, 0.35f));
+        newDatabaseButton.style.color = new StyleColor(Color.white);
+        newDatabaseButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+        toolbar.Add(newDatabaseButton);
+
+        startingCardDropdown = new DropdownField("Starting Card:", new List<string> { "(None)" }, 0);
+        startingCardDropdown.style.width = 240;
+        startingCardDropdown.style.marginRight = 12;
+        startingCardDropdown.RegisterValueChangedCallback(evt => SetStartingCardFromDropdown(evt.newValue));
+        toolbar.Add(startingCardDropdown);
+
+        VisualElement spacer = new VisualElement();
+        spacer.style.flexGrow = 1;
+        toolbar.Add(spacer);
+
+        newCardButton = new Button(OnCreateNewCardClicked) { text = "+ New Card" };
+        newCardButton.style.height = 24;
+        newCardButton.style.paddingLeft = 12;
+        newCardButton.style.paddingRight = 12;
+        newCardButton.style.marginRight = 6;
+        newCardButton.style.backgroundColor = new StyleColor(new Color(0.10f, 0.45f, 0.65f));
+        newCardButton.style.color = new StyleColor(Color.white);
+        newCardButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+        toolbar.Add(newCardButton);
+
+        newSpeakerButton = new Button(OnCreateNewSpeakerClicked) { text = "+ New Speaker" };
+        newSpeakerButton.style.height = 24;
+        newSpeakerButton.style.paddingLeft = 12;
+        newSpeakerButton.style.paddingRight = 12;
+        newSpeakerButton.style.backgroundColor = new StyleColor(new Color(0.10f, 0.45f, 0.65f));
+        newSpeakerButton.style.color = new StyleColor(Color.white);
+        newSpeakerButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+        toolbar.Add(newSpeakerButton);
+
+        return toolbar;
+    }
+
+    private void SetStartingCardFromDropdown(string selected)
+    {
+        if (currentDatabase == null)
+        {
+            return;
+        }
+
+        string newStartId = (selected == "(None)" || string.IsNullOrEmpty(selected)) ? string.Empty : selected;
+        if (currentDatabase.startingCardId == newStartId)
+        {
+            return;
+        }
+
+        Undo.RecordObject(currentDatabase, "Set Starting Card");
+        currentDatabase.startingCardId = newStartId;
+        EditorUtility.SetDirty(currentDatabase);
+        PopulateGraph();
+    }
+
+    private void UpdateToolbarState()
+    {
+        bool hasDb = currentDatabase != null;
+        newCardButton?.SetEnabled(hasDb);
+        newSpeakerButton?.SetEnabled(hasDb);
+        startingCardDropdown?.SetEnabled(hasDb);
+
+        if (hasDb)
+        {
+            RefreshStartingCardDropdownOptions();
+        }
+    }
+
+    public void RefreshStartingCardDropdownOptions()
+    {
+        if (currentDatabase == null || startingCardDropdown == null)
+        {
+            return;
+        }
+
+        List<string> options = new List<string> { "(None)" };
+        if (currentDatabase.cards != null)
+        {
+            foreach (CardData card in currentDatabase.cards)
+            {
+                string id = card != null ? (!string.IsNullOrEmpty(card.cardId) ? card.cardId : card.name) : null;
+                if (!string.IsNullOrEmpty(id) && !options.Contains(id))
+                {
+                    options.Add(id);
+                }
+            }
+        }
+
+        startingCardDropdown.choices = options;
+        string currentStartId = currentDatabase.startingCardId;
+        startingCardDropdown.SetValueWithoutNotify(
+            !string.IsNullOrEmpty(currentStartId) && options.Contains(currentStartId) ? currentStartId : "(None)");
+    }
+
+    public void PopulateGraph()
+    {
+        RefreshStartingCardDropdownOptions();
+        graphView?.Populate(currentDatabase);
+    }
+
+    private void OnCreateNewCardClicked()
+    {
+        if (currentDatabase == null)
+        {
+            return;
+        }
+
+        if (!Directory.Exists(NewCardFolder))
+        {
+            Directory.CreateDirectory(NewCardFolder);
+            AssetDatabase.Refresh();
+        }
+
+        string cardName = FindNextUnusedCardName();
+        string assetPath = Path.Combine(NewCardFolder, cardName + ".asset");
+
+        CardData newCard = ScriptableObject.CreateInstance<CardData>();
+        newCard.name = cardName;
+        newCard.cardId = cardName;
+        AssetDatabase.CreateAsset(newCard, assetPath);
+
+        Undo.RecordObject(currentDatabase, "Add New Card");
+        currentDatabase.cards ??= new List<CardData>();
+        currentDatabase.cards.Add(newCard);
+
+        if (string.IsNullOrEmpty(currentDatabase.startingCardId))
+        {
+            currentDatabase.startingCardId = cardName;
+        }
+
+        EditorUtility.SetDirty(currentDatabase);
+        AssetDatabase.SaveAssets();
+
+        graphView?.SetPendingNewCard(newCard);
+        PopulateGraph();
+
+        Selection.activeObject = newCard;
+        EditorGUIUtility.PingObject(newCard);
+    }
+
+    private string FindNextUnusedCardName()
+    {
+        int index = 1;
+        string cardName;
+        do
+        {
+            cardName = $"Card_{index:D3}";
+            index++;
+        }
+        while (CardNameInUse(cardName));
+
+        return cardName;
+    }
+
+    private bool CardNameInUse(string cardName)
+    {
+        bool inDatabase = currentDatabase.cards != null &&
+            currentDatabase.cards.Exists(c => c != null && (c.cardId == cardName || c.name == cardName));
+        bool onDisk = File.Exists(Path.Combine(NewCardFolder, cardName + ".asset"));
+        return inDatabase || onDisk;
+    }
+
+    private void OnCreateNewSpeakerClicked()
+    {
+        if (currentDatabase == null)
+        {
+            return;
+        }
+
+        if (!Directory.Exists(NewSpeakerFolder))
+        {
+            Directory.CreateDirectory(NewSpeakerFolder);
+            AssetDatabase.Refresh();
+        }
+
+        string speakerName = FindNextUnusedSpeakerName();
+        string assetPath = Path.Combine(NewSpeakerFolder, speakerName + ".asset");
+
+        CouncilMemberData newSpeaker = ScriptableObject.CreateInstance<CouncilMemberData>();
+        newSpeaker.name = speakerName;
+        newSpeaker.memberId = speakerName;
+        AssetDatabase.CreateAsset(newSpeaker, assetPath);
+
+        Undo.RecordObject(currentDatabase, "Add New Speaker");
+        currentDatabase.speakers ??= new List<CouncilMemberData>();
+        currentDatabase.speakers.Add(newSpeaker);
+
+        // Auto-assign to currently selected card if one is active
+        CardData selectedCard = Selection.activeObject as CardData;
+        if (selectedCard != null)
+        {
+            Undo.RecordObject(selectedCard, "Assign New Speaker");
+            selectedCard.speakerId = newSpeaker.memberId;
+            EditorUtility.SetDirty(selectedCard);
+        }
+
+        EditorUtility.SetDirty(currentDatabase);
+        AssetDatabase.SaveAssets();
+
+        PopulateGraph();
+
+        Selection.activeObject = newSpeaker;
+        EditorGUIUtility.PingObject(newSpeaker);
+    }
+
+    public void OnCreateNewDatabaseClicked()
+    {
+        string databaseFolder = "Assets/Game/Data";
+        if (!Directory.Exists(databaseFolder))
+        {
+            Directory.CreateDirectory(databaseFolder);
+            AssetDatabase.Refresh();
+        }
+
+        string databaseName = FindNextUnusedDatabaseName(databaseFolder);
+        string assetPath = Path.Combine(databaseFolder, databaseName + ".asset");
+
+        NarrativeDatabase newDb = ScriptableObject.CreateInstance<NarrativeDatabase>();
+        newDb.name = databaseName;
+        AssetDatabase.CreateAsset(newDb, assetPath);
+        AssetDatabase.SaveAssets();
+
+        currentDatabase = newDb;
+        if (databaseField != null)
+        {
+            databaseField.value = newDb;
+        }
+
+        UpdateToolbarState();
+        PopulateGraph();
+
+        Selection.activeObject = newDb;
+        EditorGUIUtility.PingObject(newDb);
+    }
+
+    private static string FindNextUnusedDatabaseName(string folder)
+    {
+        string defaultPath = Path.Combine(folder, "NarrativeDatabase.asset");
+        if (!File.Exists(defaultPath))
+        {
+            return "NarrativeDatabase";
+        }
+
+        int index = 1;
+        string dbName;
+        do
+        {
+            dbName = $"NarrativeDatabase_{index:D3}";
+            index++;
+        }
+        while (File.Exists(Path.Combine(folder, dbName + ".asset")));
+
+        return dbName;
+    }
+
+    private string FindNextUnusedSpeakerName()
+    {
+        int index = 1;
+        string speakerName;
+        do
+        {
+            speakerName = $"Speaker_{index:D3}";
+            index++;
+        }
+        while (SpeakerNameInUse(speakerName));
+
+        return speakerName;
+    }
+
+    private bool SpeakerNameInUse(string speakerName)
+    {
+        bool inDatabase = currentDatabase.speakers != null &&
+            currentDatabase.speakers.Exists(s => s != null && (s.memberId == speakerName || s.name == speakerName));
+        bool onDisk = File.Exists(Path.Combine(NewSpeakerFolder, speakerName + ".asset"));
+        return inDatabase || onDisk;
+    }
+}
