@@ -1,88 +1,100 @@
+using Game.Scripts.Definitions;
+using Game.Scripts.Runtime.Narrative;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Visual node representing one CouncilMemberData speaker in the graph canvas, allowing
-// editing of display name, title, and portrait directly from the graph window.
-public class SpeakerNode : Node
+namespace Game.Scripts.Editor
 {
+    // Visual node representing one CouncilMemberData speaker in the graph canvas, allowing
+    // editing of display name, title, and portrait directly from the graph window.
+    public class SpeakerNode : BaseNode
+    {
     private static readonly Color SpeakerHeaderColor = new Color(0.28f, 0.15f, 0.38f);
     private static readonly Color SpeakerBorderColor = new Color(0.65f, 0.35f, 0.85f);
+    private static readonly Color LlmAccent = new Color(0.85f, 0.6f, 1.0f);
 
     public CouncilMemberData Speaker { get; }
     private readonly CardGraphView parentGraphView;
+
+    protected override Object TargetAsset => Speaker;
+    protected override string TargetId => Speaker != null ? (!string.IsNullOrEmpty(Speaker.memberId) ? Speaker.memberId : Speaker.name) : "Null Speaker";
 
     public SpeakerNode(CouncilMemberData speaker, CardGraphView parentGraphView)
     {
         Speaker = speaker;
         this.parentGraphView = parentGraphView;
-        title = !string.IsNullOrEmpty(speaker.memberId) ? speaker.memberId : speaker.name;
+        bool isLlm = CardGraph.IsLlmSpeaker(parentGraphView?.Database, speaker);
 
+        InitializeNode(TargetId);
         ApplyNodeChrome();
-        titleContainer.Insert(0, BuildHeaderLabel(speaker));
-        HideDefaultTitleLabel();
 
-        extensionContainer.Add(BuildBody(speaker));
+        if (speaker != null)
+        {
+            titleContainer.Add(BuildBadges(speaker, isLlm));
+            extensionContainer.Add(BuildBody(speaker, isLlm));
+        }
 
         RefreshExpandedState();
         RefreshPorts();
-
-        RegisterContextMenu();
-        RegisterCallback<MouseDownEvent>(OnMouseDown);
     }
 
     private void ApplyNodeChrome()
     {
         style.backgroundColor = new StyleColor(new Color(0.14f, 0.13f, 0.17f));
-        style.borderTopWidth = 2;
-        style.borderBottomWidth = 2;
-        style.borderLeftWidth = 2;
-        style.borderRightWidth = 2;
-
-        style.borderTopColor = new StyleColor(SpeakerBorderColor);
-        style.borderBottomColor = new StyleColor(SpeakerBorderColor);
-        style.borderLeftColor = new StyleColor(SpeakerBorderColor);
-        style.borderRightColor = new StyleColor(SpeakerBorderColor);
-        style.borderTopLeftRadius = 6;
-        style.borderTopRightRadius = 6;
-        style.borderBottomLeftRadius = 6;
-        style.borderBottomRightRadius = 6;
-
-        titleContainer.style.backgroundColor = new StyleColor(SpeakerHeaderColor);
-        titleContainer.style.paddingLeft = 8;
-        titleContainer.style.paddingRight = 8;
-        titleContainer.style.height = 32;
+        ApplyBaseChrome(SpeakerHeaderColor, SpeakerBorderColor, 2f, 32f);
     }
 
-    private static Label BuildHeaderLabel(CouncilMemberData speaker)
+
+    private static VisualElement BuildBadges(CouncilMemberData speaker, bool isLlm)
     {
-        string labelText = $"👤 {(!string.IsNullOrEmpty(speaker.memberId) ? speaker.memberId : speaker.name)}";
-        return new Label(labelText)
+        VisualElement badges = new VisualElement
         {
             style =
             {
-                fontSize = 12,
-                unityFontStyleAndWeight = FontStyle.Bold,
-                color = new StyleColor(new Color(0.95f, 0.85f, 1.0f)),
-                flexGrow = 1,
-                marginRight = 6,
-                unityTextAlign = TextAnchor.MiddleLeft
+                flexDirection = FlexDirection.Row,
+                alignItems = Align.Center
             }
         };
-    }
 
-    private void HideDefaultTitleLabel()
-    {
-        Label defaultTitleLabel = titleContainer.Q<Label>("title-label");
-        if (defaultTitleLabel != null)
+        if (isLlm)
         {
-            defaultTitleLabel.style.display = DisplayStyle.None;
+            badges.Add(MakeBadge("LLM", LlmAccent, new Color(0.30f, 0.12f, 0.45f), "Designated AI speaker"));
         }
+
+        if (speaker.isLlmSpeaker && !isLlm)
+        {
+            badges.Add(MakeBadge("Flagged, not designated",
+                new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
+                "isLlmSpeaker is set but CardGraph does not treat this speaker as the designated AI speaker."));
+        }
+
+        return badges;
     }
 
-    private VisualElement BuildBody(CouncilMemberData speaker)
+    private static Label MakeBadge(string text, Color foreground, Color background, string tooltip)
+    {
+        Label label = new Label(text);
+        label.style.fontSize = 9;
+        label.style.unityFontStyleAndWeight = FontStyle.Bold;
+        label.style.color = new StyleColor(foreground);
+        label.style.backgroundColor = new StyleColor(background);
+        label.style.paddingLeft = 5;
+        label.style.paddingRight = 5;
+        label.style.paddingTop = 2;
+        label.style.paddingBottom = 2;
+        label.style.marginRight = 6;
+        label.style.borderTopLeftRadius = 3;
+        label.style.borderTopRightRadius = 3;
+        label.style.borderBottomLeftRadius = 3;
+        label.style.borderBottomRightRadius = 3;
+        label.tooltip = tooltip;
+        return label;
+    }
+
+    private VisualElement BuildBody(CouncilMemberData speaker, bool isLlm)
     {
         VisualElement body = new VisualElement
         {
@@ -92,89 +104,60 @@ public class SpeakerNode : Node
                 paddingBottom = 6,
                 paddingLeft = 8,
                 paddingRight = 8,
-                backgroundColor = new StyleColor(new Color(0.16f, 0.14f, 0.19f))
+                backgroundColor = new StyleColor(new Color(0.16f, 0.14f, 0.19f)),
+                minWidth = 160
             }
         };
 
-        TextField nameField = new TextField("Name:") { value = speaker.displayName };
-        nameField.style.fontSize = 11;
-        nameField.style.marginBottom = 4;
-        nameField.RegisterValueChangedCallback(evt =>
-        {
-            if (speaker.displayName != evt.newValue)
-            {
-                Undo.RecordObject(speaker, "Edit Speaker Display Name");
-                speaker.displayName = evt.newValue;
-                EditorUtility.SetDirty(speaker);
-            }
-        });
-        body.Add(nameField);
+        Label nameValue = new Label(string.IsNullOrEmpty(speaker.displayName) ? "(Empty Name)" : speaker.displayName);
+        nameValue.style.fontSize = 11;
+        nameValue.style.unityFontStyleAndWeight = FontStyle.Bold;
+        nameValue.style.color = new StyleColor(new Color(0.9f, 0.9f, 0.9f));
+        body.Add(nameValue);
 
-        TextField titleField = new TextField("Title:") { value = speaker.title };
-        titleField.style.fontSize = 11;
-        titleField.style.marginBottom = 4;
-        titleField.RegisterValueChangedCallback(evt =>
-        {
-            if (speaker.title != evt.newValue)
-            {
-                Undo.RecordObject(speaker, "Edit Speaker Title");
-                speaker.title = evt.newValue;
-                EditorUtility.SetDirty(speaker);
-            }
-        });
-        body.Add(titleField);
+        Label titleValue = new Label(string.IsNullOrEmpty(speaker.title) ? "(No Title)" : speaker.title);
+        titleValue.style.fontSize = 10;
+        titleValue.style.color = new StyleColor(new Color(0.7f, 0.7f, 0.7f));
+        titleValue.style.unityFontStyleAndWeight = FontStyle.Italic;
+        titleValue.style.marginBottom = 6;
+        body.Add(titleValue);
 
-        ObjectField portraitField = new ObjectField("Portrait:")
+        if (isLlm)
         {
-            objectType = typeof(Sprite),
-            allowSceneObjects = false,
-            value = speaker.portrait
-        };
-        portraitField.style.fontSize = 11;
-        portraitField.RegisterValueChangedCallback(evt =>
+            string personaText = string.IsNullOrEmpty(speaker.llmPersonaPrompt) ? "(No Persona Prompt)" : speaker.llmPersonaPrompt;
+            Label personaValue = new Label(personaText);
+            personaValue.style.fontSize = 9;
+            personaValue.style.color = new StyleColor(new Color(0.6f, 0.6f, 0.65f));
+            personaValue.style.whiteSpace = WhiteSpace.Normal;
+            personaValue.style.unityFontStyleAndWeight = FontStyle.Italic;
+            personaValue.style.maxHeight = 60;
+            body.Add(personaValue);
+        }
+
+        if (speaker.portrait != null)
         {
-            Sprite newSprite = evt.newValue as Sprite;
-            if (speaker.portrait != newSprite)
+            Image portraitImage = new Image
             {
-                Undo.RecordObject(speaker, "Edit Speaker Portrait");
-                speaker.portrait = newSprite;
-                EditorUtility.SetDirty(speaker);
-            }
-        });
-        body.Add(portraitField);
+                sprite = speaker.portrait,
+                scaleMode = ScaleMode.ScaleToFit
+            };
+            portraitImage.style.width = 64;
+            portraitImage.style.height = 64;
+            portraitImage.style.marginTop = 8;
+            portraitImage.style.alignSelf = Align.Center;
+            portraitImage.style.borderTopWidth = 1;
+            portraitImage.style.borderBottomWidth = 1;
+            portraitImage.style.borderLeftWidth = 1;
+            portraitImage.style.borderRightWidth = 1;
+            portraitImage.style.borderTopColor = new StyleColor(new Color(0.3f, 0.3f, 0.3f));
+            portraitImage.style.borderBottomColor = new StyleColor(new Color(0.3f, 0.3f, 0.3f));
+            portraitImage.style.borderLeftColor = new StyleColor(new Color(0.3f, 0.3f, 0.3f));
+            portraitImage.style.borderRightColor = new StyleColor(new Color(0.3f, 0.3f, 0.3f));
+            body.Add(portraitImage);
+        }
 
         return body;
     }
 
-    private void RegisterContextMenu()
-    {
-        this.AddManipulator(new ContextualMenuManipulator(evt =>
-        {
-            evt.menu.AppendAction("Ping Asset in Project", _ =>
-            {
-                Selection.activeObject = Speaker;
-                EditorGUIUtility.PingObject(Speaker);
-            });
-            evt.menu.AppendAction("Open Asset in Inspector", _ => AssetDatabase.OpenAsset(Speaker));
-        }));
-    }
-
-    private void OnMouseDown(MouseDownEvent evt)
-    {
-        if (evt.clickCount == 2 && Speaker != null)
-        {
-            AssetDatabase.OpenAsset(Speaker);
-            evt.StopPropagation();
-        }
-    }
-
-    public override void OnSelected()
-    {
-        base.OnSelected();
-        if (Speaker != null)
-        {
-            Selection.activeObject = Speaker;
-            EditorGUIUtility.PingObject(Speaker);
-        }
-    }
+}
 }

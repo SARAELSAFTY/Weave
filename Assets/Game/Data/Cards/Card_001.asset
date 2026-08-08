@@ -13,22 +13,22 @@ MonoBehaviour:
   m_Name: Card_001
   m_EditorClassIdentifier: 
   cardId: Card_001
-  description: The harvest season has been poor. Chancellor Verrin urges you to impose rations before winter bites — but the merchant guilds warn that price controls will collapse trade.
-  speakerId: ver
+  description: The treasury is thin, my lord. Do we raise taxes on the villages,
+    or dip into the royal reserves?
+  speakerId: bren
   dayAdvance: 1
-  leftChoiceText: Impose rations
+  leftChoiceText: Raise Taxes
   leftResourceChange:
     values:
-    - id: gold
-      value: -5
-    - id: favor
-      value: 10
+    - id: loyalty
+      value: -3
   leftNextCardId: Card_002
-  rightChoiceText: Let market decide
+  rightChoiceText: Use Reserves
   rightResourceChange:
     values:
     - id: gold
-      value: 10
-    - id: favor
-      value: -8
-  rightNextCardId: Card_003
+      value: -5
+  rightNextCardId: Card_002
+  isLlmReactionCard: 0
+  llmPromptSeed: 
+  continueNextCardId: 

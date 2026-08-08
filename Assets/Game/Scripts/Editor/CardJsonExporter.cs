@@ -1,22 +1,38 @@
 using System.Collections.Generic;
 using System.IO;
+using Game.Scripts.Definitions;
+using Game.Scripts.Runtime.Narrative;
 using UnityEditor;
 using UnityEngine;
 
-// One-click exporter: Tools > Weave > Export Cards to JSON
-// Writes all CardData assets to Assets/StreamingAssets/cards.json
-public static class CardJsonExporter
-{
+namespace Game.Scripts.Editor
+{   
+    // One-click exporter: Tools > Weave > Export Cards to JSON
+    // Writes cards, speakers, and resources from a NarrativeDatabase to Assets/StreamingAssets/cards.json
+    public static class CardJsonExporter
+    {
     [MenuItem("Tools/Weave/Export Cards to JSON")]
     public static void ExportCards()
     {
-        string[] guids = AssetDatabase.FindAssets("t:CardData");
-        var cardList = new List<CardJson>();
-
-        foreach (string guid in guids)
+        string[] guids = AssetDatabase.FindAssets("t:NarrativeDatabase");
+        if (guids.Length == 0)
         {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            CardData card = AssetDatabase.LoadAssetAtPath<CardData>(path);
+            Debug.LogError("[CardJsonExporter] No NarrativeDatabase found in project.");
+            return;
+        }
+
+        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+        NarrativeDatabase db = AssetDatabase.LoadAssetAtPath<NarrativeDatabase>(path);
+        ExportDatabase(db);
+    }
+
+    public static void ExportDatabase(NarrativeDatabase db)
+    {
+        if (db == null) return;
+
+        var cardList = new List<CardJson>();
+        foreach (CardData card in db.cards)
+        {
             if (card == null) continue;
 
             cardList.Add(new CardJson
@@ -31,14 +47,47 @@ public static class CardJsonExporter
                 rightChoiceText = card.rightChoiceText,
                 rightNextCardId = card.rightNextCardId,
                 rightResourceChange = ToResourceJson(card.rightResourceChange),
-                isEnding = card.isEnding
+                isLlmReactionCard = card.isLlmReactionCard,
+                llmPromptSeed = card.llmPromptSeed,
+                continueNextCardId = card.continueNextCardId,
+                isEnding = card.IsEnding
             });
         }
-
-        // Sort by cardId so the file is easy to read
         cardList.Sort((a, b) => string.Compare(a.cardId, b.cardId, System.StringComparison.Ordinal));
 
-        string json = JsonUtility.ToJson(new CardListJson { cards = cardList }, prettyPrint: true);
+        var speakerList = new List<SpeakerJson>();
+        foreach (CouncilMemberData speaker in db.speakers)
+        {
+            if (speaker == null) continue;
+
+            speakerList.Add(new SpeakerJson
+            {
+                memberId = speaker.memberId,
+                displayName = speaker.displayName,
+                title = speaker.title,
+                isLlmSpeaker = speaker.isLlmSpeaker,
+                llmPersonaPrompt = speaker.llmPersonaPrompt
+            });
+        }
+        speakerList.Sort((a, b) => string.Compare(a.memberId, b.memberId, System.StringComparison.Ordinal));
+
+        var resourceList = new List<ResourceDefJson>();
+        if (db.resourceCatalog != null)
+        {
+            foreach (var res in db.resourceCatalog.resources)
+            {
+                resourceList.Add(new ResourceDefJson { id = res.id, displayName = res.displayName });
+            }
+        }
+
+        var export = new CardListJson
+        {
+            cards = cardList,
+            speakers = speakerList,
+            resources = resourceList
+        };
+
+        string json = JsonUtility.ToJson(export, prettyPrint: true);
 
         string dir = Path.Combine(Application.dataPath, "StreamingAssets");
         Directory.CreateDirectory(dir);
@@ -52,7 +101,7 @@ public static class CardJsonExporter
 
     private static ResourceEntryJson[] ToResourceJson(ResourceChange rc)
     {
-        if (rc.values == null) return new ResourceEntryJson[0];
+        if (rc.values == null) return System.Array.Empty<ResourceEntryJson>();
 
         var result = new ResourceEntryJson[rc.values.Length];
         for (int i = 0; i < rc.values.Length; i++)
@@ -65,6 +114,8 @@ public static class CardJsonExporter
     private class CardListJson
     {
         public List<CardJson> cards;
+        public List<SpeakerJson> speakers;
+        public List<ResourceDefJson> resources;
     }
 
     [System.Serializable]
@@ -80,7 +131,27 @@ public static class CardJsonExporter
         public string rightChoiceText;
         public string rightNextCardId;
         public ResourceEntryJson[] rightResourceChange;
+        public bool isLlmReactionCard;
+        public string llmPromptSeed;
+        public string continueNextCardId;
         public bool isEnding;
+    }
+
+    [System.Serializable]
+    private class SpeakerJson
+    {
+        public string memberId;
+        public string displayName;
+        public string title;
+        public bool isLlmSpeaker;
+        public string llmPersonaPrompt;
+    }
+
+    [System.Serializable]
+    private class ResourceDefJson
+    {
+        public string id;
+        public string displayName;
     }
 
     [System.Serializable]
@@ -89,4 +160,5 @@ public static class CardJsonExporter
         public string id;
         public int value;
     }
+}
 }

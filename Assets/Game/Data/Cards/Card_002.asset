@@ -13,23 +13,17 @@ MonoBehaviour:
   m_Name: Card_002
   m_EditorClassIdentifier: 
   cardId: Card_002
-  description: "Spymaster Wren intercepts a report \u2014 northern lords are recruiting
-    disaffected farmers. Dispatch troops or offer a council seat?"
-  speakerId: wre
+  description: 
+  speakerId: wren
   dayAdvance: 1
-  leftChoiceText: Dispatch troops
+  leftChoiceText: 
   leftResourceChange:
-    values:
-    - id: gold
-      value: -8
-    - id: army
-      value: 5
-  leftNextCardId: Card_004
-  rightChoiceText: Offer council seat
+    values: []
+  leftNextCardId: 
+  rightChoiceText: 
   rightResourceChange:
-    values:
-    - id: army
-      value: -5
-    - id: favor
-      value: 5
-  rightNextCardId: Card_005
+    values: []
+  rightNextCardId: 
+  isLlmReactionCard: 1
+  llmPromptSeed: React briefly and suspiciously to the player's tax-vs-reserves decision.
+  continueNextCardId: Card_003

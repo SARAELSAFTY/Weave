@@ -1,16 +1,19 @@
 using System;
 
-// Resource amount paired with a resource ID string.
-[Serializable]
-public struct ResourceValue
+namespace Game.Scripts.Definitions
 {
-    public string id;
-    public int value;
-}
+    /// <summary>Represents a value change for one resource ID.</summary>
+    [Serializable]
+    public struct ResourceValue
+    {
+        public string id;
+        public int value;
+    }
 
-// Resource changes applied when making a choice.
-[Serializable]
-public struct ResourceChange
-{
-    public ResourceValue[] values;
+    /// <summary>Contains resource value changes for a card choice.</summary>
+    [Serializable]
+    public struct ResourceChange
+    {
+        public ResourceValue[] values;
+    }
 }

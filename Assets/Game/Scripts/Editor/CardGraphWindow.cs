@@ -1,14 +1,18 @@
 using System.Collections.Generic;
 using System.IO;
+using Game.Scripts.Definitions;
+using Game.Scripts.Runtime.Narrative;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Editor window shell: owns the toolbar (database picker, starting-card picker, new-card button)
-// and hosts a CardGraphView for the actual node graph.
-public class CardGraphWindow : EditorWindow
+namespace Game.Scripts.Editor
 {
+    // Editor window shell: owns the toolbar (database picker, starting-card picker, new-card button)
+    // and hosts a CardGraphView for the actual node graph.
+    public class CardGraphWindow : EditorWindow
+    {
     private const string NewCardFolder = "Assets/Game/Data/Cards";
     private const string NewSpeakerFolder = "Assets/Game/Data/Speakers";
 
@@ -17,6 +21,8 @@ public class CardGraphWindow : EditorWindow
     private Button newDatabaseButton;
     private Button newCardButton;
     private Button newSpeakerButton;
+    private Button newCatalogButton;
+    private Button newResourceButton;
     private ObjectField databaseField;
     private DropdownField startingCardDropdown;
 
@@ -116,12 +122,33 @@ public class CardGraphWindow : EditorWindow
 
         newSpeakerButton = new Button(OnCreateNewSpeakerClicked) { text = "+ New Speaker" };
         newSpeakerButton.style.height = 24;
-        newSpeakerButton.style.paddingLeft = 12;
-        newSpeakerButton.style.paddingRight = 12;
+        newSpeakerButton.style.paddingLeft = 8;
+        newSpeakerButton.style.paddingRight = 8;
+        newSpeakerButton.style.marginRight = 6;
         newSpeakerButton.style.backgroundColor = new StyleColor(new Color(0.10f, 0.45f, 0.65f));
         newSpeakerButton.style.color = new StyleColor(Color.white);
         newSpeakerButton.style.unityFontStyleAndWeight = FontStyle.Bold;
         toolbar.Add(newSpeakerButton);
+
+        newCatalogButton = new Button(OnCreateNewCatalogClicked) { text = "+ New Catalog" };
+        newCatalogButton.style.height = 24;
+        newCatalogButton.style.paddingLeft = 8;
+        newCatalogButton.style.paddingRight = 8;
+        newCatalogButton.style.marginRight = 6;
+        newCatalogButton.style.backgroundColor = new StyleColor(new Color(0.15f, 0.50f, 0.40f));
+        newCatalogButton.style.color = new StyleColor(Color.white);
+        newCatalogButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+        toolbar.Add(newCatalogButton);
+
+        newResourceButton = new Button(() => CreateResourceAt(null)) { text = "+ New Resource" };
+        newResourceButton.style.height = 24;
+        newResourceButton.style.paddingLeft = 8;
+        newResourceButton.style.paddingRight = 8;
+        newResourceButton.style.marginRight = 6;
+        newResourceButton.style.backgroundColor = new StyleColor(new Color(0.15f, 0.50f, 0.40f));
+        newResourceButton.style.color = new StyleColor(Color.white);
+        newResourceButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+        toolbar.Add(newResourceButton);
 
         return toolbar;
     }
@@ -151,6 +178,10 @@ public class CardGraphWindow : EditorWindow
         newCardButton?.SetEnabled(hasDb);
         newSpeakerButton?.SetEnabled(hasDb);
         startingCardDropdown?.SetEnabled(hasDb);
+
+        bool hasCatalog = hasDb && currentDatabase.resourceCatalog != null;
+        newCatalogButton?.SetEnabled(hasDb && !hasCatalog);
+        newResourceButton?.SetEnabled(hasCatalog);
 
         if (hasDb)
         {
@@ -192,6 +223,11 @@ public class CardGraphWindow : EditorWindow
 
     private void OnCreateNewCardClicked()
     {
+        CreateCardAt(null);
+    }
+
+    public void CreateCardAt(Vector2? windowPosition)
+    {
         if (currentDatabase == null)
         {
             return;
@@ -211,6 +247,12 @@ public class CardGraphWindow : EditorWindow
         newCard.cardId = cardName;
         AssetDatabase.CreateAsset(newCard, assetPath);
 
+        if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newCard)))
+        {
+            Debug.LogError($"[CardGraphWindow] Failed to create card asset at '{assetPath}'.");
+            return;
+        }
+
         Undo.RecordObject(currentDatabase, "Add New Card");
         currentDatabase.cards ??= new List<CardData>();
         currentDatabase.cards.Add(newCard);
@@ -220,10 +262,23 @@ public class CardGraphWindow : EditorWindow
             currentDatabase.startingCardId = cardName;
         }
 
+        if (windowPosition.HasValue)
+        {
+            currentDatabase.editorGraphPositions ??= new List<NarrativeDatabase.CardGraphPosition>();
+            currentDatabase.editorGraphPositions.Add(new NarrativeDatabase.CardGraphPosition
+            {
+                cardId = cardName,
+                position = windowPosition.Value
+            });
+        }
+        else
+        {
+            graphView?.SetPendingNewCard(newCard);
+        }
+
         EditorUtility.SetDirty(currentDatabase);
         AssetDatabase.SaveAssets();
 
-        graphView?.SetPendingNewCard(newCard);
         PopulateGraph();
 
         Selection.activeObject = newCard;
@@ -254,6 +309,11 @@ public class CardGraphWindow : EditorWindow
 
     private void OnCreateNewSpeakerClicked()
     {
+        CreateSpeakerAt(null);
+    }
+
+    public void CreateSpeakerAt(Vector2? windowPosition)
+    {
         if (currentDatabase == null)
         {
             return;
@@ -273,9 +333,29 @@ public class CardGraphWindow : EditorWindow
         newSpeaker.memberId = speakerName;
         AssetDatabase.CreateAsset(newSpeaker, assetPath);
 
+        if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newSpeaker)))
+        {
+            Debug.LogError($"[CardGraphWindow] Failed to create speaker asset at '{assetPath}'.");
+            return;
+        }
+
         Undo.RecordObject(currentDatabase, "Add New Speaker");
         currentDatabase.speakers ??= new List<CouncilMemberData>();
         currentDatabase.speakers.Add(newSpeaker);
+
+        if (windowPosition.HasValue)
+        {
+            currentDatabase.editorSpeakerPositions ??= new List<NarrativeDatabase.SpeakerGraphPosition>();
+            currentDatabase.editorSpeakerPositions.Add(new NarrativeDatabase.SpeakerGraphPosition
+            {
+                memberId = speakerName,
+                position = windowPosition.Value
+            });
+        }
+        else
+        {
+            graphView?.SetPendingNewSpeaker(speakerName);
+        }
 
         // Auto-assign to currently selected card if one is active
         CardData selectedCard = Selection.activeObject as CardData;
@@ -295,6 +375,39 @@ public class CardGraphWindow : EditorWindow
         EditorGUIUtility.PingObject(newSpeaker);
     }
 
+    public void CreateResourceAt(Vector2? windowPosition)
+    {
+        if (currentDatabase == null || currentDatabase.resourceCatalog == null)
+        {
+            return;
+        }
+
+        ResourceCatalog catalog = currentDatabase.resourceCatalog;
+        string resourceId = CardGraphEditor.CreateResource(catalog);
+
+        if (windowPosition.HasValue)
+        {
+            currentDatabase.editorResourcePositions ??= new List<NarrativeDatabase.ResourceGraphPosition>();
+            currentDatabase.editorResourcePositions.Add(new NarrativeDatabase.ResourceGraphPosition
+            {
+                resourceId = resourceId,
+                position = windowPosition.Value
+            });
+            EditorUtility.SetDirty(currentDatabase);
+        }
+        else
+        {
+            graphView?.SetPendingNewResource(resourceId);
+        }
+
+        AssetDatabase.SaveAssets();
+
+        PopulateGraph();
+
+        Selection.activeObject = catalog;
+        EditorGUIUtility.PingObject(catalog);
+    }
+
     public void OnCreateNewDatabaseClicked()
     {
         string databaseFolder = "Assets/Game/Data";
@@ -310,6 +423,11 @@ public class CardGraphWindow : EditorWindow
         NarrativeDatabase newDb = ScriptableObject.CreateInstance<NarrativeDatabase>();
         newDb.name = databaseName;
         AssetDatabase.CreateAsset(newDb, assetPath);
+        if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newDb)))
+        {
+            Debug.LogError($"[CardGraphWindow] Failed to create database asset at '{assetPath}'.");
+            return;
+        }
         AssetDatabase.SaveAssets();
 
         currentDatabase = newDb;
@@ -345,6 +463,65 @@ public class CardGraphWindow : EditorWindow
         return dbName;
     }
 
+    public void OnCreateNewCatalogClicked()
+    {
+        if (currentDatabase == null)
+        {
+            return;
+        }
+
+        string folder = "Assets/Game/Data";
+        if (!Directory.Exists(folder))
+        {
+            Directory.CreateDirectory(folder);
+            AssetDatabase.Refresh();
+        }
+
+        string catalogName = FindNextUnusedCatalogName(folder);
+        string assetPath = Path.Combine(folder, catalogName + ".asset");
+
+        ResourceCatalog newCatalog = ScriptableObject.CreateInstance<ResourceCatalog>();
+        newCatalog.name = catalogName;
+        AssetDatabase.CreateAsset(newCatalog, assetPath);
+
+        if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newCatalog)))
+        {
+            Debug.LogError($"[CardGraphWindow] Failed to create resource catalog asset at '{assetPath}'.");
+            return;
+        }
+
+        Undo.RecordObject(currentDatabase, "Assign Resource Catalog");
+        currentDatabase.resourceCatalog = newCatalog;
+        EditorUtility.SetDirty(currentDatabase);
+        AssetDatabase.SaveAssets();
+
+        UpdateToolbarState();
+        PopulateGraph();
+
+        Selection.activeObject = newCatalog;
+        EditorGUIUtility.PingObject(newCatalog);
+    }
+
+    private static string FindNextUnusedCatalogName(string folder)
+    {
+        string defaultPath = Path.Combine(folder, "ResourceCatalog.asset");
+        if (!File.Exists(defaultPath))
+        {
+            return "ResourceCatalog";
+        }
+
+        int index = 1;
+        string catalogName;
+        do
+        {
+            catalogName = $"ResourceCatalog_{index:D3}";
+            index++;
+        }
+        while (File.Exists(Path.Combine(folder, catalogName + ".asset")));
+
+        return catalogName;
+    }
+
     private string FindNextUnusedSpeakerName()
     {
         int index = 1;
@@ -366,4 +543,5 @@ public class CardGraphWindow : EditorWindow
         bool onDisk = File.Exists(Path.Combine(NewSpeakerFolder, speakerName + ".asset"));
         return inDatabase || onDisk;
     }
+}
 }

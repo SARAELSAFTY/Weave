@@ -1,14 +1,19 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Scripts.Definitions;
+using Game.Scripts.Runtime.Narrative;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// The node-graph canvas: builds CardNodes and edges from a NarrativeDatabase, and writes
-// edge/position/delete changes made in the graph back to the underlying CardData assets.
-public class CardGraphView : GraphView
+namespace Game.Scripts.Editor
 {
+    // The node-graph canvas: builds CardNodes and edges from a NarrativeDatabase, and writes
+    // edge/position/delete changes made in the graph back to the underlying CardData assets.
+    public class CardGraphView : GraphView
+    {
     private static readonly Vector2 DefaultNodeSize = new Vector2(260, 200);
     private static readonly Vector2 FallbackViewSize = new Vector2(1280, 720);
     private const float GridSpacingX = 310f;
@@ -25,15 +30,28 @@ public class CardGraphView : GraphView
     // just an in-memory mirror, rebuilt from the asset every Populate(), for fast lookup.
     private readonly Dictionary<string, Vector2> positionsByCardId = new Dictionary<string, Vector2>();
     private readonly Dictionary<string, Vector2> positionsByMemberId = new Dictionary<string, Vector2>();
+    private readonly Dictionary<string, Vector2> positionsByResourceId = new Dictionary<string, Vector2>();
 
     // Set before Populate() so the new card node is placed at the viewport centre.
     private CardData pendingNewCard;
+    private string pendingNewSpeakerId;
+    private string pendingNewResourceId;
 
     public NarrativeDatabase Database => database;
 
     public void SetPendingNewCard(CardData card)
     {
         pendingNewCard = card;
+    }
+
+    public void SetPendingNewSpeaker(string memberId)
+    {
+        pendingNewSpeakerId = memberId;
+    }
+
+    public void SetPendingNewResource(string resourceId)
+    {
+        pendingNewResourceId = resourceId;
     }
 
     public CardGraphView(CardGraphWindow window)
@@ -49,16 +67,11 @@ public class CardGraphView : GraphView
         Insert(0, grid);
         grid.StretchToParentSize();
 
-        emptyNoticeLabel = new Label
-        {
-            style =
-            {
-                fontSize = 15,
-                color = new StyleColor(new Color(0.65f, 0.65f, 0.70f)),
-                unityTextAlign = TextAnchor.MiddleCenter,
-                marginTop = 220
-            }
-        };
+        emptyNoticeLabel = new Label();
+        emptyNoticeLabel.style.fontSize = 15;
+        emptyNoticeLabel.style.color = new StyleColor(new Color(0.65f, 0.65f, 0.70f));
+        emptyNoticeLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+        emptyNoticeLabel.style.marginTop = 220;
         Add(emptyNoticeLabel);
 
         graphViewChanged = OnGraphViewChanged;
@@ -71,7 +84,11 @@ public class CardGraphView : GraphView
 
     public void Populate(NarrativeDatabase db)
     {
-        SaveCurrentNodePositions();
+        // Don't call SaveCurrentNodePositions() here. Rebuilding the graph view from scratch
+        // shouldn't flush current node positions back to the database unless they were 
+        // explicitly moved by the user (which is already handled by OnGraphViewChanged).
+        // Calling it here risks overwriting valid stored positions with uninitialized 
+        // (0,0) values if a refresh happens before the GraphView has fully laid out.
 
         isPopulating = true;
         database = db;
@@ -82,31 +99,28 @@ public class CardGraphView : GraphView
             RemoveElement(element);
         }
 
-        if ((database == null) || ((database.cards == null || database.cards.Count == 0) && (database.speakers == null || database.speakers.Count == 0)))
+        bool hasCards = database?.cards != null && database.cards.Count > 0;
+        bool hasSpeakers = database?.speakers != null && database.speakers.Count > 0;
+        bool hasResources = database?.resourceCatalog != null && database.resourceCatalog.resources != null && database.resourceCatalog.resources.Count > 0;
+
+        if (database == null || (!hasCards && !hasSpeakers && !hasResources))
         {
             emptyNoticeLabel.style.display = DisplayStyle.Flex;
             emptyNoticeLabel.text = database == null
                 ? "Select a NarrativeDatabase asset in the top toolbar to view and edit the graph."
-                : "Database has no cards or speakers. Click '+ New Card' or '+ New Speaker' in the toolbar to create content.";
+                : "Database has no cards, speakers, or resources. Click the buttons in the toolbar to create content.";
             isPopulating = false;
             return;
         }
 
         emptyNoticeLabel.style.display = DisplayStyle.None;
 
-        if (database.cards != null)
-        {
-            foreach (CardData c in database.cards)
-            {
-                CardGraph.SyncIdToAssetName(c);
-            }
-        }
-
-        Dictionary<string, CardData> cardsById = CardGraph.BuildLookup(database);
+        Dictionary<string, CardData> cardsById = CardGraph.BuildLookup(database, issue => Debug.LogWarning($"[CardGraphView] {issue}"));
         Dictionary<string, CardNode> nodesByCardId = new Dictionary<string, CardNode>();
         List<CardNode> nodeList = CreateNodes(cardsById, nodesByCardId);
         DrawEdges(nodeList, nodesByCardId);
         CreateSpeakerNodes();
+        CreateResourceNodes();
 
         isPopulating = false;
     }
@@ -115,6 +129,7 @@ public class CardGraphView : GraphView
     {
         positionsByCardId.Clear();
         positionsByMemberId.Clear();
+        positionsByResourceId.Clear();
 
         if (database?.editorGraphPositions != null)
         {
@@ -137,11 +152,32 @@ public class CardGraphView : GraphView
                 }
             }
         }
+
+        if (database?.editorResourcePositions != null)
+        {
+            foreach (NarrativeDatabase.ResourceGraphPosition entry in database.editorResourcePositions)
+            {
+                if (!string.IsNullOrEmpty(entry.resourceId))
+                {
+                    positionsByResourceId[entry.resourceId] = entry.position;
+                }
+            }
+        }
     }
 
     private List<CardNode> CreateNodes(Dictionary<string, CardData> cardsById, Dictionary<string, CardNode> nodesByCardId)
     {
         List<CardNode> nodeList = new List<CardNode>();
+
+        Dictionary<string, int> cardIdCounts = new Dictionary<string, int>();
+        foreach (CardData c in database.cards)
+        {
+            if (c != null && !string.IsNullOrEmpty(c.cardId))
+            {
+                cardIdCounts.TryGetValue(c.cardId, out int existingCount);
+                cardIdCounts[c.cardId] = existingCount + 1;
+            }
+        }
 
         int i = 0;
         foreach (CardData card in database.cards)
@@ -152,7 +188,11 @@ public class CardGraphView : GraphView
             }
 
             bool isStartCard = !string.IsNullOrEmpty(database.startingCardId) && database.startingCardId == card.cardId;
-            CardNode node = new CardNode(card, isStartCard, cardsById, this);
+            bool isDuplicateId = !string.IsNullOrEmpty(card.cardId)
+                && cardIdCounts.TryGetValue(card.cardId, out int count)
+                && count > 1;
+
+            CardNode node = new CardNode(card, isStartCard, cardsById, this, isDuplicateId);
             node.SetPosition(new Rect(ResolveNodePosition(card, i), DefaultNodeSize));
 
             AddElement(node);
@@ -209,8 +249,15 @@ public class CardGraphView : GraphView
                 continue;
             }
 
-            TryConnect(sourceNode.LeftPort, card.leftNextCardId, nodesByCardId);
-            TryConnect(sourceNode.RightPort, card.rightNextCardId, nodesByCardId);
+            if (card.isLlmReactionCard)
+            {
+                TryConnect(sourceNode.ContinuePort, card.continueNextCardId, nodesByCardId);
+            }
+            else
+            {
+                TryConnect(sourceNode.LeftPort, card.leftNextCardId, nodesByCardId);
+                TryConnect(sourceNode.RightPort, card.rightNextCardId, nodesByCardId);
+            }
         }
     }
 
@@ -263,6 +310,15 @@ public class CardGraphView : GraphView
     private Vector2 ResolveSpeakerNodePosition(CouncilMemberData speaker, int indexInList)
     {
         string id = !string.IsNullOrEmpty(speaker.memberId) ? speaker.memberId : speaker.name;
+
+        if (!string.IsNullOrEmpty(pendingNewSpeakerId) && id == pendingNewSpeakerId)
+        {
+            pendingNewSpeakerId = null;
+            Vector2 centerPos = ViewportCenterInContentSpace();
+            SaveSpeakerPositionToDatabase(id, centerPos);
+            return centerPos;
+        }
+
         if (!string.IsNullOrEmpty(id) && positionsByMemberId.TryGetValue(id, out Vector2 savedPos))
         {
             return savedPos;
@@ -270,6 +326,51 @@ public class CardGraphView : GraphView
 
         Vector2 defaultPos = new Vector2(-260, indexInList * 210 + 60);
         SaveSpeakerPositionToDatabase(id, defaultPos);
+        return defaultPos;
+    }
+
+    private static readonly Vector2 DefaultResourceNodeSize = new Vector2(200, 150);
+
+    private void CreateResourceNodes()
+    {
+        if (database?.resourceCatalog?.resources == null)
+        {
+            return;
+        }
+
+        int i = 0;
+        foreach (ResourceData resource in database.resourceCatalog.resources)
+        {
+            if (resource == null || string.IsNullOrEmpty(resource.id))
+            {
+                continue;
+            }
+
+            ResourceNode resourceNode = new ResourceNode(resource);
+            Vector2 pos = ResolveResourceNodePosition(resource.id, i);
+            resourceNode.SetPosition(new Rect(pos, DefaultResourceNodeSize));
+            AddElement(resourceNode);
+            i++;
+        }
+    }
+
+    private Vector2 ResolveResourceNodePosition(string resourceId, int indexInList)
+    {
+        if (!string.IsNullOrEmpty(pendingNewResourceId) && resourceId == pendingNewResourceId)
+        {
+            pendingNewResourceId = null;
+            Vector2 centerPos = ViewportCenterInContentSpace();
+            SaveResourcePositionToDatabase(resourceId, centerPos);
+            return centerPos;
+        }
+
+        if (positionsByResourceId.TryGetValue(resourceId, out Vector2 savedPos))
+        {
+            return savedPos;
+        }
+
+        Vector2 defaultPos = new Vector2(-520, indexInList * 190 + 60);
+        SaveResourcePositionToDatabase(resourceId, defaultPos);
         return defaultPos;
     }
 
@@ -299,7 +400,79 @@ public class CardGraphView : GraphView
                 }
             }
         }
+
+        foreach (ResourceNode node in graphElements.OfType<ResourceNode>())
+        {
+            if (node.Data != null && !string.IsNullOrEmpty(node.Data.id))
+            {
+                SaveResourcePositionToDatabase(node.Data.id, node.GetPosition().position);
+            }
+        }
     }
+
+   // Shared save logic for all three graph-position lists (card/speaker/resource). Writes only
+   // when the position actually changed (avoids needless SetDirty on every repopulate), and
+   // records Undo before mutating so node drags participate in Unity's undo/redo like every other
+   // mutation in this tool does.
+   private void SaveNodePosition<TEntry>(
+       List<TEntry> list,
+       Dictionary<string, Vector2> mirror,
+       string id,
+       Vector2 position,
+       Func<TEntry, string> getId,
+       Func<string, Vector2, TEntry> makeEntry,
+       string undoLabel)
+   {
+       if (database == null || string.IsNullOrEmpty(id) || list == null)
+       {
+           return;
+       }
+
+       if (mirror.TryGetValue(id, out Vector2 existing) && existing == position)
+       {
+           return;
+       }
+
+       mirror[id] = position;
+
+       int index = list.FindIndex(e => getId(e) == id);
+
+       Undo.RecordObject(database, undoLabel);
+
+       if (index >= 0)
+       {
+           list[index] = makeEntry(id, position);
+       }
+       else
+       {
+           list.Add(makeEntry(id, position));
+       }
+
+       EditorUtility.SetDirty(database);
+   }
+
+   // Shared remove logic for all three graph-position lists.
+   private void RemoveNodePosition<TEntry>(
+       List<TEntry> list,
+       Dictionary<string, Vector2> mirror,
+       string id,
+       Func<TEntry, string> getId,
+       string undoLabel)
+   {
+       if (list == null || string.IsNullOrEmpty(id))
+       {
+           return;
+       }
+
+       mirror.Remove(id);
+       int index = list.FindIndex(e => getId(e) == id);
+       if (index >= 0)
+       {
+           Undo.RecordObject(database, undoLabel);
+           list.RemoveAt(index);
+           EditorUtility.SetDirty(database);
+       }
+   }
 
     // Writes a single card's position into both the in-memory mirror and the database asset, so
     // a drag persists to disk (and survives closing/reopening the window) instead of living only
@@ -311,42 +484,30 @@ public class CardGraphView : GraphView
             return;
         }
 
-        positionsByCardId[cardId] = position;
-
         database.editorGraphPositions ??= new List<NarrativeDatabase.CardGraphPosition>();
-        int index = database.editorGraphPositions.FindIndex(e => e.cardId == cardId);
-        NarrativeDatabase.CardGraphPosition entry = new NarrativeDatabase.CardGraphPosition
-        {
-            cardId = cardId,
-            position = position
-        };
-
-        if (index >= 0)
-        {
-            database.editorGraphPositions[index] = entry;
-        }
-        else
-        {
-            database.editorGraphPositions.Add(entry);
-        }
-
-        EditorUtility.SetDirty(database);
+        SaveNodePosition(
+            database.editorGraphPositions,
+            positionsByCardId,
+            cardId,
+            position,
+            e => e.cardId,
+            (id, pos) => new NarrativeDatabase.CardGraphPosition { cardId = id, position = pos },
+            "Move Card Node");
     }
 
     private void RemovePositionFromDatabase(string cardId)
     {
-        if (database?.editorGraphPositions == null || string.IsNullOrEmpty(cardId))
+        if (database == null)
         {
             return;
         }
 
-        positionsByCardId.Remove(cardId);
-        int index = database.editorGraphPositions.FindIndex(e => e.cardId == cardId);
-        if (index >= 0)
-        {
-            database.editorGraphPositions.RemoveAt(index);
-            EditorUtility.SetDirty(database);
-        }
+        RemoveNodePosition(
+            database.editorGraphPositions,
+            positionsByCardId,
+            cardId,
+            e => e.cardId,
+            "Delete Card Node Position");
     }
 
     private void SaveSpeakerPositionToDatabase(string memberId, Vector2 position)
@@ -356,41 +517,81 @@ public class CardGraphView : GraphView
             return;
         }
 
-        positionsByMemberId[memberId] = position;
         database.editorSpeakerPositions ??= new List<NarrativeDatabase.SpeakerGraphPosition>();
-        int index = database.editorSpeakerPositions.FindIndex(e => e.memberId == memberId);
-        NarrativeDatabase.SpeakerGraphPosition entry = new NarrativeDatabase.SpeakerGraphPosition
-        {
-            memberId = memberId,
-            position = position
-        };
-
-        if (index >= 0)
-        {
-            database.editorSpeakerPositions[index] = entry;
-        }
-        else
-        {
-            database.editorSpeakerPositions.Add(entry);
-        }
-
-        EditorUtility.SetDirty(database);
+        SaveNodePosition(
+            database.editorSpeakerPositions,
+            positionsByMemberId,
+            memberId,
+            position,
+            e => e.memberId,
+            (id, pos) => new NarrativeDatabase.SpeakerGraphPosition { memberId = id, position = pos },
+            "Move Speaker Node");
     }
 
     private void RemoveSpeakerPositionFromDatabase(string memberId)
     {
-        if (database?.editorSpeakerPositions == null || string.IsNullOrEmpty(memberId))
+        if (database == null)
         {
             return;
         }
 
-        positionsByMemberId.Remove(memberId);
-        int index = database.editorSpeakerPositions.FindIndex(e => e.memberId == memberId);
-        if (index >= 0)
+        RemoveNodePosition(
+            database.editorSpeakerPositions,
+            positionsByMemberId,
+            memberId,
+            e => e.memberId,
+            "Delete Speaker Node Position");
+    }
+
+    private void SaveResourcePositionToDatabase(string resourceId, Vector2 position)
+    {
+        if (database == null || string.IsNullOrEmpty(resourceId))
         {
-            database.editorSpeakerPositions.RemoveAt(index);
-            EditorUtility.SetDirty(database);
+            return;
         }
+
+        database.editorResourcePositions ??= new List<NarrativeDatabase.ResourceGraphPosition>();
+        SaveNodePosition(
+            database.editorResourcePositions,
+            positionsByResourceId,
+            resourceId,
+            position,
+            e => e.resourceId,
+            (id, pos) => new NarrativeDatabase.ResourceGraphPosition { resourceId = id, position = pos },
+            "Move Resource Node");
+    }
+
+    private void RemoveResourcePositionFromDatabase(string resourceId)
+    {
+        if (database == null)
+        {
+            return;
+        }
+
+        RemoveNodePosition(
+            database.editorResourcePositions,
+            positionsByResourceId,
+            resourceId,
+            e => e.resourceId,
+            "Delete Resource Node Position");
+    }
+
+    public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+    {
+        if (database == null) return;
+
+        Vector2 mousePos = evt.mousePosition;
+        Vector2 graphPos = contentViewContainer.WorldToLocal(mousePos);
+
+        evt.menu.AppendAction("Create Card", _ => window.CreateCardAt(graphPos));
+        evt.menu.AppendAction("Create Speaker", _ => window.CreateSpeakerAt(graphPos));
+        if (database.resourceCatalog != null)
+        {
+            evt.menu.AppendAction("Create Resource", _ => window.CreateResourceAt(graphPos));
+        }
+        evt.menu.AppendSeparator();
+        
+        base.BuildContextualMenu(evt);
     }
 
     private GraphViewChange OnGraphViewChanged(GraphViewChange change)
@@ -457,7 +658,11 @@ public class CardGraphView : GraphView
         }
 
         Undo.RecordObject(sourceCard, "Connect Card Link");
-        if (edge.output == sourceNode.LeftPort)
+        if (sourceCard.isLlmReactionCard && edge.output == sourceNode.ContinuePort)
+        {
+            sourceCard.continueNextCardId = targetCard.cardId;
+        }
+        else if (edge.output == sourceNode.LeftPort)
         {
             sourceCard.leftNextCardId = targetCard.cardId;
         }
@@ -503,6 +708,16 @@ public class CardGraphView : GraphView
                         elementsToRemove.Remove(speakerNode);
                     }
                     break;
+                case ResourceNode resourceNode:
+                    if (TryDeleteResource(resourceNode))
+                    {
+                        anyChange = true;
+                    }
+                    else
+                    {
+                        elementsToRemove.Remove(resourceNode);
+                    }
+                    break;
             }
         }
 
@@ -518,7 +733,11 @@ public class CardGraphView : GraphView
 
         CardData sourceCard = sourceNode.Card;
         Undo.RecordObject(sourceCard, "Clear Card Link");
-        if (edge.output == sourceNode.LeftPort)
+        if (sourceCard.isLlmReactionCard && edge.output == sourceNode.ContinuePort)
+        {
+            sourceCard.continueNextCardId = string.Empty;
+        }
+        else if (edge.output == sourceNode.LeftPort)
         {
             sourceCard.leftNextCardId = string.Empty;
         }
@@ -615,6 +834,44 @@ public class CardGraphView : GraphView
         return true;
     }
 
+    private bool TryDeleteResource(ResourceNode resourceNode)
+    {
+        ResourceData dataToDelete = resourceNode.Data;
+        if (dataToDelete == null)
+        {
+            return true;
+        }
+
+        string resourceId = dataToDelete.id;
+        bool confirm = EditorUtility.DisplayDialog(
+            "Delete Resource",
+            $"Delete resource asset '{resourceId}'? This will remove it from the catalog and delete the file. This cannot be undone.",
+            "Delete",
+            "Cancel");
+
+        if (!confirm)
+        {
+            return false;
+        }
+
+        RemoveResourcePositionFromDatabase(resourceId);
+
+        if (database?.resourceCatalog != null)
+        {
+            Undo.RecordObject(database.resourceCatalog, "Remove Resource From Catalog");
+            database.resourceCatalog.resources.Remove(dataToDelete);
+            EditorUtility.SetDirty(database.resourceCatalog);
+        }
+
+        string path = AssetDatabase.GetAssetPath(dataToDelete);
+        if (!string.IsNullOrEmpty(path))
+        {
+            AssetDatabase.DeleteAsset(path);
+        }
+
+        return true;
+    }
+
     private void ClearIncomingLinks(string deletedId, CardData cardToDelete)
     {
         if (database == null || database.cards == null)
@@ -642,6 +899,13 @@ public class CardGraphView : GraphView
                 other.rightNextCardId = string.Empty;
                 EditorUtility.SetDirty(other);
             }
+
+            if (other.continueNextCardId == deletedId)
+            {
+                Undo.RecordObject(other, "Clear Card Link");
+                other.continueNextCardId = string.Empty;
+                EditorUtility.SetDirty(other);
+            }
         }
 
         if (database.startingCardId == deletedId)
@@ -654,4 +918,5 @@ public class CardGraphView : GraphView
         database.cards.Remove(cardToDelete);
         EditorUtility.SetDirty(database);
     }
-}
+    }
+    }

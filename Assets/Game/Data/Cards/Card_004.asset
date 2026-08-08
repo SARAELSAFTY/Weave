@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Card_004
   m_EditorClassIdentifier: 
   cardId: Card_004
-  description: Winter arrives. The crisis has passed — for now. History will remember how you chose to govern.
-  speakerId: ros
-  dayAdvance: 3
+  description: You spoke plainly to the court, and they respect you more for it.
+    The kingdom holds steady.
+  speakerId: bren
+  dayAdvance: 1
   leftChoiceText: 
   leftResourceChange:
     values: []
@@ -24,3 +25,6 @@ MonoBehaviour:
   rightResourceChange:
     values: []
   rightNextCardId: 
+  isLlmReactionCard: 0
+  llmPromptSeed: 
+  continueNextCardId: 

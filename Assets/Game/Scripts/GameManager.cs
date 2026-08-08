@@ -1,171 +1,260 @@
-using System;
+﻿using System;
 using System.Collections;
+using Game.Scripts.Definitions;
+using Game.Scripts.Runtime.Llm;
+using Game.Scripts.Runtime.Narrative;
+using Game.Scripts.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Main controller for game flow, UI updates, and turn progression.
-public class GameManager : MonoBehaviour
+namespace Game.Scripts
 {
-    [SerializeField, Tooltip("Card UI component in scene.")] private CardView cardView;
-    [SerializeField, Tooltip("Tracks kingdom resource values.")] private ResourceState resourceState;
-    [SerializeField, Tooltip("Story database containing cards.")] private NarrativeDatabase narrativeDatabase;
-    [SerializeField, Min(0.05f), Tooltip("Card exit animation duration in seconds.")] private float cardExitDuration = 0.25f;
-    [SerializeField, Tooltip("UI text element showing the current day.")] private DayDisplay dayDisplay;
-
-    private bool inputEnabled;
-    private NarrativeRunner narrativeRunner;
-
-    public bool AcceptsChoiceInput => inputEnabled;
-    public int CurrentDay => narrativeRunner != null ? narrativeRunner.Day : 1;
-
-    public event Action DayChanged;
-
-    private void Awake()
+    /// <summary>Coordinates narrative flow, card UI updates, and run lifecycle.</summary>
+    public class GameManager : MonoBehaviour
     {
-        if (cardView == null)
+        [SerializeField, Tooltip("Card UI component in scene.")] private CardView cardView;
+        [SerializeField, Tooltip("Tracks kingdom resource values.")] private ResourceState resourceState;
+        [SerializeField, Tooltip("Story database containing cards.")] private NarrativeDatabase narrativeDatabase;
+        [SerializeField, Min(0.05f), Tooltip("Card exit animation duration in seconds.")] private float cardExitDuration = 0.25f;
+        [SerializeField, Tooltip("UI text element showing the current day.")] private DayDisplay dayDisplay;
+        [SerializeField, Tooltip("Shared chat service for LLM reaction cards.")] private LlmReactionClient llmReactionClient;
+
+        private bool inputEnabled;
+        private NarrativeRunner narrativeRunner;
+
+        /// <summary>Gets whether card choice input is currently accepted.</summary>
+        public bool AcceptsChoiceInput => inputEnabled;
+
+        /// <summary>Gets the current in-game day.</summary>
+        public int CurrentDay => narrativeRunner != null ? narrativeRunner.Day : 1;
+
+        /// <summary>Gets the tracker for recent player choices.</summary>
+        public PlayerHistoryTracker HistoryTracker { get; private set; }
+
+        /// <summary>Raised after the current day value changes.</summary>
+        public event Action DayChanged;
+
+        private void Awake()
         {
-            Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(cardView)}' on '{gameObject.name}'.", this);
+            if (cardView == null)
+            {
+                Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(cardView)}' on '{gameObject.name}'.", this);
+            }
+
+            if (resourceState == null)
+            {
+                Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(resourceState)}' on '{gameObject.name}'.", this);
+            }
+
+            if (narrativeDatabase == null)
+            {
+                Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(narrativeDatabase)}' on '{gameObject.name}'.", this);
+            }
+
+            if (dayDisplay == null)
+            {
+                Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(dayDisplay)}' on '{gameObject.name}'.", this);
+            }
+
+            if (llmReactionClient == null)
+            {
+                Debug.LogWarning($"[GameManager] Optional Inspector reference '{nameof(llmReactionClient)}' is missing on '{gameObject.name}'. LLM reaction cards will auto-advance.", this);
+            }
+
+            if (cardView == null || resourceState == null || narrativeDatabase == null || dayDisplay == null)
+            {
+                enabled = false;
+                return;
+            }
         }
 
-        if (resourceState == null)
+        private void Start()
         {
-            Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(resourceState)}' on '{gameObject.name}'.", this);
+            if (!enabled)
+            {
+                return;
+            }
+
+            narrativeRunner = new NarrativeRunner(narrativeDatabase, resourceState);
+            narrativeRunner.DayChanged += HandleDayChanged;
+            HistoryTracker = new PlayerHistoryTracker(resourceState, narrativeRunner, narrativeDatabase.resourceCatalog);
+
+            HistoryTracker.Reset();
+            if (!narrativeRunner.StartRun(out string error))
+            {
+                Debug.LogError(error, this);
+                enabled = false;
+                return;
+            }
+
+            RefreshDayDisplay();
+            ShowCurrentCard();
         }
 
-        if (narrativeDatabase == null)
+        private void OnEnable()
         {
-            Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(narrativeDatabase)}' on '{gameObject.name}'.", this);
+            if (cardView != null)
+            {
+                cardView.RestartRequested += RestartRun;
+            }
         }
 
-        if (dayDisplay == null)
+        private void OnDisable()
         {
-            Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(dayDisplay)}' on '{gameObject.name}'.", this);
+            if (cardView != null)
+            {
+                cardView.RestartRequested -= RestartRun;
+            }
+
+            if (narrativeRunner != null)
+            {
+                narrativeRunner.DayChanged -= HandleDayChanged;
+            }
         }
 
-        if (cardView == null || resourceState == null || narrativeDatabase == null || dayDisplay == null)
+        /// <summary>Applies the selected side choice for the current card.</summary>
+        public void ChooseSide(bool choseRight)
         {
-            enabled = false;
-        }
-    }
+            if (!inputEnabled)
+            {
+                return;
+            }
 
-    private void Start()
-    {
-        if (!enabled)
-        {
-            return;
+            StartCoroutine(ChooseRoutine(choseRight));
         }
 
-        narrativeRunner = new NarrativeRunner(narrativeDatabase, resourceState);
-        narrativeRunner.DayChanged += HandleDayChanged;
-
-        if (!narrativeRunner.StartRun(out string error))
+        private IEnumerator ChooseRoutine(bool choseRight)
         {
-            Debug.LogError(error, this);
-            enabled = false;
-            return;
+            inputEnabled = false;
+
+            CardData currentCard = narrativeRunner.CurrentCard;
+            bool isLlmCard = currentCard != null && currentCard.isLlmReactionCard;
+            string chosenChoiceText = currentCard != null && !isLlmCard
+                ? (choseRight ? currentCard.rightChoiceText : currentCard.leftChoiceText)
+                : null;
+
+            NarrativeStepResult result = narrativeRunner.Choose(choseRight);
+            if (result.HasError)
+            {
+                Debug.LogError(result.error, this);
+                enabled = false;
+                yield break;
+            }
+
+            if (HistoryTracker != null && !string.IsNullOrEmpty(chosenChoiceText))
+            {
+                HistoryTracker.RecordChoice(chosenChoiceText);
+            }
+
+            yield return cardView.AnimateCardExit(choseRight, cardExitDuration);
+
+            if (result.HasEnded)
+            {
+                EndRun(result.endingCard);
+                yield break;
+            }
+
+            ShowCurrentCard();
         }
 
-        RefreshDayDisplay();
-        ShowCurrentCard();
-    }
-
-    private void OnEnable()
-    {
-        if (cardView != null)
+        private void EndRun(CardData endingCard)
         {
-            cardView.RestartRequested += RestartRun;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (cardView != null)
-        {
-            cardView.RestartRequested -= RestartRun;
+            inputEnabled = false;
+            cardView.ShowEnding(endingCard, narrativeRunner.GetSpeaker(endingCard.speakerId));
         }
 
-        if (narrativeRunner != null)
+        private void ShowCurrentCard()
         {
-            narrativeRunner.DayChanged -= HandleDayChanged;
-        }
-    }
+            CardData card = narrativeRunner.CurrentCard;
+            if (card == null)
+            {
+                return;
+            }
 
-    // Called by input system when player chooses left (false) or right (true).
-    public void ChooseSide(bool choseRight)
-    {
-        if (!inputEnabled)
-        {
-            return;
-        }
+            CouncilMemberData speaker = narrativeRunner.GetSpeaker(card.speakerId);
+            if (card.isLlmReactionCard)
+            {
+                cardView.ShowLlmReaction(card, speaker);
+                inputEnabled = false;
 
-        StartCoroutine(ChooseRoutine(choseRight));
-    }
+                string gameStateSnapshot = HistoryTracker != null
+                    ? HistoryTracker.GetSnapshot()
+                    : "Kingdom Status: Unknown";
 
-    private IEnumerator ChooseRoutine(bool choseRight)
-    {
-        inputEnabled = false;
+                string seed = string.IsNullOrWhiteSpace(card.llmPromptSeed)
+                    ? "React briefly to the player's recent decisions in character."
+                    : card.llmPromptSeed;
 
-        NarrativeStepResult result = narrativeRunner.Choose(choseRight);
-        if (result.HasError)
-        {
-            Debug.LogError(result.Error, this);
-            enabled = false;
-            yield break;
-        }
+                if (llmReactionClient == null)
+                {
+                    Debug.LogWarning("[GameManager] llmReactionClient is missing; auto-advancing LLM reaction card.", this);
+                    AutoAdvanceReactionCard(card);
+                    return;
+                }
 
-        yield return cardView.AnimateCardExit(choseRight, cardExitDuration);
+                string fullSystemPrompt = LlmPersonaPromptBuilder.Build(speaker, gameStateSnapshot, seed);
 
-        if (result.HasEnded)
-        {
-            EndRun(result.EndingCard);
-            yield break;
-        }
+                llmReactionClient.RequestReaction(
+                    fullSystemPrompt,
+                    line =>
+                    {
+                        cardView.SetDescriptionText(line);
+                        inputEnabled = !card.IsEnding;
+                    },
+                    error =>
+                    {
+                        Debug.LogWarning($"[GameManager] LLM reaction failed: {error}");
+                        AutoAdvanceReactionCard(card);
+                    });
 
-        ShowCurrentCard();
-    }
+                return;
+            }
 
-    private void EndRun(CardData endingCard)
-    {
-        inputEnabled = false;
-        cardView.ShowEnding(endingCard, narrativeRunner.GetSpeaker(endingCard.speakerId));
-    }
-
-    private void ShowCurrentCard()
-    {
-        CardData card = narrativeRunner.CurrentCard;
-        if (card == null)
-        {
-            return;
+            cardView.Show(card, speaker);
+            inputEnabled = !card.IsEnding;
         }
 
-        cardView.Show(
-            card,
-            narrativeRunner.GetSpeaker(card.speakerId));
-
-        inputEnabled = !card.isEnding;
-    }
-
-    private void HandleDayChanged()
-    {
-        RefreshDayDisplay();
-        DayChanged?.Invoke();
-    }
-
-    private void RefreshDayDisplay()
-    {
-        dayDisplay.SetDay(CurrentDay);
-    }
-
-    private void RestartRun()
-    {
-        Scene scene = SceneManager.GetActiveScene();
-        if (!string.IsNullOrEmpty(scene.path))
+        private void AutoAdvanceReactionCard(CardData card)
         {
-            SceneManager.LoadScene(scene.path);
+            NarrativeStepResult result = narrativeRunner.Choose(false);
+            if (result.HasError)
+            {
+                Debug.LogError(result.error, this);
+                enabled = false;
+                return;
+            }
+
+            if (result.HasEnded)
+            {
+                EndRun(result.endingCard);
+                return;
+            }
+
+            ShowCurrentCard();
         }
-        else
+
+        private void HandleDayChanged()
         {
-            SceneManager.LoadScene(scene.buildIndex);
+            RefreshDayDisplay();
+            DayChanged?.Invoke();
+        }
+
+        private void RefreshDayDisplay()
+        {
+            dayDisplay.SetDay(CurrentDay);
+        }
+
+        private void RestartRun()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            if (!string.IsNullOrEmpty(scene.path))
+            {
+                SceneManager.LoadScene(scene.path);
+            }
+            else
+            {
+                SceneManager.LoadScene(scene.buildIndex);
+            }
         }
     }
 }

@@ -13,23 +13,22 @@ MonoBehaviour:
   m_Name: Card_003
   m_EditorClassIdentifier: 
   cardId: Card_003
-  description: Trade is brisk but riots erupt in the poorest quarter. Quartermaster
-    Elian requests emergency grain imports.
-  speakerId: eli
+  description: Whichever way we turned, the court is watching closely now. Do we
+    address them directly, or retreat and plan quietly?
+  speakerId: bren
   dayAdvance: 1
-  leftChoiceText: Buy eastern grain
+  leftChoiceText: Address the Court
   leftResourceChange:
     values:
-    - id: gold
-      value: -12
-    - id: food
-      value: 12
-  leftNextCardId: Card_005
-  rightChoiceText: Send in Marshal
+    - id: loyalty
+      value: 5
+  leftNextCardId: Card_004
+  rightChoiceText: Retreat and Plan
   rightResourceChange:
     values:
     - id: gold
-      value: -3
-    - id: army
-      value: 8
-  rightNextCardId: Card_004
+      value: 5
+  rightNextCardId: Card_005
+  isLlmReactionCard: 0
+  llmPromptSeed: 
+  continueNextCardId: 

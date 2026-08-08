@@ -1,78 +1,92 @@
+using System;
+using Game.Scripts.Definitions;
+using Game.Scripts.Runtime.Narrative;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-// Listens to resource changes and updates resource UI text labels.
-public class ResourceDisplay : MonoBehaviour
+namespace Game.Scripts.UI
 {
-    private const string FoodId = "food";
-    private const string GoldId = "gold";
-    private const string ArmyId = "army";
-    private const string FavorId = "favor";
-
-    [SerializeField, Tooltip("Source of active resource values.")] private ResourceState resourceState;
-    [SerializeField, Tooltip("UI text for food level.")] private TMP_Text foodText;
-    [SerializeField, Tooltip("UI text for gold level.")] private TMP_Text goldText;
-    [SerializeField, Tooltip("UI text for army level.")] private TMP_Text armyText;
-    [SerializeField, FormerlySerializedAs("crownText"), Tooltip("UI text for favor level.")] private TMP_Text favorText;
-
-    private void Awake()
+    /// <summary>Updates resource labels when resource values change.</summary>
+    public class ResourceDisplay : MonoBehaviour
     {
-        if (resourceState == null)
+        /// <summary>Binds one resource ID to one text label.</summary>
+        [Serializable]
+        public struct LabelBinding
         {
-            Debug.LogError($"[ResourceDisplay] Missing required Inspector reference '{nameof(resourceState)}' on '{gameObject.name}'.", this);
+            public string resourceId;
+            public TMP_Text label;
         }
 
-        if (foodText == null)
+        [SerializeField] private ResourceState resourceState;
+        [SerializeField] private ResourceCatalog catalog;
+        [SerializeField] private LabelBinding[] labels;
+
+        private void Awake()
         {
-            Debug.LogError($"[ResourceDisplay] Missing required Inspector reference '{nameof(foodText)}' on '{gameObject.name}'.", this);
+            if (resourceState == null)
+            {
+                Debug.LogError($"[ResourceDisplay] Missing required Inspector reference '{nameof(resourceState)}' on '{gameObject.name}'.", this);
+                enabled = false;
+                return;
+            }
+
+            if (labels == null || labels.Length == 0)
+            {
+                Debug.LogError($"[ResourceDisplay] No label bindings assigned on '{gameObject.name}'.", this);
+                enabled = false;
+            }
         }
 
-        if (goldText == null)
+        private void OnEnable()
         {
-            Debug.LogError($"[ResourceDisplay] Missing required Inspector reference '{nameof(goldText)}' on '{gameObject.name}'.", this);
+            if (resourceState != null)
+            {
+                resourceState.Changed += Refresh;
+                Refresh();
+            }
         }
 
-        if (armyText == null)
+        private void OnDisable()
         {
-            Debug.LogError($"[ResourceDisplay] Missing required Inspector reference '{nameof(armyText)}' on '{gameObject.name}'.", this);
+            if (resourceState != null)
+            {
+                resourceState.Changed -= Refresh;
+            }
         }
 
-        if (favorText == null)
+        private void Refresh()
         {
-            Debug.LogError($"[ResourceDisplay] Missing required Inspector reference '{nameof(favorText)}' on '{gameObject.name}'.", this);
+            if (labels == null)
+            {
+                return;
+            }
+
+            foreach (LabelBinding binding in labels)
+            {
+                if (binding.label == null || string.IsNullOrEmpty(binding.resourceId))
+                {
+                    continue;
+                }
+
+                string displayName = ResolveDisplayName(binding.resourceId);
+                binding.label.text = $"{displayName}: {resourceState.Get(binding.resourceId)}";
+            }
         }
 
-        if (resourceState == null || foodText == null || goldText == null || armyText == null || favorText == null)
+        private string ResolveDisplayName(string resourceId)
         {
-            enabled = false;
+            if (catalog != null && catalog.resources != null)
+            {
+                foreach (ResourceData definition in catalog.resources)
+                {
+                    if (definition != null && definition.id == resourceId && !string.IsNullOrEmpty(definition.displayName))
+                    {
+                        return definition.displayName;
+                    }
+                }
+            }
+
+            return resourceId;
         }
-    }
-
-    private void OnEnable()
-    {
-        if (!enabled)
-        {
-            return;
-        }
-
-        resourceState.Changed += Refresh;
-        Refresh();
-    }
-
-    private void OnDisable()
-    {
-        if (resourceState != null)
-        {
-            resourceState.Changed -= Refresh;
-        }
-    }
-
-    private void Refresh()
-    {
-        foodText.text = $"Food: {resourceState.Get(FoodId)}";
-        goldText.text = $"Gold: {resourceState.Get(GoldId)}";
-        armyText.text = $"Army: {resourceState.Get(ArmyId)}";
-        favorText.text = $"Favor: {resourceState.Get(FavorId)}";
     }
 }

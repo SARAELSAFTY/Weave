@@ -105,3 +105,9 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# JetBrains Rider / VS Code local IDE state (project-level settings live under .vscode when shared)
+.idea/
+*.slnx
+
+*groq_api_key
