@@ -17,6 +17,7 @@ namespace Game.Scripts
         [SerializeField, Tooltip("Story database containing cards.")] private NarrativeDatabase narrativeDatabase;
         [SerializeField, Min(0.05f), Tooltip("Card exit animation duration in seconds.")] private float cardExitDuration = 0.25f;
         [SerializeField, Tooltip("UI text element showing the current day.")] private DayDisplay dayDisplay;
+        [SerializeField, Tooltip("Start screen shown before a run begins.")] private StartScreenView startScreenView;
         [SerializeField, Tooltip("Shared chat service for LLM reaction cards.")] private LlmReactionClient llmReactionClient;
 
         private bool inputEnabled;
@@ -56,12 +57,17 @@ namespace Game.Scripts
                 Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(dayDisplay)}' on '{gameObject.name}'.", this);
             }
 
+            if (startScreenView == null)
+            {
+                Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(startScreenView)}' on '{gameObject.name}'.", this);
+            }
+
             if (llmReactionClient == null)
             {
                 Debug.LogWarning($"[GameManager] Optional Inspector reference '{nameof(llmReactionClient)}' is missing on '{gameObject.name}'. LLM reaction cards will auto-advance.", this);
             }
 
-            if (cardView == null || resourceState == null || narrativeDatabase == null || dayDisplay == null)
+            if (cardView == null || resourceState == null || narrativeDatabase == null || dayDisplay == null || startScreenView == null)
             {
                 enabled = false;
                 return;
@@ -86,9 +92,6 @@ namespace Game.Scripts
                 enabled = false;
                 return;
             }
-
-            RefreshDayDisplay();
-            ShowCurrentCard();
         }
 
         private void OnEnable()
@@ -96,6 +99,11 @@ namespace Game.Scripts
             if (cardView != null)
             {
                 cardView.RestartRequested += RestartRun;
+            }
+
+            if (startScreenView != null)
+            {
+                startScreenView.PlayRequested += BeginRun;
             }
         }
 
@@ -106,10 +114,28 @@ namespace Game.Scripts
                 cardView.RestartRequested -= RestartRun;
             }
 
+            if (startScreenView != null)
+            {
+                startScreenView.PlayRequested -= BeginRun;
+            }
+
             if (narrativeRunner != null)
             {
                 narrativeRunner.DayChanged -= HandleDayChanged;
             }
+        }
+
+        /// <summary>Hides the start screen and shows the first card.</summary>
+        private void BeginRun()
+        {
+            if (!enabled)
+            {
+                return;
+            }
+
+            startScreenView.Hide();
+            RefreshDayDisplay();
+            ShowCurrentCard();
         }
 
         /// <summary>Applies the selected side choice for the current card.</summary>
