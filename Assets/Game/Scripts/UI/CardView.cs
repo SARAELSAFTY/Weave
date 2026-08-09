@@ -38,9 +38,6 @@ namespace Game.Scripts.UI
         /// <summary>Gets whether this card can be dragged for a choice.</summary>
         public bool AcceptsDrag => !isEndingCard;
 
-        /// <summary>Gets the card rect transform used for UI placement.</summary>
-        public RectTransform CardRectTransform => cardRectTransform;
-
         private void Awake()
         {
             if (descriptionText == null)

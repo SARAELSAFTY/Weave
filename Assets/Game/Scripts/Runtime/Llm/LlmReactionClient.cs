@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -15,22 +15,10 @@ namespace Game.Scripts.Runtime.Llm
         [SerializeField, Tooltip("Global LLM settings.")]
         private LlmSettings settings;
 
-        [SerializeField, Tooltip("Reference to a TextAsset containing the Groq API key.")]
+        [SerializeField, Tooltip("TextAsset containing the Groq API key. Drag the key file here.")]
         private TextAsset apiKeyAsset;
 
         private string cachedApiKey;
-        private int currentRequestToken;
-        private Action<LlmRequestError> currentOnFailure;
-
-        private void OnDisable()
-        {
-            CancelPendingRequest();
-        }
-
-        private void OnDestroy()
-        {
-            CancelPendingRequest();
-        }
 
         /// <summary>
         /// Requests one in-character reaction line from the configured LLM provider.
@@ -46,33 +34,15 @@ namespace Game.Scripts.Runtime.Llm
 
             if (string.IsNullOrEmpty(GetApiKey()))
             {
-                Debug.LogError("[LlmReactionClient] API key is missing. Ensure groq_api_key.txt exists in Resources or is assigned to the component.");
+                Debug.LogError("[LlmReactionClient] API key is missing. Assign a TextAsset containing the Groq API key to the apiKeyAsset field in the Inspector.");
                 onFailure?.Invoke(LlmRequestError.NotConfigured);
                 return;
             }
 
-            CancelPendingRequest();
-
-            int token = ++currentRequestToken;
-            currentOnFailure = onFailure;
-            StartCoroutine(RequestRoutine(token, systemPrompt, onSuccess, onFailure));
+            StartCoroutine(RequestRoutine(systemPrompt, onSuccess, onFailure));
         }
 
-        private void CancelPendingRequest()
-        {
-            if (currentOnFailure != null)
-            {
-                Action<LlmRequestError> onFailure = currentOnFailure;
-                currentOnFailure = null;
-                currentRequestToken++;
-                onFailure.Invoke(LlmRequestError.Cancelled);
-                return;
-            }
-
-            currentRequestToken++;
-        }
-
-        private IEnumerator RequestRoutine(int token, string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure)
+        private IEnumerator RequestRoutine(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure)
         {
             LlmRequestError? error = null;
             string result = null;
@@ -101,11 +71,6 @@ namespace Game.Scripts.Runtime.Llm
                     request.timeout = Mathf.CeilToInt(settings.apiTimeoutSeconds);
 
                     yield return request.SendWebRequest();
-
-                    if (token != currentRequestToken)
-                    {
-                        yield break;
-                    }
 
                     if (request.result == UnityWebRequest.Result.Success)
                     {
@@ -136,13 +101,6 @@ namespace Game.Scripts.Runtime.Llm
                     }
                 }
             }
-
-            if (token != currentRequestToken)
-            {
-                yield break;
-            }
-
-            currentOnFailure = null;
 
             if (error.HasValue)
             {
@@ -197,13 +155,6 @@ namespace Game.Scripts.Runtime.Llm
             if (apiKeyAsset != null && !string.IsNullOrWhiteSpace(apiKeyAsset.text))
             {
                 cachedApiKey = apiKeyAsset.text.Trim();
-                return cachedApiKey;
-            }
-
-            TextAsset loadedApiKey = Resources.Load<TextAsset>("groq_api_key");
-            if (loadedApiKey != null)
-            {
-                cachedApiKey = loadedApiKey.text.Trim();
             }
 
             return cachedApiKey;

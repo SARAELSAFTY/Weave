@@ -25,26 +25,26 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 990eb7fecd5a06f4891345907879899e, type: 2}
   editorGraphPositions:
   - cardId: Card_001
-    position: {x: -338, y: 143}
+    position: {x: -358, y: 73}
   - cardId: Card_002
-    position: {x: 101, y: 129}
+    position: {x: 83, y: 165}
   - cardId: Card_003
     position: {x: 481, y: 158}
   - cardId: Card_004
-    position: {x: 918, y: 10}
+    position: {x: 934, y: 13}
   - cardId: Card_005
     position: {x: 928, y: 230}
   editorSpeakerPositions:
   - memberId: bren
-    position: {x: -255, y: -180}
+    position: {x: -77, y: -200}
   - memberId: wren
-    position: {x: -633, y: -48}
+    position: {x: -541, y: -82}
   - memberId: Bren
     position: {x: 6.3999996, y: 43.199997}
   editorResourcePositions:
   - resourceId: gold
-    position: {x: 143, y: -101}
+    position: {x: 289, y: -174}
   - resourceId: loyalty
-    position: {x: 187, y: 23}
+    position: {x: 283, y: -21}
   - resourceId: resource_003
     position: {x: -520, y: 440}

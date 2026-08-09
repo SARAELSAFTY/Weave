@@ -64,13 +64,6 @@ namespace Game.Scripts.Editor
             badges.Add(MakeBadge("LLM", LlmAccent, new Color(0.30f, 0.12f, 0.45f), "Designated AI speaker"));
         }
 
-        if (speaker.isLlmSpeaker && !isLlm)
-        {
-            badges.Add(MakeBadge("Flagged, not designated",
-                new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
-                "isLlmSpeaker is set but CardGraph does not treat this speaker as the designated AI speaker."));
-        }
-
         return badges;
     }
 

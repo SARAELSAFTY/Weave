@@ -152,12 +152,6 @@ namespace Game.Scripts.Runtime.Narrative
                     missingSpeakerCards.Add(card.cardId);
                     continue;
                 }
-
-                CouncilMemberData speaker = GetSpeaker(card.speakerId);
-                if (card.isLlmReactionCard && !CardGraph.IsLlmSpeaker(database, speaker))
-                {
-                    Debug.LogWarning($"Card '{card.cardId}' is an LLM reaction card but speaker '{card.speakerId}' is not the designated LLM Speaker in the Narrative Database.");
-                }
             }
 
             if (missingSpeakerCards.Count > 0)
