@@ -18,13 +18,19 @@ namespace Game.Scripts
         [SerializeField, Min(0.05f), Tooltip("Card exit animation duration in seconds.")] private float cardExitDuration = 0.25f;
         [SerializeField, Tooltip("UI text element showing the current day.")] private DayDisplay dayDisplay;
         [SerializeField, Tooltip("Start screen shown before a run begins.")] private StartScreenView startScreenView;
+        [SerializeField, Tooltip("Pause overlay shown during a run.")] private PauseMenuView pauseMenuView;
         [SerializeField, Tooltip("Shared chat service for LLM reaction cards.")] private LlmReactionClient llmReactionClient;
 
         private bool inputEnabled;
+        private bool runInProgress;
+        private bool isPaused;
         private NarrativeRunner narrativeRunner;
 
         /// <summary>Gets whether card choice input is currently accepted.</summary>
-        public bool AcceptsChoiceInput => inputEnabled;
+        public bool AcceptsChoiceInput => inputEnabled && !isPaused;
+
+        /// <summary>Gets whether the run is currently paused.</summary>
+        public bool IsPaused => isPaused;
 
         /// <summary>Gets the current in-game day.</summary>
         public int CurrentDay => narrativeRunner != null ? narrativeRunner.Day : 1;
@@ -62,12 +68,17 @@ namespace Game.Scripts
                 Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(startScreenView)}' on '{gameObject.name}'.", this);
             }
 
+            if (pauseMenuView == null)
+            {
+                Debug.LogError($"[GameManager] Missing required Inspector reference '{nameof(pauseMenuView)}' on '{gameObject.name}'.", this);
+            }
+
             if (llmReactionClient == null)
             {
                 Debug.LogWarning($"[GameManager] Optional Inspector reference '{nameof(llmReactionClient)}' is missing on '{gameObject.name}'. LLM reaction cards will auto-advance.", this);
             }
 
-            if (cardView == null || resourceState == null || narrativeDatabase == null || dayDisplay == null || startScreenView == null)
+            if (cardView == null || resourceState == null || narrativeDatabase == null || dayDisplay == null || startScreenView == null || pauseMenuView == null)
             {
                 enabled = false;
                 return;
@@ -94,6 +105,19 @@ namespace Game.Scripts
             }
         }
 
+        private void Update()
+        {
+            if (!enabled || !runInProgress)
+            {
+                return;
+            }
+
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            {
+                TogglePause();
+            }
+        }
+
         private void OnEnable()
         {
             if (cardView != null)
@@ -104,6 +128,13 @@ namespace Game.Scripts
             if (startScreenView != null)
             {
                 startScreenView.PlayRequested += BeginRun;
+                startScreenView.QuitRequested += QuitGame;
+            }
+
+            if (pauseMenuView != null)
+            {
+                pauseMenuView.ResumeRequested += Resume;
+                pauseMenuView.QuitRequested += QuitGame;
             }
         }
 
@@ -117,6 +148,13 @@ namespace Game.Scripts
             if (startScreenView != null)
             {
                 startScreenView.PlayRequested -= BeginRun;
+                startScreenView.QuitRequested -= QuitGame;
+            }
+
+            if (pauseMenuView != null)
+            {
+                pauseMenuView.ResumeRequested -= Resume;
+                pauseMenuView.QuitRequested -= QuitGame;
             }
 
             if (narrativeRunner != null)
@@ -134,14 +172,60 @@ namespace Game.Scripts
             }
 
             startScreenView.Hide();
+            runInProgress = true;
             RefreshDayDisplay();
             ShowCurrentCard();
+        }
+
+        /// <summary>Toggles the pause overlay on or off.</summary>
+        private void TogglePause()
+        {
+            if (isPaused)
+            {
+                Resume();
+            }
+            else
+            {
+                Pause();
+            }
+        }
+
+        private void Pause()
+        {
+            if (isPaused)
+            {
+                return;
+            }
+
+            isPaused = true;
+            pauseMenuView.Show();
+        }
+
+        private void Resume()
+        {
+            if (!isPaused)
+            {
+                return;
+            }
+
+            isPaused = false;
+            pauseMenuView.Hide();
+        }
+
+        /// <summary>Quits the application (or exits play mode in the editor).</summary>
+        private void QuitGame()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
 
         /// <summary>Applies the selected side choice for the current card.</summary>
         public void ChooseSide(bool choseRight)
         {
-            if (!inputEnabled)
+            if (!AcceptsChoiceInput)
             {
                 return;
             }
@@ -186,6 +270,7 @@ namespace Game.Scripts
         private void EndRun(CardData endingCard)
         {
             inputEnabled = false;
+            runInProgress = false;
             cardView.ShowEnding(endingCard, narrativeRunner.GetSpeaker(endingCard.speakerId));
         }
 
