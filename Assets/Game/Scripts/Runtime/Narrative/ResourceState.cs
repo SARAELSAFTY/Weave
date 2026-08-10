@@ -10,7 +10,7 @@ namespace Game.Scripts.Runtime.Narrative
     {
         [SerializeField] private ResourceCatalog catalog;
 
-        private readonly Dictionary<string, int> values = new Dictionary<string, int>();
+        private readonly Dictionary<ResourceData, int> values = new Dictionary<ResourceData, int>();
 
         /// <summary>Raised after resource values are updated.</summary>
         public event Action Changed;
@@ -27,9 +27,9 @@ namespace Game.Scripts.Runtime.Narrative
 
             foreach (ResourceData resource in catalog.resources)
             {
-                if (resource != null && !string.IsNullOrEmpty(resource.id))
+                if (resource != null)
                 {
-                    values[resource.id] = resource.defaultStartingValue;
+                    values[resource] = resource.defaultStartingValue;
                 }
             }
         }
@@ -41,10 +41,10 @@ namespace Game.Scripts.Runtime.Narrative
             {
                 foreach (ResourceValue changeValue in change.values)
                 {
-                    if (!string.IsNullOrEmpty(changeValue.id))
+                    if (changeValue.resource != null)
                     {
-                        values.TryGetValue(changeValue.id, out int currentValue);
-                        values[changeValue.id] = currentValue + changeValue.value;
+                        values.TryGetValue(changeValue.resource, out int currentValue);
+                        values[changeValue.resource] = currentValue + changeValue.value;
                     }
                 }
             }
@@ -52,10 +52,10 @@ namespace Game.Scripts.Runtime.Narrative
             Changed?.Invoke();
         }
 
-        /// <summary>Gets the current value for a resource ID, or zero when not found.</summary>
-        public int Get(string resourceId)
+        /// <summary>Gets the current value for a resource asset, or zero when not found.</summary>
+        public int Get(ResourceData resource)
         {
-            return !string.IsNullOrEmpty(resourceId) && values.TryGetValue(resourceId, out int value) ? value : 0;
+            return resource != null && values.TryGetValue(resource, out int value) ? value : 0;
         }
     }
 }

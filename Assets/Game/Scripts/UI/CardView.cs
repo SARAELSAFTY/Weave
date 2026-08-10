@@ -92,7 +92,7 @@ namespace Game.Scripts.UI
         }
 
         /// <summary>Shows a standard narrative card.</summary>
-        public void Show(CardData cardData, CouncilMemberData speaker)
+        public void Show(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
             ResetCardPosition();
@@ -109,7 +109,7 @@ namespace Game.Scripts.UI
         }
 
         /// <summary>Shows an LLM reaction card before generated text is returned.</summary>
-        public void ShowLlmReaction(CardData cardData, CouncilMemberData speaker)
+        public void ShowLlmReaction(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
             ResetCardPosition();
@@ -135,7 +135,7 @@ namespace Game.Scripts.UI
         }
 
         /// <summary>Shows ending card UI and enables restart.</summary>
-        public void ShowEnding(CardData cardData, CouncilMemberData speaker)
+        public void ShowEnding(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = true;
             ResetCardPosition();
@@ -209,7 +209,7 @@ namespace Game.Scripts.UI
             RestartRequested?.Invoke();
         }
 
-        private void ApplySpeaker(CouncilMemberData speaker)
+        private void ApplySpeaker(SpeakerData speaker)
         {
             bool hasSpeaker = speaker != null;
 
@@ -229,16 +229,9 @@ namespace Game.Scripts.UI
             }
         }
 
-        private static string FormatSpeakerLabel(CouncilMemberData speaker)
+        private static string FormatSpeakerLabel(SpeakerData speaker)
         {
-            if (speaker == null)
-            {
-                return string.Empty;
-            }
-
-            return !string.IsNullOrEmpty(speaker.displayName)
-                ? speaker.displayName.Trim()
-                : speaker.title ?? string.Empty;
+            return speaker != null ? speaker.DisplayName : string.Empty;
         }
 
         private void SetChoiceVisibility(float progress)

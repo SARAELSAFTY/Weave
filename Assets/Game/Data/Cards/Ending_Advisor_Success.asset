@@ -10,21 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Card_004
+  m_Name: Ending_Advisor_Success
   m_EditorClassIdentifier: 
-  cardId: Card_004
-  description: You spoke plainly to the court, and they respect you more for it.
-    The kingdom holds steady.
-  speakerId: bren
+  assetName: Ending_Advisor_Success
+  displayName: 
+  speaker: {fileID: 11400000, guid: a5388ae7259a167408893a29a7d84fa2, type: 2}
+  description: The settlement recovered its balance and secures a prosperous future.
   dayAdvance: 1
-  leftChoiceText: 
+  leftChoiceText: test
   leftResourceChange:
     values: []
-  leftNextCardId: 
-  rightChoiceText: 
+  leftNextCard: {fileID: 11400000, guid: 03bba049db2524749a4c28d4adad4fec, type: 2}
+  rightChoiceText: test
   rightResourceChange:
     values: []
-  rightNextCardId: 
+  rightNextCard: {fileID: 11400000, guid: 03bba049db2524749a4c28d4adad4fec, type: 2}
   isLlmReactionCard: 0
   llmPromptSeed: 
-  continueNextCardId: 
+  continueNextCard: {fileID: 0}

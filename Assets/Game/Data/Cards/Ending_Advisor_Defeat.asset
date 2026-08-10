@@ -10,25 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Card_003
+  m_Name: Ending_Advisor_Defeat
   m_EditorClassIdentifier: 
-  cardId: Card_003
-  description: Whichever way we turned, the court is watching closely now. Do we
-    address them directly, or retreat and plan quietly?
-  speakerId: bren
+  assetName: Ending_Advisor_Defeat
+  displayName: 
+  speaker: {fileID: 11400000, guid: a5388ae7259a167408893a29a7d84fa2, type: 2}
+  description: Resources collapsed completely. The settlement could not hold.
   dayAdvance: 1
-  leftChoiceText: Address the Court
+  leftChoiceText: 
   leftResourceChange:
-    values:
-    - id: loyalty
-      value: 5
-  leftNextCardId: Card_004
-  rightChoiceText: Retreat and Plan
+    values: []
+  leftNextCard: {fileID: 0}
+  rightChoiceText: 
   rightResourceChange:
-    values:
-    - id: gold
-      value: 5
-  rightNextCardId: Card_005
+    values: []
+  rightNextCard: {fileID: 0}
   isLlmReactionCard: 0
   llmPromptSeed: 
-  continueNextCardId: 
+  continueNextCard: {fileID: 0}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using Game.Scripts.Definitions;
 using Game.Scripts.Runtime.Llm;
@@ -20,11 +20,18 @@ namespace Game.Scripts
         [SerializeField, Tooltip("Start screen shown before a run begins.")] private StartScreenView startScreenView;
         [SerializeField, Tooltip("Pause overlay shown during a run.")] private PauseMenuView pauseMenuView;
         [SerializeField, Tooltip("Shared chat service for LLM reaction cards.")] private LlmReactionClient llmReactionClient;
+        [SerializeField, Tooltip("Prompt templates and label defaults.")] private LlmPromptTemplates promptTemplates;
+        [SerializeField, Tooltip("Global LLM settings.")] private LlmSettings llmSettings;
 
         private bool inputEnabled;
         private bool runInProgress;
         private bool isPaused;
         private NarrativeRunner narrativeRunner;
+        private ResourceWarningMonitor resourceWarningMonitor;
+        private bool showingResourceWarning;
+        private CardData warningCardInstance;
+
+        private LlmPromptTemplates Templates => promptTemplates != null ? promptTemplates : (narrativeDatabase != null ? narrativeDatabase.promptTemplates : null);
 
         /// <summary>Gets whether card choice input is currently accepted.</summary>
         public bool AcceptsChoiceInput => inputEnabled && !isPaused;
@@ -92,9 +99,11 @@ namespace Game.Scripts
                 return;
             }
 
-            narrativeRunner = new NarrativeRunner(narrativeDatabase, resourceState);
+            narrativeRunner = new NarrativeRunner(narrativeDatabase, resourceState, narrativeDatabase.resourceCatalog);
             narrativeRunner.DayChanged += HandleDayChanged;
             HistoryTracker = new PlayerHistoryTracker(resourceState, narrativeRunner, narrativeDatabase.resourceCatalog);
+            resourceWarningMonitor = new ResourceWarningMonitor(narrativeDatabase.resourceCatalog, resourceState);
+            resourceWarningMonitor.Reset();
 
             HistoryTracker.Reset();
             if (!narrativeRunner.StartRun(out string error))
@@ -102,6 +111,15 @@ namespace Game.Scripts
                 Debug.LogError(error, this);
                 enabled = false;
                 return;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (warningCardInstance != null)
+            {
+                Destroy(warningCardInstance);
+                warningCardInstance = null;
             }
         }
 
@@ -173,6 +191,8 @@ namespace Game.Scripts
 
             startScreenView.Hide();
             runInProgress = true;
+            showingResourceWarning = false;
+            resourceWarningMonitor?.Reset();
             RefreshDayDisplay();
             ShowCurrentCard();
         }
@@ -230,7 +250,21 @@ namespace Game.Scripts
                 return;
             }
 
+            if (showingResourceWarning)
+            {
+                StartCoroutine(DismissResourceWarningRoutine(choseRight));
+                return;
+            }
+
             StartCoroutine(ChooseRoutine(choseRight));
+        }
+
+        private IEnumerator DismissResourceWarningRoutine(bool choseRight)
+        {
+            inputEnabled = false;
+            showingResourceWarning = false;
+            yield return cardView.AnimateCardExit(choseRight, cardExitDuration);
+            ShowCurrentCard();
         }
 
         private IEnumerator ChooseRoutine(bool choseRight)
@@ -260,18 +294,154 @@ namespace Game.Scripts
 
             if (result.HasEnded)
             {
-                EndRun(result.endingCard);
+                EndRun(result.endingCard, result.isCollapseEnding);
                 yield break;
+            }
+
+            if (resourceWarningMonitor != null)
+            {
+                resourceWarningMonitor.Tick();
+                if (resourceWarningMonitor.TryGetTriggeredWarning(out ResourceData triggeredResource))
+                {
+                    ShowResourceWarning(triggeredResource);
+                    yield break;
+                }
             }
 
             ShowCurrentCard();
         }
 
-        private void EndRun(CardData endingCard)
+        private void EndRun(CardData endingCard, bool isCollapseEnding)
         {
             inputEnabled = false;
             runInProgress = false;
-            cardView.ShowEnding(endingCard, narrativeRunner.GetSpeaker(endingCard.speakerId));
+            cardView.ShowEnding(endingCard, endingCard != null ? endingCard.speaker : null);
+
+            if (!isCollapseEnding)
+            {
+                return; // Authored ending — its own description stands as written. No LLM overwrite.
+            }
+
+            if (llmReactionClient == null || HistoryTracker == null || narrativeDatabase.resourceCatalog == null)
+            {
+                return;
+            }
+
+            LlmPromptTemplates templates = Templates;
+            ResourceData collapsedResource = FindCollapsedResource();
+            string unknownCause = templates != null ? templates.unknownCollapseCauseLabel : string.Empty;
+            string collapsedResourceName = collapsedResource != null ? collapsedResource.DisplayName : unknownCause;
+            string finalResourceSummary = HistoryTracker.GetResourceSummary();
+            string fullChoiceHistory = HistoryTracker.GetFullHistorySummary();
+
+            string epilogueInstructions = templates != null ? templates.epilogueSystemInstructions : string.Empty;
+            string epiloguePrompt = EpiloguePromptBuilder.Build(
+                narrativeRunner.Day, collapsedResourceName, finalResourceSummary, fullChoiceHistory, epilogueInstructions);
+
+            int? epilogueMaxTokens = llmSettings != null ? llmSettings.epilogueMaxTokens : 80;
+
+            llmReactionClient.RequestReaction(
+                epiloguePrompt,
+                line =>
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        cardView.SetDescriptionText(line);
+                    }
+                },
+                error =>
+                {
+                    Debug.LogWarning($"[GameManager] Epilogue generation failed: {error}");
+                },
+                maxTokensOverride: epilogueMaxTokens);
+        }
+
+        private ResourceData FindCollapsedResource()
+        {
+            foreach (ResourceData resource in narrativeDatabase.resourceCatalog.resources)
+            {
+                if (resource != null && resourceState.Get(resource) <= 0)
+                {
+                    return resource;
+                }
+            }
+            return null;
+        }
+
+        private void ShowResourceWarning(ResourceData resource)
+        {
+            if (resource == null || resource.warningSpeaker == null)
+            {
+                ShowCurrentCard();
+                return;
+            }
+
+            SpeakerData speaker = resource.warningSpeaker;
+            if (string.IsNullOrWhiteSpace(speaker.llmPersonaPrompt))
+            {
+                ShowCurrentCard();
+                return;
+            }
+
+            showingResourceWarning = true;
+            inputEnabled = false;
+
+            LlmPromptTemplates templates = Templates;
+
+            if (warningCardInstance == null)
+            {
+                warningCardInstance = ScriptableObject.CreateInstance<CardData>();
+            }
+            warningCardInstance.isLlmReactionCard = true;
+            warningCardInstance.speaker = resource.warningSpeaker;
+            warningCardInstance.leftChoiceText = string.Empty;
+            warningCardInstance.rightChoiceText = string.Empty;
+
+            cardView.ShowLlmReaction(warningCardInstance, speaker);
+
+            if (resourceWarningMonitor != null)
+            {
+                resourceWarningMonitor.OnWarningShown(resource);
+            }
+
+            string gameStateSnapshot = HistoryTracker != null
+                ? HistoryTracker.GetSnapshot()
+                : "Kingdom Status: Unknown";
+
+            string defaultWarningSeed = templates != null
+                ? templates.defaultWarningSeedPrompt
+                : string.Empty;
+
+            string rawSeed = string.IsNullOrWhiteSpace(resource.warningSeedPrompt)
+                ? defaultWarningSeed
+                : resource.warningSeedPrompt;
+
+            string seed = rawSeed.Replace("{resourceName}", resource.DisplayName);
+
+            if (llmReactionClient == null)
+            {
+                Debug.LogWarning("[GameManager] llmReactionClient is missing; skipping resource warning LLM reaction.", this);
+                showingResourceWarning = false;
+                ShowCurrentCard();
+                return;
+            }
+
+            string personaInstructions = templates != null ? templates.personaSystemInstructions : string.Empty;
+            string fullSystemPrompt = LlmPersonaPromptBuilder.Build(speaker, gameStateSnapshot, seed, personaInstructions);
+
+            llmReactionClient.RequestReaction(
+                fullSystemPrompt,
+                line =>
+                {
+                    cardView.SetDescriptionText(line);
+                    inputEnabled = true;
+                },
+                error =>
+                {
+                    Debug.LogWarning($"[GameManager] Resource warning LLM reaction failed: {error}");
+                    showingResourceWarning = false;
+                    ShowCurrentCard();
+                });
         }
 
         private void ShowCurrentCard()
@@ -282,9 +452,10 @@ namespace Game.Scripts
                 return;
             }
 
-            CouncilMemberData speaker = narrativeRunner.GetSpeaker(card.speakerId);
+            SpeakerData speaker = card.speaker;
             if (card.isLlmReactionCard)
             {
+                LlmPromptTemplates templates = Templates;
                 cardView.ShowLlmReaction(card, speaker);
                 inputEnabled = false;
 
@@ -292,8 +463,12 @@ namespace Game.Scripts
                     ? HistoryTracker.GetSnapshot()
                     : "Kingdom Status: Unknown";
 
+                string defaultReactionSeed = templates != null
+                    ? templates.defaultReactionSeedPrompt
+                    : string.Empty;
+
                 string seed = string.IsNullOrWhiteSpace(card.llmPromptSeed)
-                    ? "React briefly to the player's recent decisions in character."
+                    ? defaultReactionSeed
                     : card.llmPromptSeed;
 
                 if (llmReactionClient == null)
@@ -303,7 +478,8 @@ namespace Game.Scripts
                     return;
                 }
 
-                string fullSystemPrompt = LlmPersonaPromptBuilder.Build(speaker, gameStateSnapshot, seed);
+                string personaInstructions = templates != null ? templates.personaSystemInstructions : string.Empty;
+                string fullSystemPrompt = LlmPersonaPromptBuilder.Build(speaker, gameStateSnapshot: gameStateSnapshot, situationalPrompt: seed, systemInstructionsTemplate: personaInstructions);
 
                 llmReactionClient.RequestReaction(
                     fullSystemPrompt,
@@ -337,7 +513,7 @@ namespace Game.Scripts
 
             if (result.HasEnded)
             {
-                EndRun(result.endingCard);
+                EndRun(result.endingCard, result.isCollapseEnding);
                 return;
             }
 

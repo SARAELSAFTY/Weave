@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using Game.Scripts.Definitions;
-using Game.Scripts.Runtime.Narrative;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,12 +8,10 @@ namespace Game.Scripts.Editor
     public class CardDataEditor : UnityEditor.Editor
     {
         private CardData card;
-        private NarrativeDatabase database;
 
         private void OnEnable()
         {
             card = (CardData)target;
-            database = CardGraphEditor.FindOwningDatabase(card);
         }
 
         public override void OnInspectorGUI()
@@ -24,105 +20,73 @@ namespace Game.Scripts.Editor
 
             serializedObject.Update();
 
-            // Header / Identity
+            // ── Identity ─────────────────────────────────────────────────────────
             EditorGUILayout.LabelField("Identity", EditorStyles.boldLabel);
 
-            // Card ID is read-only here — rename the asset file in the Project window to change it.
-            EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.TextField(new GUIContent("Card Id", "Rename the asset file in the Project window to change this"), card.cardId);
-            EditorGUI.EndDisabledGroup();
+            SerializedProperty assetNameProp = serializedObject.FindProperty("assetName");
+            EditorGUILayout.PropertyField(assetNameProp, new GUIContent(
+                "Asset Name (ID)",
+                "Author-facing identifier. Convention: <Scene>_<Speaker>_<Slug>, e.g. Market_Advisor_WarnsBlight. " +
+                "Drives the graph node title and auto-renames the asset file on save. NOT shown to players."));
 
-            EditorGUILayout.Space(6);
+            SerializedProperty displayNameProp = serializedObject.FindProperty("displayName");
+            EditorGUILayout.PropertyField(displayNameProp, new GUIContent(
+                "Display Name (UI)",
+                "Optional player-facing label. Most cards leave this empty. " +
+                "Falls back to Asset Name when blank."));
 
-            // Content
-            EditorGUILayout.LabelField("Card Content", EditorStyles.boldLabel);
+            EditorGUILayout.Space(8);
+
+            // ── Speaker & Content ─────────────────────────────────────────────────
+            EditorGUILayout.LabelField("Speaker & Content", EditorStyles.boldLabel);
+
+            SerializedProperty speakerProp = serializedObject.FindProperty("speaker");
+            EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker", "Character speaking this card. Required for narrative run execution."));
+
+            if (speakerProp.objectReferenceValue == null)
+            {
+                EditorGUILayout.HelpBox("Every card must have a speaker assigned — the run will fail to start without one.", MessageType.Warning);
+            }
 
             EditorGUI.BeginDisabledGroup(card.isLlmReactionCard);
             card.description = EditorGUILayout.TextArea(card.description, GUILayout.MinHeight(50));
             EditorGUI.EndDisabledGroup();
 
-            if (database == null)
-            {
-                card.speakerId = EditorGUILayout.TextField("Speaker Id", card.speakerId);
-            }
-            else
-            {
-                List<string> speakerIds = CardGraphEditor.GetSpeakerChoices(database);
-
-                int selectedIndex = 0;
-                if (!string.IsNullOrEmpty(card.speakerId))
-                {
-                    int matchIndex = speakerIds.IndexOf(card.speakerId);
-                    if (matchIndex >= 0)
-                    {
-                        selectedIndex = matchIndex;
-                    }
-                }
-
-                int newIndex = EditorGUILayout.Popup("Speaker Id", selectedIndex, speakerIds.ToArray());
-                if (newIndex != selectedIndex)
-                {
-                    card.speakerId = newIndex == 0 ? string.Empty : speakerIds[newIndex];
-                }
-            }
-
-            if (string.IsNullOrEmpty(card.speakerId))
-            {
-                EditorGUILayout.HelpBox("Every card must have a speaker assigned - the run will fail to start without one.", MessageType.Warning);
-            }
-
             card.dayAdvance = Mathf.Max(0, EditorGUILayout.IntField("Day Advance", card.dayAdvance));
 
-            EditorGUILayout.Space(6);
+            EditorGUILayout.Space(8);
 
+            // ── LLM Reaction Card ─────────────────────────────────────────────────
             card.isLlmReactionCard = EditorGUILayout.Toggle(
-                new GUIContent("Is LLM Reaction Card", "Generates card description at runtime via LLM. Swiping either direction advances to the same next card with no resource changes."),
+                new GUIContent("Is LLM Reaction Card", "Generates description text dynamically at runtime via LLM."),
                 card.isLlmReactionCard);
-
-            EditorGUILayout.Space(6);
-
-            bool ending = card.IsEnding;
 
             if (card.isLlmReactionCard)
             {
                 card.description = string.Empty;
                 EditorGUILayout.HelpBox(
-                    "This card's description is LLM-generated at runtime from the prompt seed below. " +
-                    "Authoring text in 'Card Content' is disabled for LLM cards.",
+                    "Description text is generated dynamically at runtime from the seed prompt below.",
                     MessageType.Info);
 
                 card.llmPromptSeed = EditorGUILayout.TextArea(card.llmPromptSeed, GUILayout.MinHeight(50));
 
-                CouncilMemberData assignedSpeaker = FindSpeakerById(database, card.speakerId);
-                if (assignedSpeaker != null && !CardGraph.IsLlmSpeaker(database, assignedSpeaker))
+                if (card.speaker != null && string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
                 {
-                    EditorGUILayout.HelpBox($"Speaker '{card.speakerId}' is not marked as an AI Speaker, so this reaction will have no persona.", MessageType.Warning);
+                    EditorGUILayout.HelpBox($"Speaker '{card.speaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
                 }
-                
-                // Also disabled resource changes for LLM cards
-                card.leftResourceChange = new ResourceChange();
-                card.rightResourceChange = new ResourceChange();
 
-                EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.TextField(
-                    new GUIContent("Continue Next Card Id", "Set by wiring the Continue port in the Card Graph window"),
-                    card.continueNextCardId);
-                EditorGUI.EndDisabledGroup();
+                EditorGUILayout.Space(6);
+                SerializedProperty continueNextCardProp = serializedObject.FindProperty("continueNextCard");
+                EditorGUILayout.PropertyField(continueNextCardProp, new GUIContent("Continue Next Card"));
             }
-            else if (ending)
+            else if (card.IsEnding)
             {
-                // An ending card has no swipe - CardView.ShowEnding blanks both choice labels at
-                // runtime, so Left/Right Choice text and resource changes here would never actually
-                // be shown or applied. Hiding them avoids authoring dead data.
-                EditorGUILayout.HelpBox(
-                    "This is an Ending card (no Left/Right links). Left and Right Choice fields are " +
-                    "hidden because an ending card has no swipe - they're never shown or applied. " +
-                    "Wire a next card in the Card Graph window to turn this back into a choice card.",
-                    MessageType.Info);
+                EditorGUILayout.HelpBox("This is an Ending card (no outgoing next card links).", MessageType.Info);
             }
             else
             {
-                // Left Choice
+                // ── Left Choice ───────────────────────────────────────────────────
+                EditorGUILayout.Space(6);
                 EditorGUILayout.LabelField("Left Choice", EditorStyles.boldLabel);
                 card.leftChoiceText = EditorGUILayout.TextField("Left Choice Text", card.leftChoiceText);
 
@@ -132,14 +96,11 @@ namespace Game.Scripts.Editor
                     EditorGUILayout.PropertyField(leftChangeProp, true);
                 }
 
-                // Left Next Card ID is READ-ONLY (wired in Card Graph)
-                EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.TextField(new GUIContent("Left Next Card Id", "Set by wiring edges in the Card Graph window"), card.leftNextCardId);
-                EditorGUI.EndDisabledGroup();
+                SerializedProperty leftNextCardProp = serializedObject.FindProperty("leftNextCard");
+                EditorGUILayout.PropertyField(leftNextCardProp, new GUIContent("Left Next Card"));
 
+                // ── Right Choice ──────────────────────────────────────────────────
                 EditorGUILayout.Space(6);
-
-                // Right Choice
                 EditorGUILayout.LabelField("Right Choice", EditorStyles.boldLabel);
                 card.rightChoiceText = EditorGUILayout.TextField("Right Choice Text", card.rightChoiceText);
 
@@ -149,21 +110,9 @@ namespace Game.Scripts.Editor
                     EditorGUILayout.PropertyField(rightChangeProp, true);
                 }
 
-                // Right Next Card ID is READ-ONLY (wired in Card Graph)
-                EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.TextField(new GUIContent("Right Next Card Id", "Set by wiring edges in the Card Graph window"), card.rightNextCardId);
-                EditorGUI.EndDisabledGroup();
+                SerializedProperty rightNextCardProp = serializedObject.FindProperty("rightNextCard");
+                EditorGUILayout.PropertyField(rightNextCardProp, new GUIContent("Right Next Card"));
             }
-
-            EditorGUILayout.Space(6);
-
-            // Ending (Automatic status display)
-            EditorGUILayout.LabelField("Ending Status", EditorStyles.boldLabel);
-            EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.Toggle(new GUIContent("Is Ending Card", card.isLlmReactionCard
-                ? "Automatically true when Continue Next Card Id is empty"
-                : "Automatically true when both Left and Right Next Card IDs are empty"), ending);
-            EditorGUI.EndDisabledGroup();
 
             if (GUI.changed)
             {
@@ -171,17 +120,6 @@ namespace Game.Scripts.Editor
                 EditorUtility.SetDirty(card);
                 CardGraphWindow.RefreshOpenWindows();
             }
-        }
-
-
-        private static CouncilMemberData FindSpeakerById(NarrativeDatabase database, string speakerId)
-        {
-            if (database == null || database.speakers == null || string.IsNullOrEmpty(speakerId))
-            {
-                return null;
-            }
-
-            return database.speakers.Find(s => s != null && s.memberId == speakerId);
         }
     }
 }

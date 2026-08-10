@@ -9,16 +9,15 @@ namespace Game.Scripts.UI
     /// <summary>Updates resource labels when resource values change.</summary>
     public class ResourceDisplay : MonoBehaviour
     {
-        /// <summary>Binds one resource ID to one text label.</summary>
+        /// <summary>Binds one resource asset to one text label.</summary>
         [Serializable]
         public struct LabelBinding
         {
-            public string resourceId;
+            public ResourceData resource;
             public TMP_Text label;
         }
 
         [SerializeField] private ResourceState resourceState;
-        [SerializeField] private ResourceCatalog catalog;
         [SerializeField] private LabelBinding[] labels;
 
         private void Awake()
@@ -63,30 +62,13 @@ namespace Game.Scripts.UI
 
             foreach (LabelBinding binding in labels)
             {
-                if (binding.label == null || string.IsNullOrEmpty(binding.resourceId))
+                if (binding.label == null || binding.resource == null)
                 {
                     continue;
                 }
 
-                string displayName = ResolveDisplayName(binding.resourceId);
-                binding.label.text = $"{displayName}: {resourceState.Get(binding.resourceId)}";
+                binding.label.text = $"{binding.resource.DisplayName}: {resourceState.Get(binding.resource)}";
             }
-        }
-
-        private string ResolveDisplayName(string resourceId)
-        {
-            if (catalog != null && catalog.resources != null)
-            {
-                foreach (ResourceData definition in catalog.resources)
-                {
-                    if (definition != null && definition.id == resourceId && !string.IsNullOrEmpty(definition.displayName))
-                    {
-                        return definition.displayName;
-                    }
-                }
-            }
-
-            return resourceId;
         }
     }
 }

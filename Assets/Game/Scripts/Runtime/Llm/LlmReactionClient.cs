@@ -15,6 +15,9 @@ namespace Game.Scripts.Runtime.Llm
         [SerializeField, Tooltip("Global LLM settings.")]
         private LlmSettings settings;
 
+        [SerializeField, Tooltip("Prompt templates and default copy.")]
+        private LlmPromptTemplates promptTemplates;
+
         [SerializeField, Tooltip("TextAsset containing the Groq API key. Drag the key file here.")]
         private TextAsset apiKeyAsset;
 
@@ -23,7 +26,7 @@ namespace Game.Scripts.Runtime.Llm
         /// <summary>
         /// Requests one in-character reaction line from the configured LLM provider.
         /// </summary>
-        public void RequestReaction(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure)
+        public void RequestReaction(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
             if (settings == null)
             {
@@ -39,10 +42,10 @@ namespace Game.Scripts.Runtime.Llm
                 return;
             }
 
-            StartCoroutine(RequestRoutine(systemPrompt, onSuccess, onFailure));
+            StartCoroutine(RequestRoutine(systemPrompt, onSuccess, onFailure, maxTokensOverride));
         }
 
-        private IEnumerator RequestRoutine(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure)
+        private IEnumerator RequestRoutine(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
             LlmRequestError? error = null;
             string result = null;
@@ -50,7 +53,7 @@ namespace Game.Scripts.Runtime.Llm
             string jsonPayload;
             try
             {
-                jsonPayload = BuildJsonPayload(systemPrompt);
+                jsonPayload = BuildJsonPayload(systemPrompt, maxTokensOverride);
             }
             catch (Exception exception)
             {
@@ -112,17 +115,22 @@ namespace Game.Scripts.Runtime.Llm
             }
         }
 
-        private string BuildJsonPayload(string systemPrompt)
+        private string BuildJsonPayload(string systemPrompt, int? maxTokensOverride = null)
         {
+            int tokens = maxTokensOverride.HasValue ? maxTokensOverride.Value : settings.maxTokensPerResponse;
             GroqApiRequest request = new GroqApiRequest
             {
                 model = settings.groqModel,
-                max_tokens = settings.maxTokensPerResponse,
+                max_tokens = tokens,
                 temperature = settings.temperature
             };
 
+            string userTurnPrompt = promptTemplates != null
+                ? promptTemplates.reactionUserTurnPrompt
+                : string.Empty;
+
             request.messages.Add(new GroqApiMessage { role = "system", content = systemPrompt });
-            request.messages.Add(new GroqApiMessage { role = "user", content = "React now, in character, following your instructions above." });
+            request.messages.Add(new GroqApiMessage { role = "user", content = userTurnPrompt });
 
             return JsonUtility.ToJson(request);
         }
@@ -134,7 +142,20 @@ namespace Game.Scripts.Runtime.Llm
                 GroqResponse response = JsonUtility.FromJson<GroqResponse>(json);
                 if (response?.choices != null && response.choices.Length > 0)
                 {
-                    return response.choices[0].message?.content;
+                    string content = response.choices[0].message?.content;
+                    if (string.IsNullOrWhiteSpace(content)) return null;
+
+                    // Strip any roleplay actions/stage directions in parentheses e.g. (pausing), (clearing throat)
+                    content = System.Text.RegularExpressions.Regex.Replace(content, @"\([^)]*\)", "").Trim();
+
+                    // Strip any roleplay actions in asterisks e.g. *sighs*
+                    content = System.Text.RegularExpressions.Regex.Replace(content, @"\*[^*]*\*", "").Trim();
+
+                    // Clean up multiple spaces or leading/trailing quotes
+                    content = System.Text.RegularExpressions.Regex.Replace(content, @"\s+", " ");
+                    content = content.Trim('"', '\'', ' ');
+
+                    return content;
                 }
             }
             catch (Exception exception)

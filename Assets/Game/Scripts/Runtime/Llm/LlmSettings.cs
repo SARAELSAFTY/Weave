@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace Game.Scripts.Runtime.Llm
 {
@@ -15,6 +15,9 @@ namespace Game.Scripts.Runtime.Llm
 
         [Min(50), Tooltip("Maximum tokens the AI can generate per response.")]
         public int maxTokensPerResponse = 150;
+
+        [Min(20), Tooltip("Maximum tokens generated for the epilogue summary.")]
+        public int epilogueMaxTokens = 80;
 
         [Min(1f), Tooltip("Network timeout in seconds for API calls.")]
         public float apiTimeoutSeconds = 10f;

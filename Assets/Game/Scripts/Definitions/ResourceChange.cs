@@ -2,11 +2,11 @@ using System;
 
 namespace Game.Scripts.Definitions
 {
-    /// <summary>Represents a value change for one resource ID.</summary>
+    /// <summary>Represents a value change for one resource asset.</summary>
     [Serializable]
     public struct ResourceValue
     {
-        public string id;
+        public ResourceData resource;
         public int value;
     }
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Game.Scripts.Definitions;
-using UnityEngine;
 
 namespace Game.Scripts.Runtime.Narrative
 {
@@ -10,6 +9,7 @@ namespace Game.Scripts.Runtime.Narrative
     {
         public readonly CardData endingCard;
         public readonly string error;
+        public readonly bool isCollapseEnding;
 
         /// <summary>Gets whether the step failed with an error.</summary>
         public bool HasError => !string.IsNullOrEmpty(error);
@@ -18,10 +18,11 @@ namespace Game.Scripts.Runtime.Narrative
         public bool HasEnded => endingCard != null;
 
         /// <summary>Creates a step result value.</summary>
-        public NarrativeStepResult(CardData endingCard, string error)
+        public NarrativeStepResult(CardData endingCard, string error, bool isCollapseEnding = false)
         {
             this.endingCard = endingCard;
             this.error = error;
+            this.isCollapseEnding = isCollapseEnding;
         }
     }
 
@@ -30,8 +31,7 @@ namespace Game.Scripts.Runtime.Narrative
     {
         private readonly NarrativeDatabase database;
         private readonly ResourceState resourceState;
-        private readonly Dictionary<string, CardData> cardsById = new Dictionary<string, CardData>();
-        private readonly Dictionary<string, CouncilMemberData> speakersById = new Dictionary<string, CouncilMemberData>();
+        private readonly ResourceCatalog resourceCatalog;
         private readonly NarrativeState state = new NarrativeState();
 
         /// <summary>Gets the card currently shown to the player.</summary>
@@ -47,11 +47,12 @@ namespace Game.Scripts.Runtime.Narrative
             remove => state.DayChanged -= value;
         }
 
-        /// <summary>Creates a narrative runner for one database and resource state.</summary>
-        public NarrativeRunner(NarrativeDatabase database, ResourceState resourceState)
+        /// <summary>Creates a narrative runner for one database, resource state, and catalog.</summary>
+        public NarrativeRunner(NarrativeDatabase database, ResourceState resourceState, ResourceCatalog resourceCatalog = null)
         {
             this.database = database;
             this.resourceState = resourceState;
+            this.resourceCatalog = resourceCatalog ?? (database != null ? database.resourceCatalog : null);
         }
 
         /// <summary>Validates setup and moves the runner to the starting card.</summary>
@@ -64,32 +65,18 @@ namespace Game.Scripts.Runtime.Narrative
                 return false;
             }
 
-            cardsById.Clear();
-            Dictionary<string, CardData> cards = CardGraph.BuildLookup(database, Debug.LogWarning);
-            foreach (KeyValuePair<string, CardData> pair in cards)
-            {
-                cardsById[pair.Key] = pair.Value;
-            }
-
-            speakersById.Clear();
-            Dictionary<string, CouncilMemberData> speakers = CardGraph.BuildSpeakerLookup(database, Debug.LogWarning);
-            foreach (KeyValuePair<string, CouncilMemberData> pair in speakers)
-            {
-                speakersById[pair.Key] = pair.Value;
-            }
-
             if (!ValidateSpeakers(out error))
             {
                 return false;
             }
 
-            if (!cardsById.TryGetValue(database.startingCardId, out CardData startCard))
+            if (database.startingCard == null)
             {
-                error = $"Starting Card ID '{database.startingCardId}' does not resolve to a card.";
+                error = "NarrativeDatabase does not have a Starting Card assigned.";
                 return false;
             }
 
-            CurrentCard = startCard;
+            CurrentCard = database.startingCard;
             return true;
         }
 
@@ -106,21 +93,27 @@ namespace Game.Scripts.Runtime.Narrative
                 return new NarrativeStepResult(CurrentCard, null);
             }
 
-            string selectedNextCardId = choseRight
-                ? CurrentCard.ResolveRightNextCardId()
-                : CurrentCard.ResolveLeftNextCardId();
+            CardData nextCard = choseRight
+                ? CurrentCard.ResolveRightNextCard()
+                : CurrentCard.ResolveLeftNextCard();
 
             if (!CurrentCard.isLlmReactionCard)
             {
                 ResourceChange change = choseRight ? CurrentCard.rightResourceChange : CurrentCard.leftResourceChange;
                 resourceState.Apply(change);
+
+                if (TryGetCollapsedResourceEnding(out CardData collapseCard))
+                {
+                    state.Advance(CurrentCard.dayAdvance);
+                    return new NarrativeStepResult(collapseCard, null, isCollapseEnding: true);
+                }
             }
 
             state.Advance(CurrentCard.dayAdvance);
 
-            if (string.IsNullOrEmpty(selectedNextCardId) || !cardsById.TryGetValue(selectedNextCardId, out CardData nextCard))
+            if (nextCard == null)
             {
-                return new NarrativeStepResult(null, $"'{CurrentCard.cardId}' has no valid next card to show.");
+                return new NarrativeStepResult(null, $"'{CurrentCard.AssetName}' has no valid next card to show.");
             }
 
             if (nextCard.IsEnding)
@@ -132,25 +125,47 @@ namespace Game.Scripts.Runtime.Narrative
             return new NarrativeStepResult(null, null);
         }
 
-        /// <summary>Gets speaker data for a speaker ID, or null when not found.</summary>
-        public CouncilMemberData GetSpeaker(string speakerId)
+        private bool TryGetCollapsedResourceEnding(out CardData collapseCard)
         {
-            return !string.IsNullOrEmpty(speakerId) && speakersById.TryGetValue(speakerId, out CouncilMemberData speaker)
-                ? speaker
-                : null;
+            collapseCard = null;
+            if (resourceCatalog?.resources == null)
+            {
+                return false;
+            }
+
+            foreach (ResourceData resource in resourceCatalog.resources)
+            {
+                if (resource != null && resource.collapseEndingCard != null && resourceState.Get(resource) <= 0)
+                {
+                    collapseCard = resource.collapseEndingCard;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>Gets speaker data for a card's speaker, or null when not assigned.</summary>
+        public SpeakerData GetSpeaker(CardData card)
+        {
+            return card != null ? card.speaker : null;
         }
 
         private bool ValidateSpeakers(out string error)
         {
             error = null;
+            if (database.cards == null)
+            {
+                return true;
+            }
+
             List<string> missingSpeakerCards = new List<string>();
 
-            foreach (CardData card in cardsById.Values)
+            foreach (CardData card in database.cards)
             {
-                if (string.IsNullOrEmpty(card.speakerId))
+                if (card != null && card.speaker == null)
                 {
-                    missingSpeakerCards.Add(card.cardId);
-                    continue;
+                    missingSpeakerCards.Add(card.AssetName);
                 }
             }
 

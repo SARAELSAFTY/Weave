@@ -12,39 +12,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c9ad9e3b8ad4b6da6e0a01a6f2ce002, type: 3}
   m_Name: NarrativeDatabase
   m_EditorClassIdentifier: 
-  startingCardId: Card_001
+  startingCard: {fileID: 11400000, guid: ab02f419b547c784a814fa8a47591621, type: 2}
   resourceCatalog: {fileID: 11400000, guid: f7fdd8b214fe75841b2b50951d246f90, type: 2}
+  promptTemplates: {fileID: 0}
   cards:
-  - {fileID: 11400000, guid: 492b6e4366e05be4681aa1ab16a7e38f, type: 2}
-  - {fileID: 11400000, guid: b327579ba4c0c34429edd13cd05f57f8, type: 2}
-  - {fileID: 11400000, guid: 250dd557f34013342b815bc3003b9c99, type: 2}
-  - {fileID: 11400000, guid: fe6e5969c7441c84aa3f3b3805bc55f0, type: 2}
-  - {fileID: 11400000, guid: 112099a5154948549ae9f43f8ca95234, type: 2}
+  - {fileID: 11400000, guid: ab02f419b547c784a814fa8a47591621, type: 2}
+  - {fileID: 11400000, guid: 08befc3609714ad48bcda3ef429b394a, type: 2}
+  - {fileID: 11400000, guid: 1da5399618ab3e9489daa704f86774a7, type: 2}
+  - {fileID: 11400000, guid: 3467c25efbea9484b8d05039ea97c1ac, type: 2}
+  - {fileID: 11400000, guid: 03bba049db2524749a4c28d4adad4fec, type: 2}
   speakers:
-  - {fileID: 11400000, guid: 105888846b9c99f4686716bdd2ca5504, type: 2}
-  - {fileID: 11400000, guid: 990eb7fecd5a06f4891345907879899e, type: 2}
+  - {fileID: 11400000, guid: 7718c1eee73ca9b4d90d17362ba1b037, type: 2}
+  - {fileID: 11400000, guid: a5388ae7259a167408893a29a7d84fa2, type: 2}
   editorGraphPositions:
-  - cardId: Card_001
-    position: {x: -163, y: 116}
-  - cardId: Card_002
-    position: {x: 178, y: 164}
-  - cardId: Card_003
-    position: {x: 535, y: 153}
-  - cardId: Card_004
-    position: {x: 934, y: 13}
-  - cardId: Card_005
-    position: {x: 928, y: 230}
+  - card: {fileID: 11400000, guid: ab02f419b547c784a814fa8a47591621, type: 2}
+    position: {x: 50, y: 152}
+  - card: {fileID: 11400000, guid: 08befc3609714ad48bcda3ef429b394a, type: 2}
+    position: {x: 490, y: 91}
+  - card: {fileID: 11400000, guid: 1da5399618ab3e9489daa704f86774a7, type: 2}
+    position: {x: 380, y: 300}
+  - card: {fileID: 11400000, guid: 3467c25efbea9484b8d05039ea97c1ac, type: 2}
+    position: {x: 1109, y: 219}
+  - card: {fileID: 11400000, guid: 03bba049db2524749a4c28d4adad4fec, type: 2}
+    position: {x: 1474, y: 408}
   editorSpeakerPositions:
-  - memberId: bren
-    position: {x: 291, y: -117}
-  - memberId: wren
-    position: {x: 303, y: 37}
-  - memberId: Bren
-    position: {x: 6.3999996, y: 43.199997}
+  - speaker: {fileID: 11400000, guid: 7718c1eee73ca9b4d90d17362ba1b037, type: 2}
+    position: {x: -260, y: 50}
+  - speaker: {fileID: 11400000, guid: a5388ae7259a167408893a29a7d84fa2, type: 2}
+    position: {x: -260, y: 220}
   editorResourcePositions:
-  - resourceId: gold
-    position: {x: 509, y: -112}
-  - resourceId: loyalty
-    position: {x: 515, y: 18}
-  - resourceId: resource_003
-    position: {x: -520, y: 440}
+  - resource: {fileID: 11400000, guid: 7f2bd87bd7948e14a8bf75aa99fc9797, type: 2}
+    position: {x: -521, y: 50}
+  - resource: {fileID: 11400000, guid: e2359c62876e58f4480f3ae5542479c9, type: 2}
+    position: {x: -521, y: 220}
+  - resource: {fileID: 11400000, guid: 2c3d1f5576a111a48a3de38e5bf00bf1, type: 2}
+    position: {x: -520, y: 389}
