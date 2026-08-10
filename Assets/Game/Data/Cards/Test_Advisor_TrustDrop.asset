@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   assetName: Test_Advisor_TrustDrop
   displayName: 
-  speaker: {fileID: 11400000, guid: a5388ae7259a167408893a29a7d84fa2, type: 2}
+  speaker: {fileID: 11400000, guid: 7718c1eee73ca9b4d90d17362ba1b037, type: 2}
   description: 
   dayAdvance: 1
   leftChoiceText: Push Critical (-80 Trust)

@@ -706,7 +706,7 @@ namespace Game.Scripts.Editor
                 if (other.leftNextCard == cardToDelete)
                 {
                     Undo.RecordObject(other, "Clear Card Link");
-                    other.leftNextCard = null;d
+                    other.leftNextCard = null;
                     EditorUtility.SetDirty(other);
                 }
 

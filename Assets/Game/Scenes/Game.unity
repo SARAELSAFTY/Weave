@@ -1166,6 +1166,8 @@ MonoBehaviour:
   startScreenView: {fileID: 1413500621}
   pauseMenuView: {fileID: 949664362}
   llmReactionClient: {fileID: 596245567}
+  promptTemplates: {fileID: 11400000, guid: c7b0ff0026423ae44ad813fc05ecf0e3, type: 2}
+  llmSettings: {fileID: 11400000, guid: 817ee4e6f5e9d0b489044a9fc3c80ea2, type: 2}
 --- !u!4 &596245562
 Transform:
   m_ObjectHideFlags: 0
@@ -1227,6 +1229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings: {fileID: 11400000, guid: 817ee4e6f5e9d0b489044a9fc3c80ea2, type: 2}
+  promptTemplates: {fileID: 11400000, guid: c7b0ff0026423ae44ad813fc05ecf0e3, type: 2}
   apiKeyAsset: {fileID: 4900000, guid: 123933fe9c5789c43be28b0fa868b9fb, type: 3}
 --- !u!1 &619394800
 GameObject:
@@ -2133,7 +2136,6 @@ MonoBehaviour:
   speakerPortrait: {fileID: 188202743}
   speakerNameText: {fileID: 272223691}
   restartButton: {fileID: 752770509}
-  regnalTitleText: {fileID: 0}
   exitDistance: 1400
   exitRotationDegrees: 18
   exitEase:

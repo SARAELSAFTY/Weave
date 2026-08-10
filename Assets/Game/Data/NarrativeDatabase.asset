@@ -28,7 +28,7 @@ MonoBehaviour:
   - card: {fileID: 11400000, guid: ab02f419b547c784a814fa8a47591621, type: 2}
     position: {x: 50, y: 152}
   - card: {fileID: 11400000, guid: 08befc3609714ad48bcda3ef429b394a, type: 2}
-    position: {x: 490, y: 91}
+    position: {x: 450, y: 69}
   - card: {fileID: 11400000, guid: 1da5399618ab3e9489daa704f86774a7, type: 2}
     position: {x: 380, y: 300}
   - card: {fileID: 11400000, guid: 3467c25efbea9484b8d05039ea97c1ac, type: 2}
