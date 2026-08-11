@@ -7,7 +7,6 @@ using UnityEngine.UI;
 
 namespace Game.Scripts.UI
 {
-    /// <summary>Controls card UI content, drag visuals, and exit animation.</summary>
     public class CardView : MonoBehaviour
     {
         [SerializeField, Tooltip("Main card story text.")] private TMP_Text descriptionText;
@@ -20,6 +19,13 @@ namespace Game.Scripts.UI
         [Header("Ending")]
         [SerializeField, Tooltip("Restart button shown on game ending screen.")] private Button restartButton;
 
+        [Header("Petition")]
+        [SerializeField, Tooltip("Root object containing the petition input field and submit button.")] private GameObject petitionInputRoot;
+        [SerializeField, Tooltip("Text input field for petition commands.")] private TMP_InputField petitionInputField;
+        [SerializeField, Tooltip("Submit button for petition commands.")] private Button petitionSubmitButton;
+        [SerializeField, Tooltip("Confirm button shown once the AI has proposed a resolution.")] private Button petitionConfirmButton;
+        [SerializeField, Tooltip("Dot meter showing remaining petition turns. Optional.")] private Image[] petitionPatienceDots;
+
         [Header("Exit Feel")]
         [SerializeField, Tooltip("Horizontal distance card moves offscreen on exit.")] private float exitDistance = 1400f;
         [SerializeField, Tooltip("Maximum rotation angle during exit.")] private float exitRotationDegrees = 18f;
@@ -31,12 +37,13 @@ namespace Game.Scripts.UI
         private float leftChoiceBaseAlpha;
         private float rightChoiceBaseAlpha;
         private bool isEndingCard;
+        private bool isPetitionCard;
 
-        /// <summary>Raised when restart is requested from the ending screen.</summary>
         public event Action RestartRequested;
+        public event Action<string> PetitionCommandSubmitted;
+        public event Action PetitionConfirmRequested;
 
-        /// <summary>Gets whether this card can be dragged for a choice.</summary>
-        public bool AcceptsDrag => !isEndingCard;
+        public bool AcceptsDrag => !isEndingCard && !isPetitionCard;
 
         private void Awake()
         {
@@ -75,7 +82,22 @@ namespace Game.Scripts.UI
                 Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(restartButton)}' on '{gameObject.name}'.", this);
             }
 
-            if (descriptionText == null || leftChoiceText == null || rightChoiceText == null || canvasGroup == null || speakerPortrait == null || speakerNameText == null || restartButton == null)
+            if (petitionInputRoot == null)
+            {
+                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(petitionInputRoot)}' on '{gameObject.name}'.", this);
+            }
+
+            if (petitionInputField == null)
+            {
+                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(petitionInputField)}' on '{gameObject.name}'.", this);
+            }
+
+            if (petitionSubmitButton == null)
+            {
+                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(petitionSubmitButton)}' on '{gameObject.name}'.", this);
+            }
+
+            if (descriptionText == null || leftChoiceText == null || rightChoiceText == null || canvasGroup == null || speakerPortrait == null || speakerNameText == null || restartButton == null || petitionInputRoot == null || petitionInputField == null || petitionSubmitButton == null)
             {
                 enabled = false;
                 return;
@@ -89,14 +111,30 @@ namespace Game.Scripts.UI
 
             restartButton.gameObject.SetActive(false);
             restartButton.onClick.AddListener(RequestRestart);
+
+            petitionInputRoot.SetActive(false);
+            petitionSubmitButton.onClick.AddListener(RequestPetitionSubmit);
+            petitionInputField.onValueChanged.AddListener(OnPetitionInputChanged);
+
+            if (petitionConfirmButton == null)
+            {
+                Debug.LogWarning($"[CardView] Optional Inspector reference '{nameof(petitionConfirmButton)}' is missing on '{gameObject.name}'. Petitions will have no confirm step.", this);
+            }
+
+            if (petitionConfirmButton != null)
+            {
+                petitionConfirmButton.gameObject.SetActive(false);
+                petitionConfirmButton.onClick.AddListener(() => PetitionConfirmRequested?.Invoke());
+            }
         }
 
-        /// <summary>Shows a standard narrative card.</summary>
         public void Show(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
+            isPetitionCard = false;
             ResetCardPosition();
             restartButton.gameObject.SetActive(false);
+            HidePetitionInput();
 
             if (cardData != null)
             {
@@ -108,24 +146,44 @@ namespace Game.Scripts.UI
             ApplySpeaker(speaker);
         }
 
-        /// <summary>Shows an LLM reaction card before generated text is returned.</summary>
         public void ShowLlmReaction(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
+            isPetitionCard = false;
             ResetCardPosition();
             restartButton.gameObject.SetActive(false);
+            HidePetitionInput();
 
             if (cardData != null)
             {
                 descriptionText.text = string.Empty;
-                leftChoiceText.text = cardData.leftChoiceText;
-                rightChoiceText.text = cardData.rightChoiceText;
+                leftChoiceText.text = !string.IsNullOrWhiteSpace(cardData.leftChoiceText) ? cardData.leftChoiceText : "Dismiss";
+                rightChoiceText.text = !string.IsNullOrWhiteSpace(cardData.rightChoiceText) ? cardData.rightChoiceText : "Continue";
             }
 
             ApplySpeaker(speaker);
         }
 
-        /// <summary>Sets the main description text value.</summary>
+        public void ShowPetition(CardData cardData, SpeakerData speaker)
+        {
+            isEndingCard = false;
+            isPetitionCard = true;
+            ResetCardPosition();
+            restartButton.gameObject.SetActive(false);
+            HidePetitionInput();
+
+            descriptionText.text = string.Empty;
+            leftChoiceText.text = string.Empty;
+            rightChoiceText.text = string.Empty;
+
+            ApplySpeaker(speaker);
+        }
+
+        public void RevealPetitionInput()
+        {
+            ShowPetitionInput();
+        }
+
         public void SetDescriptionText(string text)
         {
             if (descriptionText != null)
@@ -134,11 +192,12 @@ namespace Game.Scripts.UI
             }
         }
 
-        /// <summary>Shows ending card UI and enables restart.</summary>
         public void ShowEnding(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = true;
+            isPetitionCard = false;
             ResetCardPosition();
+            HidePetitionInput();
 
             descriptionText.text = cardData != null ? cardData.description : "The run has ended.";
             leftChoiceText.text = string.Empty;
@@ -148,10 +207,9 @@ namespace Game.Scripts.UI
             restartButton.gameObject.SetActive(true);
         }
 
-        /// <summary>Updates card position and choice highlight from drag input.</summary>
         public void SetDragProgress(float horizontalDrag, float swipeThreshold)
         {
-            if (isEndingCard)
+            if (isEndingCard || isPetitionCard)
             {
                 return;
             }
@@ -165,7 +223,6 @@ namespace Game.Scripts.UI
             SetChoiceVisibility(progress);
         }
 
-        /// <summary>Resets card transform and visuals to default.</summary>
         public void ResetCardPosition()
         {
             cardRectTransform.anchoredPosition = homePosition;
@@ -175,13 +232,11 @@ namespace Game.Scripts.UI
             SetChoiceVisibility(0f);
         }
 
-        /// <summary>Checks whether a screen point is inside the card rectangle.</summary>
         public bool ContainsScreenPoint(Vector2 screenPoint, Camera eventCamera)
         {
             return RectTransformUtility.RectangleContainsScreenPoint(cardRectTransform, screenPoint, eventCamera);
         }
 
-        /// <summary>Animates card exit in the chosen direction.</summary>
         public IEnumerator AnimateCardExit(bool choseRight, float duration)
         {
             Vector2 startPosition = cardRectTransform.anchoredPosition;
@@ -201,6 +256,86 @@ namespace Game.Scripts.UI
                 canvasGroup.alpha = Mathf.Lerp(1f, 0f, easedProgress);
 
                 yield return null;
+            }
+        }
+
+        private void ShowPetitionInput()
+        {
+            if (petitionInputField != null)
+            {
+                petitionInputField.text = string.Empty;
+            }
+
+            if (petitionInputRoot != null)
+            {
+                petitionInputRoot.SetActive(true);
+            }
+
+            SetPetitionSubmitting(false);
+        }
+
+        private void HidePetitionInput()
+        {
+            if (petitionInputRoot != null)
+            {
+                petitionInputRoot.SetActive(false);
+            }
+
+            if (petitionConfirmButton != null)
+            {
+                petitionConfirmButton.gameObject.SetActive(false);
+            }
+
+            SetPatienceDotsActive(false);
+        }
+
+        private void SetPatienceDotsActive(bool active)
+        {
+            if (petitionPatienceDots == null) return;
+            foreach (Image dot in petitionPatienceDots)
+            {
+                if (dot != null) dot.gameObject.SetActive(active);
+            }
+        }
+
+        public void SetPetitionSubmitting(bool isSubmitting)
+        {
+            if (petitionInputField != null)
+            {
+                petitionInputField.interactable = !isSubmitting;
+            }
+
+            if (petitionSubmitButton != null)
+            {
+                petitionSubmitButton.interactable = !isSubmitting && petitionInputField != null && !string.IsNullOrWhiteSpace(petitionInputField.text);
+            }
+
+            if (petitionConfirmButton != null)
+            {
+                petitionConfirmButton.interactable = !isSubmitting;
+            }
+        }
+
+        private void RequestPetitionSubmit()
+        {
+            if (petitionInputField == null || string.IsNullOrWhiteSpace(petitionInputField.text))
+            {
+                return;
+            }
+
+            if (petitionConfirmButton != null)
+            {
+                petitionConfirmButton.gameObject.SetActive(false);
+            }
+
+            PetitionCommandSubmitted?.Invoke(petitionInputField.text.Trim());
+        }
+
+        private void OnPetitionInputChanged(string text)
+        {
+            if (petitionSubmitButton != null)
+            {
+                petitionSubmitButton.interactable = !string.IsNullOrWhiteSpace(text);
             }
         }
 
@@ -245,6 +380,45 @@ namespace Game.Scripts.UI
             Color color = text.color;
             color.a = baseAlpha * alpha;
             text.color = color;
+        }
+
+        public void ShowPetitionDeliberation(string reactionText)
+        {
+            if (petitionConfirmButton != null)
+            {
+                petitionConfirmButton.gameObject.SetActive(false);
+            }
+
+            descriptionText.text = reactionText ?? string.Empty;
+            ShowPetitionInput();
+        }
+
+        public void ShowPetitionProposal(string reactionText)
+        {
+            descriptionText.text = reactionText ?? string.Empty;
+            ShowPetitionInput();
+
+            if (petitionConfirmButton != null)
+            {
+                petitionConfirmButton.gameObject.SetActive(true);
+            }
+        }
+
+        /// <summary>Filled dots represent turns remaining, not turns used.</summary>
+        public void UpdatePetitionPatience(int turnsUsed, int maxTurns)
+        {
+            if (petitionPatienceDots == null || petitionPatienceDots.Length == 0) return;
+
+            SetPatienceDotsActive(true);
+            int remaining = Mathf.Clamp(maxTurns - turnsUsed, 0, petitionPatienceDots.Length);
+
+            for (int i = 0; i < petitionPatienceDots.Length; i++)
+            {
+                if (petitionPatienceDots[i] == null) continue;
+                Color c = petitionPatienceDots[i].color;
+                c.a = i < remaining ? 1f : 0.25f;
+                petitionPatienceDots[i].color = c;
+            }
         }
     }
 }

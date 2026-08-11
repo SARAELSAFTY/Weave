@@ -6,11 +6,10 @@ using UnityEngine;
 
 namespace Game.Scripts.Definitions
 {
-    /// <summary>Stores all authored narrative content and related runtime configuration.</summary>
+    /// <summary>Root authored content asset: cards, speakers, resources, and runtime config.</summary>
     [CreateAssetMenu(fileName = "NarrativeDatabase", menuName = "Weave/Narrative Database", order = 3)]
     public class NarrativeDatabase : ScriptableObject
     {
-        /// <summary>Stores one card node position for the editor graph.</summary>
         [Serializable]
         public struct CardGraphPosition
         {
@@ -18,7 +17,6 @@ namespace Game.Scripts.Definitions
             public Vector2 position;
         }
 
-        /// <summary>Stores one speaker node position for the editor graph.</summary>
         [Serializable]
         public struct SpeakerGraphPosition
         {
@@ -26,7 +24,6 @@ namespace Game.Scripts.Definitions
             public Vector2 position;
         }
 
-        /// <summary>Stores one resource node position for the editor graph.</summary>
         [Serializable]
         public struct ResourceGraphPosition
         {

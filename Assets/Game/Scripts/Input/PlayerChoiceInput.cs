@@ -8,7 +8,6 @@ using UnityEngine.UI;
 
 namespace Game.Scripts.Input
 {
-    /// <summary>Reads keyboard and pointer input and submits card choices.</summary>
     public class PlayerChoiceInput : MonoBehaviour
     {
         private const float TargetFrameRate = 60f;

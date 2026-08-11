@@ -6,9 +6,8 @@ using UnityEditor;
 using UnityEngine;
 
 namespace Game.Scripts.Editor
-{   
-    // One-click exporter: Tools > Weave > Export Cards to JSON
-    // Writes cards, speakers, and resources from a NarrativeDatabase to Assets/StreamingAssets/cards.json
+{
+    /// <summary>Exports a NarrativeDatabase to Assets/StreamingAssets/cards.json (Tools → Weave → Export Cards to JSON).</summary>
     public static class CardJsonExporter
     {
         [MenuItem("Tools/Weave/Export Cards to JSON")]
@@ -50,6 +49,8 @@ namespace Game.Scripts.Editor
                     rightResourceChange = ToResourceJson(card.rightResourceChange),
                     isLlmReactionCard = card.isLlmReactionCard,
                     llmPromptSeed = card.llmPromptSeed,
+                    isPetitionCard = card.isPetitionCard,
+                    petitionSeedPrompt = card.petitionSeedPrompt,
                     continueNextCard = card.continueNextCard != null ? card.continueNextCard.AssetName : string.Empty,
                     isEnding = card.IsEnding
                 });
@@ -79,8 +80,7 @@ namespace Game.Scripts.Editor
                     resourceList.Add(new ResourceDefJson
                     {
                         assetName = res.AssetName,
-                        displayName = res.displayName,
-                        collapseEndingCard = res.collapseEndingCard != null ? res.collapseEndingCard.AssetName : string.Empty
+                        displayName = res.displayName
                     });
                 }
             }
@@ -145,6 +145,8 @@ namespace Game.Scripts.Editor
             public ResourceEntryJson[] rightResourceChange;
             public bool isLlmReactionCard;
             public string llmPromptSeed;
+            public bool isPetitionCard;
+            public string petitionSeedPrompt;
             public string continueNextCard;
             public bool isEnding;
         }
@@ -162,7 +164,6 @@ namespace Game.Scripts.Editor
         {
             public string assetName;
             public string displayName;
-            public string collapseEndingCard;
         }
 
         [System.Serializable]

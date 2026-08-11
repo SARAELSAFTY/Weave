@@ -5,14 +5,12 @@ using UnityEngine;
 
 namespace Game.Scripts.Runtime.Narrative
 {
-    /// <summary>Tracks current resource values and notifies listeners when values change.</summary>
     public class ResourceState : MonoBehaviour
     {
         [SerializeField] private ResourceCatalog catalog;
 
         private readonly Dictionary<ResourceData, int> values = new Dictionary<ResourceData, int>();
 
-        /// <summary>Raised after resource values are updated.</summary>
         public event Action Changed;
 
         private void Awake()
@@ -34,7 +32,6 @@ namespace Game.Scripts.Runtime.Narrative
             }
         }
 
-        /// <summary>Applies a resource change set and raises the change event.</summary>
         public void Apply(ResourceChange change)
         {
             if (change.values != null)
@@ -52,7 +49,6 @@ namespace Game.Scripts.Runtime.Narrative
             Changed?.Invoke();
         }
 
-        /// <summary>Gets the current value for a resource asset, or zero when not found.</summary>
         public int Get(ResourceData resource)
         {
             return resource != null && values.TryGetValue(resource, out int value) ? value : 0;

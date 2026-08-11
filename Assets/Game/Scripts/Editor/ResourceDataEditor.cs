@@ -43,19 +43,11 @@ namespace Game.Scripts.Editor
             EditorGUILayout.PropertyField(startingValProp, new GUIContent("Starting Value", "Default value when a run begins."));
 
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Warning Threshold", EditorStyles.boldLabel);
             SerializedProperty warningThresholdProp = serializedObject.FindProperty("warningThresholdPercent");
             EditorGUILayout.PropertyField(warningThresholdProp, new GUIContent("Warning Threshold (%)",
                 "Resource triggers a Warning reaction at or below this percentage of starting value."));
 
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Collapse Ending", EditorStyles.boldLabel);
-            SerializedProperty collapseEndingCardProp = serializedObject.FindProperty("collapseEndingCard");
-            EditorGUILayout.PropertyField(collapseEndingCardProp, new GUIContent("Collapse Ending Card",
-                "Ending card shown immediately when this resource hits 0. Leave empty to disable forced collapse for this resource."));
-
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Warning Alert Speaker & Prompt", EditorStyles.boldLabel);
             SerializedProperty warningSpeakerProp = serializedObject.FindProperty("warningSpeaker");
             SerializedProperty warningSeedPromptProp = serializedObject.FindProperty("warningSeedPrompt");
             SerializedProperty cooldownProp = serializedObject.FindProperty("warningCooldownCards");

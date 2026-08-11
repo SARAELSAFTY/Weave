@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Test_Intro_Start
+  m_EditorClassIdentifier: 
+  assetName: Test_Intro_Start
+  displayName: The Granary Question
+  speaker: {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
+  description: The granary sits half-empty and the court grows restless. The kingdom
+    looks to you for a decision.
+  dayAdvance: 2
+  leftChoiceText: Ration the food
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 5a0196efc6c6aca4e80dd289639a76bb, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
+      value: -5
+  leftNextCard: {fileID: 11400000, guid: d820acf18a7f7cb4db5000767dff8f32, type: 2}
+  rightChoiceText: Reassure the court
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 28865345534e13046b9f8b9d492912ab, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
+      value: 5
+  rightNextCard: {fileID: 11400000, guid: 89f9636b9e558ae48b6c25e117aa135a, type: 2}
+  isLlmReactionCard: 0
+  llmPromptSeed: 
+  isPetitionCard: 0
+  petitionSeedPrompt: 
+  continueNextCard: {fileID: 0}

@@ -4,7 +4,7 @@ using Game.Scripts.Definitions;
 
 namespace Game.Scripts.Runtime.Narrative
 {
-    /// <summary>Stores recent player choices and builds snapshot text for LLM prompts.</summary>
+    /// <summary>Records player choices and builds compact state snapshots for LLM prompts.</summary>
     public class PlayerHistoryTracker
     {
         private const int MaxChoiceHistory = 3;
@@ -14,8 +14,8 @@ namespace Game.Scripts.Runtime.Narrative
         private readonly ResourceCatalog catalog;
         private readonly List<string> recentChoices = new List<string>();
         private readonly List<string> fullChoiceHistory = new List<string>();
+        private readonly List<string> historyTags = new List<string>();
 
-        /// <summary>Creates a new history tracker for one active run.</summary>
         public PlayerHistoryTracker(ResourceState resourceState, NarrativeRunner narrativeRunner, ResourceCatalog catalog)
         {
             this.resourceState = resourceState;
@@ -23,14 +23,13 @@ namespace Game.Scripts.Runtime.Narrative
             this.catalog = catalog;
         }
 
-        /// <summary>Clears all recorded choices.</summary>
         public void Reset()
         {
             recentChoices.Clear();
             fullChoiceHistory.Clear();
+            historyTags.Clear();
         }
 
-        /// <summary>Adds one choice text item to recent history.</summary>
         public void RecordChoice(string choiceText)
         {
             if (string.IsNullOrWhiteSpace(choiceText))
@@ -47,7 +46,16 @@ namespace Game.Scripts.Runtime.Narrative
             }
         }
 
-        /// <summary>Builds a summary string of all kingdom resource values.</summary>
+        public void RecordHistoryTag(string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+            {
+                return;
+            }
+
+            historyTags.Add(tag.Trim());
+        }
+
         public string GetResourceSummary()
         {
             StringBuilder resourceSummary = new StringBuilder();
@@ -68,11 +76,9 @@ namespace Game.Scripts.Runtime.Narrative
             return resourceSummary.ToString();
         }
 
-        /// <summary>Builds a string of all choices made throughout the full run.</summary>
         public string GetFullHistorySummary() =>
             fullChoiceHistory.Count > 0 ? string.Join("; ", fullChoiceHistory) : "No decisions were recorded.";
 
-        /// <summary>Builds a compact state snapshot used in LLM prompts.</summary>
         public string GetSnapshot()
         {
             int day = narrativeRunner != null ? narrativeRunner.Day : 1;
@@ -82,9 +88,14 @@ namespace Game.Scripts.Runtime.Narrative
                 ? string.Join("; ", recentChoices)
                 : "None";
 
+            string tagsSummary = historyTags.Count > 0
+                ? string.Join(", ", historyTags)
+                : "None";
+
             return $"Current Day: {day}\n" +
                    $"Kingdom Resources -> {resourceSummary}\n" +
-                   $"Recent Player Decisions: {choicesSummary}";
+                   $"Recent Player Decisions: {choicesSummary}\n" +
+                   $"History Tags: {tagsSummary}";
         }
     }
 }

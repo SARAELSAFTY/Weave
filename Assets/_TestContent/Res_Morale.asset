@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a3714b3e4c4278ac399d60c86fa534, type: 3}
+  m_Name: Res_Morale
+  m_EditorClassIdentifier: 
+  assetName: Res_Morale
+  displayName: Morale
+  icon: {fileID: 0}
+  defaultStartingValue: 60
+  warningThresholdPercent: 35
+  warningSpeaker: {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
+  warningSeedPrompt: '{resourceName} among the people is sinking. React with concern
+    and suggest a gesture is needed.'
+  warningCooldownCards: 3

@@ -20,8 +20,12 @@ namespace Game.Scripts.Editor
 
             serializedObject.Update();
 
-            // ── Identity ─────────────────────────────────────────────────────────
-            EditorGUILayout.LabelField("Identity", EditorStyles.boldLabel);
+            SerializedProperty descriptionProp = serializedObject.FindProperty("description");
+            SerializedProperty dayAdvanceProp = serializedObject.FindProperty("dayAdvance");
+            SerializedProperty leftChoiceTextProp = serializedObject.FindProperty("leftChoiceText");
+            SerializedProperty rightChoiceTextProp = serializedObject.FindProperty("rightChoiceText");
+            SerializedProperty llmPromptSeedProp = serializedObject.FindProperty("llmPromptSeed");
+            SerializedProperty petitionSeedPromptProp = serializedObject.FindProperty("petitionSeedPrompt");
 
             SerializedProperty assetNameProp = serializedObject.FindProperty("assetName");
             EditorGUILayout.PropertyField(assetNameProp, new GUIContent(
@@ -37,9 +41,6 @@ namespace Game.Scripts.Editor
 
             EditorGUILayout.Space(8);
 
-            // ── Speaker & Content ─────────────────────────────────────────────────
-            EditorGUILayout.LabelField("Speaker & Content", EditorStyles.boldLabel);
-
             SerializedProperty speakerProp = serializedObject.FindProperty("speaker");
             EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker", "Character speaking this card. Required for narrative run execution."));
 
@@ -48,27 +49,85 @@ namespace Game.Scripts.Editor
                 EditorGUILayout.HelpBox("Every card must have a speaker assigned — the run will fail to start without one.", MessageType.Warning);
             }
 
-            EditorGUI.BeginDisabledGroup(card.isLlmReactionCard);
-            card.description = EditorGUILayout.TextArea(card.description, GUILayout.MinHeight(50));
-            EditorGUI.EndDisabledGroup();
+            if (!card.isLlmReactionCard && !card.isPetitionCard)
+            {
+                EditorGUILayout.LabelField("Card Description (Story Text)", EditorStyles.boldLabel);
+                descriptionProp.stringValue = EditorGUILayout.TextArea(descriptionProp.stringValue, GUILayout.MinHeight(50));
+            }
 
-            card.dayAdvance = Mathf.Max(0, EditorGUILayout.IntField("Day Advance", card.dayAdvance));
+            dayAdvanceProp.intValue = Mathf.Max(0, EditorGUILayout.IntField("Day Advance", dayAdvanceProp.intValue));
 
             EditorGUILayout.Space(8);
 
-            // ── LLM Reaction Card ─────────────────────────────────────────────────
-            card.isLlmReactionCard = EditorGUILayout.Toggle(
+            // Empty seed fields fall back to LlmPromptTemplates defaults at runtime — do not write
+            // hardcoded seeds when toggling these flags.
+
+            bool newIsLlm = EditorGUILayout.Toggle(
                 new GUIContent("Is LLM Reaction Card", "Generates description text dynamically at runtime via LLM."),
                 card.isLlmReactionCard);
 
+            if (newIsLlm != card.isLlmReactionCard)
+            {
+                card.isLlmReactionCard = newIsLlm;
+                if (newIsLlm)
+                {
+                    card.isPetitionCard = false;
+                }
+            }
+
+            bool newIsPetition = EditorGUILayout.Toggle(
+                new GUIContent("Is Petition Card", "Prompts player for free-form command input resolved dynamically by LLM."),
+                card.isPetitionCard);
+
+            if (newIsPetition != card.isPetitionCard)
+            {
+                card.isPetitionCard = newIsPetition;
+                if (newIsPetition)
+                {
+                    card.isLlmReactionCard = false;
+                    descriptionProp.stringValue = string.Empty;
+                }
+            }
+
             if (card.isLlmReactionCard)
             {
-                card.description = string.Empty;
+                descriptionProp.stringValue = string.Empty;
                 EditorGUILayout.HelpBox(
                     "Description text is generated dynamically at runtime from the seed prompt below.",
                     MessageType.Info);
 
-                card.llmPromptSeed = EditorGUILayout.TextArea(card.llmPromptSeed, GUILayout.MinHeight(50));
+                EditorGUILayout.LabelField("LLM Prompt Seed", EditorStyles.boldLabel);
+                if (string.IsNullOrWhiteSpace(llmPromptSeedProp.stringValue))
+                {
+                    EditorGUILayout.HelpBox(
+                        "Empty — will use LlmPromptTemplates.defaultReactionSeedPrompt at runtime.",
+                        MessageType.None);
+                }
+                llmPromptSeedProp.stringValue = EditorGUILayout.TextArea(llmPromptSeedProp.stringValue, GUILayout.MinHeight(50));
+
+                if (card.speaker != null && string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
+                {
+                    EditorGUILayout.HelpBox($"Speaker '{card.speaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
+                }
+
+                EditorGUILayout.Space(6);
+                SerializedProperty continueNextCardProp = serializedObject.FindProperty("continueNextCard");
+                EditorGUILayout.PropertyField(continueNextCardProp, new GUIContent("Continue Next Card"));
+            }
+            else if (card.isPetitionCard)
+            {
+                EditorGUILayout.HelpBox(
+                    "Petition cards generate their opening line via AI at runtime. If the request fails or no LLM client is configured, the run silently advances to the next card.",
+                    MessageType.Info);
+
+                EditorGUILayout.LabelField("Petition Seed Prompt", EditorStyles.boldLabel);
+                if (string.IsNullOrWhiteSpace(petitionSeedPromptProp.stringValue))
+                {
+                    EditorGUILayout.HelpBox(
+                        "Empty — will use LlmPromptTemplates.defaultPetitionSeedPrompt at runtime.",
+                        MessageType.None);
+                }
+                petitionSeedPromptProp.stringValue = EditorGUILayout.TextArea(petitionSeedPromptProp.stringValue, GUILayout.MinHeight(50));
 
                 if (card.speaker != null && string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
                 {
@@ -85,10 +144,10 @@ namespace Game.Scripts.Editor
             }
             else
             {
-                // ── Left Choice ───────────────────────────────────────────────────
+
                 EditorGUILayout.Space(6);
                 EditorGUILayout.LabelField("Left Choice", EditorStyles.boldLabel);
-                card.leftChoiceText = EditorGUILayout.TextField("Left Choice Text", card.leftChoiceText);
+                leftChoiceTextProp.stringValue = EditorGUILayout.TextField("Left Choice Text", leftChoiceTextProp.stringValue);
 
                 SerializedProperty leftChangeProp = serializedObject.FindProperty("leftResourceChange");
                 if (leftChangeProp != null)
@@ -99,10 +158,10 @@ namespace Game.Scripts.Editor
                 SerializedProperty leftNextCardProp = serializedObject.FindProperty("leftNextCard");
                 EditorGUILayout.PropertyField(leftNextCardProp, new GUIContent("Left Next Card"));
 
-                // ── Right Choice ──────────────────────────────────────────────────
+
                 EditorGUILayout.Space(6);
                 EditorGUILayout.LabelField("Right Choice", EditorStyles.boldLabel);
-                card.rightChoiceText = EditorGUILayout.TextField("Right Choice Text", card.rightChoiceText);
+                rightChoiceTextProp.stringValue = EditorGUILayout.TextField("Right Choice Text", rightChoiceTextProp.stringValue);
 
                 SerializedProperty rightChangeProp = serializedObject.FindProperty("rightResourceChange");
                 if (rightChangeProp != null)

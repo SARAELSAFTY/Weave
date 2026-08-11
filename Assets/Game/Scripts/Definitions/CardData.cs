@@ -1,11 +1,7 @@
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace Game.Scripts.Definitions
 {
-    /// <summary>Defines authored content and outcomes for one narrative card.</summary>
     [CreateAssetMenu(fileName = "Scene_Speaker_Slug", menuName = "Weave/Card Data", order = 0)]
     public class CardData : ScriptableObject
     {
@@ -19,35 +15,17 @@ namespace Game.Scripts.Definitions
                  "Leave empty — most cards do not expose a title to the player.")]
         public string displayName;
 
-        /// <summary>
-        /// Author-facing identifier (graph node title, dropdowns, tooling). Falls back to Unity asset name.
-        /// </summary>
+        /// <summary>Author-facing ID for tooling. Falls back to the Unity asset name.</summary>
         public string AssetName => !string.IsNullOrWhiteSpace(assetName) ? assetName.Trim() : name;
 
-        /// <summary>
-        /// Player-facing display label. Falls back to AssetName when not set.
-        /// </summary>
+        /// <summary>Player-facing label. Falls back to <see cref="AssetName"/> when unset.</summary>
         public string DisplayName => !string.IsNullOrWhiteSpace(displayName) ? displayName.Trim() : AssetName;
 
 #if UNITY_EDITOR
         private void OnValidate()
         {
             if (string.IsNullOrWhiteSpace(assetName)) return;
-
-            string trimmed = assetName.Trim();
-            // Defer: AssetDatabase calls are not allowed mid-serialization (inside OnValidate).
-            UnityEditor.EditorApplication.delayCall += () =>
-            {
-                if (this == null) return;
-                string assetPath = UnityEditor.AssetDatabase.GetAssetPath(this);
-                if (string.IsNullOrEmpty(assetPath)) return;
-
-                string currentFilename = System.IO.Path.GetFileNameWithoutExtension(assetPath);
-                if (currentFilename == trimmed) return;
-
-                UnityEditor.AssetDatabase.RenameAsset(assetPath, trimmed);
-                UnityEditor.AssetDatabase.SaveAssets();
-            };
+            DefinitionAssetRenamer.ScheduleRenameToMatch(this, assetName.Trim());
         }
 #endif
 
@@ -89,23 +67,31 @@ namespace Game.Scripts.Definitions
         [TextArea(3, 6), Tooltip("Seed prompt instructing the AI on how to react.")]
         public string llmPromptSeed;
 
-        [Tooltip("Card to advance to upon swipe (used when isLlmReactionCard is true).")]
+        [Header("Petition Card")]
+        [Tooltip("Marks this card as a player petition card requiring free-form text input.")]
+        public bool isPetitionCard;
+
+        [TextArea(3, 6), Tooltip("Seed prompt giving the AI context on what kind of petitions this card expects.")]
+        public string petitionSeedPrompt;
+
+        [Tooltip("Card to advance to upon swipe/resolution (used when isLlmReactionCard or isPetitionCard is true).")]
         public CardData continueNextCard;
 
-        /// <summary>Returns the left branch target for this card.</summary>
+        /// <summary>True when routing uses <see cref="continueNextCard"/> instead of left/right branches.</summary>
+        public bool UsesContinueExit => isLlmReactionCard || isPetitionCard;
+
         public CardData ResolveLeftNextCard()
         {
-            return isLlmReactionCard ? continueNextCard : leftNextCard;
+            return UsesContinueExit ? continueNextCard : leftNextCard;
         }
 
-        /// <summary>Returns the right branch target for this card.</summary>
         public CardData ResolveRightNextCard()
         {
-            return isLlmReactionCard ? continueNextCard : rightNextCard;
+            return UsesContinueExit ? continueNextCard : rightNextCard;
         }
 
-        /// <summary>Returns true when the card has no valid outgoing links.</summary>
-        public bool IsEnding => isLlmReactionCard
+        /// <summary>True when there is no valid outgoing link (terminal card).</summary>
+        public bool IsEnding => UsesContinueExit
             ? continueNextCard == null
             : leftNextCard == null && rightNextCard == null;
     }

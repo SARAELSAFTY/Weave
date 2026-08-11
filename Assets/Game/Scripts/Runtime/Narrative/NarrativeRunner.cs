@@ -1,23 +1,19 @@
 using System;
 using System.Collections.Generic;
 using Game.Scripts.Definitions;
+using UnityEngine;
 
 namespace Game.Scripts.Runtime.Narrative
 {
-    /// <summary>Represents the result of applying one narrative choice.</summary>
     public readonly struct NarrativeStepResult
     {
         public readonly CardData endingCard;
         public readonly string error;
         public readonly bool isCollapseEnding;
 
-        /// <summary>Gets whether the step failed with an error.</summary>
         public bool HasError => !string.IsNullOrEmpty(error);
-
-        /// <summary>Gets whether the step reached an ending card.</summary>
         public bool HasEnded => endingCard != null;
 
-        /// <summary>Creates a step result value.</summary>
         public NarrativeStepResult(CardData endingCard, string error, bool isCollapseEnding = false)
         {
             this.endingCard = endingCard;
@@ -26,7 +22,7 @@ namespace Game.Scripts.Runtime.Narrative
         }
     }
 
-    /// <summary>Runs card progression, resource updates, and day progression.</summary>
+    /// <summary>Advances cards, applies resource changes, and tracks day progression.</summary>
     public class NarrativeRunner
     {
         private readonly NarrativeDatabase database;
@@ -34,20 +30,15 @@ namespace Game.Scripts.Runtime.Narrative
         private readonly ResourceCatalog resourceCatalog;
         private readonly NarrativeState state = new NarrativeState();
 
-        /// <summary>Gets the card currently shown to the player.</summary>
         public CardData CurrentCard { get; private set; }
-
-        /// <summary>Gets the current in-game day.</summary>
         public int Day => state.Day;
 
-        /// <summary>Raised after the in-game day changes.</summary>
         public event Action DayChanged
         {
             add => state.DayChanged += value;
             remove => state.DayChanged -= value;
         }
 
-        /// <summary>Creates a narrative runner for one database, resource state, and catalog.</summary>
         public NarrativeRunner(NarrativeDatabase database, ResourceState resourceState, ResourceCatalog resourceCatalog = null)
         {
             this.database = database;
@@ -55,7 +46,6 @@ namespace Game.Scripts.Runtime.Narrative
             this.resourceCatalog = resourceCatalog ?? (database != null ? database.resourceCatalog : null);
         }
 
-        /// <summary>Validates setup and moves the runner to the starting card.</summary>
         public bool StartRun(out string error)
         {
             error = null;
@@ -80,7 +70,6 @@ namespace Game.Scripts.Runtime.Narrative
             return true;
         }
 
-        /// <summary>Applies one player choice and advances narrative state.</summary>
         public NarrativeStepResult Choose(bool choseRight)
         {
             if (CurrentCard == null)
@@ -97,16 +86,16 @@ namespace Game.Scripts.Runtime.Narrative
                 ? CurrentCard.ResolveRightNextCard()
                 : CurrentCard.ResolveLeftNextCard();
 
-            if (!CurrentCard.isLlmReactionCard)
+            if (!CurrentCard.isLlmReactionCard && !CurrentCard.isPetitionCard)
             {
                 ResourceChange change = choseRight ? CurrentCard.rightResourceChange : CurrentCard.leftResourceChange;
                 resourceState.Apply(change);
+            }
 
-                if (TryGetCollapsedResourceEnding(out CardData collapseCard))
-                {
-                    state.Advance(CurrentCard.dayAdvance);
-                    return new NarrativeStepResult(collapseCard, null, isCollapseEnding: true);
-                }
+            if (TryGetCollapsedResourceEnding(out CardData collapseCard))
+            {
+                state.Advance(CurrentCard.dayAdvance);
+                return new NarrativeStepResult(collapseCard, null, isCollapseEnding: true);
             }
 
             state.Advance(CurrentCard.dayAdvance);
@@ -135,9 +124,13 @@ namespace Game.Scripts.Runtime.Narrative
 
             foreach (ResourceData resource in resourceCatalog.resources)
             {
-                if (resource != null && resource.collapseEndingCard != null && resourceState.Get(resource) <= 0)
+                if (resource != null && resourceState.Get(resource) <= 0)
                 {
-                    collapseCard = resource.collapseEndingCard;
+                    collapseCard = resourceCatalog.GetCollapseEndingCard(resource);
+                    if (collapseCard == null)
+                    {
+                        Debug.LogWarning($"[NarrativeRunner] '{resource.AssetName}' collapsed to zero but has no collapse-ending CardData assigned. Add an entry to ResourceCatalog.collapseEndings.");
+                    }
                     return true;
                 }
             }
@@ -145,7 +138,6 @@ namespace Game.Scripts.Runtime.Narrative
             return false;
         }
 
-        /// <summary>Gets speaker data for a card's speaker, or null when not assigned.</summary>
         public SpeakerData GetSpeaker(CardData card)
         {
             return card != null ? card.speaker : null;

@@ -6,10 +6,8 @@ using UnityEngine;
 
 namespace Game.Scripts.UI
 {
-    /// <summary>Updates resource labels when resource values change.</summary>
     public class ResourceDisplay : MonoBehaviour
     {
-        /// <summary>Binds one resource asset to one text label.</summary>
         [Serializable]
         public struct LabelBinding
         {

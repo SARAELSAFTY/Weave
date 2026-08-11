@@ -4,8 +4,10 @@ using UnityEngine;
 
 namespace Game.Scripts.Runtime.Narrative
 {
-    /// <summary>Monitors resource state against a single Warning threshold per resource and
-    /// manages per-resource cooldowns so a warning doesn't re-fire every card.</summary>
+    /// <summary>
+    /// Fires at most one warning per resource while it stays below threshold, with a cooldown
+    /// so the same resource does not re-alert every card.
+    /// </summary>
     public class ResourceWarningMonitor
     {
         private readonly ResourceCatalog catalog;
@@ -19,14 +21,12 @@ namespace Game.Scripts.Runtime.Narrative
             this.resourceState = resourceState;
         }
 
-        /// <summary>Clears all tracked warning and cooldown state for a new run.</summary>
         public void Reset()
         {
             warnedResources.Clear();
             cooldownCardsRemaining.Clear();
         }
 
-        /// <summary>Decrements cooldown counters for all resources by 1 (floor at 0).</summary>
         public void Tick()
         {
             List<ResourceData> keys = new List<ResourceData>(cooldownCardsRemaining.Keys);
@@ -39,7 +39,6 @@ namespace Game.Scripts.Runtime.Narrative
             }
         }
 
-        /// <summary>Sets the cooldown counter when a warning is shown to the player.</summary>
         public void OnWarningShown(ResourceData resource)
         {
             if (resource == null)
@@ -50,7 +49,6 @@ namespace Game.Scripts.Runtime.Narrative
             cooldownCardsRemaining[resource] = Mathf.Max(0, resource.warningCooldownCards);
         }
 
-        /// <summary>Returns the first resource (in catalog order) currently eligible to warn.</summary>
         public bool TryGetTriggeredWarning(out ResourceData triggeredResource)
         {
             triggeredResource = null;
@@ -72,7 +70,7 @@ namespace Game.Scripts.Runtime.Narrative
 
                 if (currentValue > thresholdValue)
                 {
-                    // Recovered above threshold — allow this resource to warn again next time it dips.
+                    // Recovered above threshold — may warn again the next time it dips.
                     warnedResources.Remove(resource);
                     continue;
                 }

@@ -8,7 +8,6 @@ namespace Game.Scripts.Editor
 {
     public static class CardGraphEditor
     {
-        // Adds a new resource to the catalog with an auto-generated asset name.
         public static ResourceData CreateResource(ResourceCatalog catalog)
         {
             if (catalog == null)
@@ -21,7 +20,7 @@ namespace Game.Scripts.Editor
             ResourceData data = ScriptableObject.CreateInstance<ResourceData>();
             data.assetName = name;
             data.name = name;
-            // displayName intentionally left empty — author sets the player-facing label in the Inspector
+            // Leave displayName empty; author sets the player-facing label in the Inspector.
 
             string catalogPath = AssetDatabase.GetAssetPath(catalog);
             string directory = string.IsNullOrEmpty(catalogPath) ? "Assets" : Path.GetDirectoryName(catalogPath);

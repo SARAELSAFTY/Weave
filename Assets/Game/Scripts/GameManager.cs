@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Game.Scripts.Definitions;
 using Game.Scripts.Runtime.Llm;
 using Game.Scripts.Runtime.Narrative;
@@ -9,7 +10,6 @@ using UnityEngine.SceneManagement;
 
 namespace Game.Scripts
 {
-    /// <summary>Coordinates narrative flow, card UI updates, and run lifecycle.</summary>
     public class GameManager : MonoBehaviour
     {
         [SerializeField, Tooltip("Card UI component in scene.")] private CardView cardView;
@@ -30,22 +30,14 @@ namespace Game.Scripts
         private ResourceWarningMonitor resourceWarningMonitor;
         private bool showingResourceWarning;
         private CardData warningCardInstance;
+        private PetitionSession currentPetitionSession;
 
         private LlmPromptTemplates Templates => promptTemplates != null ? promptTemplates : (narrativeDatabase != null ? narrativeDatabase.promptTemplates : null);
 
-        /// <summary>Gets whether card choice input is currently accepted.</summary>
         public bool AcceptsChoiceInput => inputEnabled && !isPaused;
-
-        /// <summary>Gets whether the run is currently paused.</summary>
         public bool IsPaused => isPaused;
-
-        /// <summary>Gets the current in-game day.</summary>
-        public int CurrentDay => narrativeRunner != null ? narrativeRunner.Day : 1;
-
-        /// <summary>Gets the tracker for recent player choices.</summary>
+        public int CurrentDay => narrativeRunner?.Day ?? 1;
         public PlayerHistoryTracker HistoryTracker { get; private set; }
-
-        /// <summary>Raised after the current day value changes.</summary>
         public event Action DayChanged;
 
         private void Awake()
@@ -85,10 +77,19 @@ namespace Game.Scripts
                 Debug.LogWarning($"[GameManager] Optional Inspector reference '{nameof(llmReactionClient)}' is missing on '{gameObject.name}'. LLM reaction cards will auto-advance.", this);
             }
 
+            if (promptTemplates == null && (narrativeDatabase == null || narrativeDatabase.promptTemplates == null))
+            {
+                Debug.LogWarning($"[GameManager] No LlmPromptTemplates assigned on '{gameObject.name}'. LLM prompts will have no system instructions.", this);
+            }
+
+            if (llmSettings == null)
+            {
+                Debug.LogWarning($"[GameManager] Optional Inspector reference '{nameof(llmSettings)}' is missing on '{gameObject.name}'. Falling back to hardcoded LLM defaults.", this);
+            }
+
             if (cardView == null || resourceState == null || narrativeDatabase == null || dayDisplay == null || startScreenView == null || pauseMenuView == null)
             {
                 enabled = false;
-                return;
             }
         }
 
@@ -110,7 +111,6 @@ namespace Game.Scripts
             {
                 Debug.LogError(error, this);
                 enabled = false;
-                return;
             }
         }
 
@@ -154,6 +154,12 @@ namespace Game.Scripts
                 pauseMenuView.ResumeRequested += Resume;
                 pauseMenuView.QuitRequested += QuitGame;
             }
+
+            if (cardView != null)
+            {
+                cardView.PetitionCommandSubmitted += HandlePetitionSubmitted;
+                cardView.PetitionConfirmRequested += HandlePetitionConfirmed;
+            }
         }
 
         private void OnDisable()
@@ -161,6 +167,8 @@ namespace Game.Scripts
             if (cardView != null)
             {
                 cardView.RestartRequested -= RestartRun;
+                cardView.PetitionCommandSubmitted -= HandlePetitionSubmitted;
+                cardView.PetitionConfirmRequested -= HandlePetitionConfirmed;
             }
 
             if (startScreenView != null)
@@ -181,7 +189,6 @@ namespace Game.Scripts
             }
         }
 
-        /// <summary>Hides the start screen and shows the first card.</summary>
         private void BeginRun()
         {
             if (!enabled)
@@ -197,7 +204,6 @@ namespace Game.Scripts
             ShowCurrentCard();
         }
 
-        /// <summary>Toggles the pause overlay on or off.</summary>
         private void TogglePause()
         {
             if (isPaused)
@@ -232,7 +238,6 @@ namespace Game.Scripts
             pauseMenuView.Hide();
         }
 
-        /// <summary>Quits the application (or exits play mode in the editor).</summary>
         private void QuitGame()
         {
 #if UNITY_EDITOR
@@ -242,7 +247,6 @@ namespace Game.Scripts
 #endif
         }
 
-        /// <summary>Applies the selected side choice for the current card.</summary>
         public void ChooseSide(bool choseRight)
         {
             if (!AcceptsChoiceInput)
@@ -315,11 +319,17 @@ namespace Game.Scripts
         {
             inputEnabled = false;
             runInProgress = false;
-            cardView.ShowEnding(endingCard, endingCard != null ? endingCard.speaker : null);
+
+            ResourceData collapsedResource = isCollapseEnding ? FindCollapsedResource() : null;
+            SpeakerData speaker = isCollapseEnding && collapsedResource != null
+                ? collapsedResource.warningSpeaker
+                : (endingCard != null ? endingCard.speaker : null);
+
+            cardView.ShowEnding(endingCard, speaker);
 
             if (!isCollapseEnding)
             {
-                return; // Authored ending — its own description stands as written. No LLM overwrite.
+                return; // Authored endings keep their written description; only collapse endings get an LLM epilogue.
             }
 
             if (llmReactionClient == null || HistoryTracker == null || narrativeDatabase.resourceCatalog == null)
@@ -328,7 +338,6 @@ namespace Game.Scripts
             }
 
             LlmPromptTemplates templates = Templates;
-            ResourceData collapsedResource = FindCollapsedResource();
             string unknownCause = templates != null ? templates.unknownCollapseCauseLabel : string.Empty;
             string collapsedResourceName = collapsedResource != null ? collapsedResource.DisplayName : unknownCause;
             string finalResourceSummary = HistoryTracker.GetResourceSummary();
@@ -404,9 +413,7 @@ namespace Game.Scripts
                 resourceWarningMonitor.OnWarningShown(resource);
             }
 
-            string gameStateSnapshot = HistoryTracker != null
-                ? HistoryTracker.GetSnapshot()
-                : "Kingdom Status: Unknown";
+            string gameStateSnapshot = GetSnapshotOrDefault();
 
             string defaultWarningSeed = templates != null
                 ? templates.defaultWarningSeedPrompt
@@ -453,15 +460,19 @@ namespace Game.Scripts
             }
 
             SpeakerData speaker = card.speaker;
+            if (card.isPetitionCard)
+            {
+                ShowPetitionCard(card, speaker);
+                return;
+            }
+
             if (card.isLlmReactionCard)
             {
                 LlmPromptTemplates templates = Templates;
                 cardView.ShowLlmReaction(card, speaker);
                 inputEnabled = false;
 
-                string gameStateSnapshot = HistoryTracker != null
-                    ? HistoryTracker.GetSnapshot()
-                    : "Kingdom Status: Unknown";
+                string gameStateSnapshot = GetSnapshotOrDefault();
 
                 string defaultReactionSeed = templates != null
                     ? templates.defaultReactionSeedPrompt
@@ -474,7 +485,7 @@ namespace Game.Scripts
                 if (llmReactionClient == null)
                 {
                     Debug.LogWarning("[GameManager] llmReactionClient is missing; auto-advancing LLM reaction card.", this);
-                    AutoAdvanceReactionCard(card);
+                    AutoAdvanceReactionCard();
                     return;
                 }
 
@@ -491,7 +502,7 @@ namespace Game.Scripts
                     error =>
                     {
                         Debug.LogWarning($"[GameManager] LLM reaction failed: {error}");
-                        AutoAdvanceReactionCard(card);
+                        AutoAdvanceReactionCard();
                     });
 
                 return;
@@ -501,7 +512,227 @@ namespace Game.Scripts
             inputEnabled = !card.IsEnding;
         }
 
-        private void AutoAdvanceReactionCard(CardData card)
+        private void ShowPetitionCard(CardData card, SpeakerData speaker)
+        {
+            LlmPromptTemplates templates = Templates;
+            cardView.ShowPetition(card, speaker);
+            inputEnabled = false;
+            currentPetitionSession = new PetitionSession(llmSettings != null ? llmSettings.petitionMaxTurns : 1);
+
+            string gameStateSnapshot = GetSnapshotOrDefault();
+            string defaultSeed = templates != null ? templates.defaultPetitionSeedPrompt : string.Empty;
+            string seed = string.IsNullOrWhiteSpace(card.petitionSeedPrompt) ? defaultSeed : card.petitionSeedPrompt;
+
+            if (llmReactionClient == null)
+            {
+                Debug.LogWarning("[GameManager] llmReactionClient is missing; auto-advancing petition card.", this);
+                AutoAdvancePetitionCard();
+                return;
+            }
+
+            string personaInstructions = templates != null ? templates.personaSystemInstructions : string.Empty;
+            string fullSystemPrompt = LlmPersonaPromptBuilder.Build(speaker, gameStateSnapshot, seed, personaInstructions);
+
+            llmReactionClient.RequestReaction(
+                fullSystemPrompt,
+                line =>
+                {
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        Debug.LogWarning("[GameManager] Petition situation generation returned empty; auto-advancing.", this);
+                        AutoAdvancePetitionCard();
+                        return;
+                    }
+
+                    cardView.SetDescriptionText(line);
+                    cardView.RevealPetitionInput();
+                    cardView.UpdatePetitionPatience(0, currentPetitionSession.MaxTurns);
+                },
+                error =>
+                {
+                    Debug.LogWarning($"[GameManager] Petition situation generation failed: {error}");
+                    AutoAdvancePetitionCard();
+                });
+        }
+
+        private void HandlePetitionSubmitted(string playerInput)
+        {
+            CardData card = narrativeRunner.CurrentCard;
+            if (card == null || !card.isPetitionCard || currentPetitionSession == null)
+            {
+                return;
+            }
+
+            cardView.SetPetitionSubmitting(true);
+
+            SpeakerData speaker = card.speaker;
+            string snapshot = GetSnapshotOrDefault();
+
+            LlmPromptTemplates templates = Templates;
+            string defaultSeed = templates != null ? templates.defaultPetitionSeedPrompt : string.Empty;
+            string seed = string.IsNullOrWhiteSpace(card.petitionSeedPrompt) ? defaultSeed : card.petitionSeedPrompt;
+
+            IReadOnlyList<ResourceData> validResources = narrativeDatabase != null && narrativeDatabase.resourceCatalog != null
+                ? narrativeDatabase.resourceCatalog.resources
+                : null;
+
+            int clamp = llmSettings != null ? llmSettings.petitionResourceClampMagnitude : 20;
+            string systemInstructions = templates != null ? templates.petitionSystemInstructions : string.Empty;
+
+            if (llmReactionClient == null)
+            {
+                Debug.LogWarning("[GameManager] llmReactionClient is missing; auto-advancing petition card.", this);
+                AutoAdvancePetitionCard();
+                return;
+            }
+
+            // Snapshot before BuildMessagesForSubmission increments TurnsUsed.
+            bool wasFinalTurn = currentPetitionSession.NextTurnIsFinal;
+
+            List<GroqApiMessage> messages = currentPetitionSession.BuildMessagesForSubmission(
+                playerInput, speaker, snapshot, seed, validResources, clamp, systemInstructions);
+
+            llmReactionClient.RequestPetitionTurn(
+                messages,
+                (result, rawContent) => OnPetitionTurnResolved(result, rawContent, wasFinalTurn),
+                OnPetitionFailed);
+        }
+
+        private void OnPetitionTurnResolved(PetitionResolution result, string rawContent, bool wasFinalTurn)
+        {
+            if (result == null || string.IsNullOrWhiteSpace(result.reaction))
+            {
+                OnPetitionFailed(LlmRequestError.EmptyResponse);
+                return;
+            }
+
+            currentPetitionSession?.RecordReply(result, rawContent);
+            cardView.SetPetitionSubmitting(false);
+
+            if (result.IsProposal)
+            {
+                cardView.ShowPetitionProposal(result.reaction);
+                return;
+            }
+
+            if (wasFinalTurn)
+            {
+                // Model ignored the final-turn instruction and kept deliberating — don't stall the run.
+                Debug.LogWarning("[GameManager] Petition exceeded max turns without a proposal; auto-advancing.", this);
+                AutoAdvancePetitionCard();
+                return;
+            }
+
+            cardView.ShowPetitionDeliberation(result.reaction);
+            cardView.UpdatePetitionPatience(currentPetitionSession.TurnsUsed, currentPetitionSession.MaxTurns);
+        }
+
+        private void HandlePetitionConfirmed()
+        {
+            if (currentPetitionSession == null || !currentPetitionSession.AwaitingConfirmation)
+            {
+                return;
+            }
+
+            PetitionResolution proposal = currentPetitionSession.LastProposal;
+            int clampMagnitude = llmSettings != null ? llmSettings.petitionResourceClampMagnitude : 20;
+            PetitionApplyResult applyResult = PetitionResolutionApplier.Apply(proposal, narrativeDatabase?.resourceCatalog, clampMagnitude);
+
+            if (applyResult.resourceChange.HasValue)
+            {
+                resourceState.Apply(applyResult.resourceChange.Value);
+            }
+
+            if (applyResult.historyTag != null && HistoryTracker != null)
+            {
+                HistoryTracker.RecordHistoryTag(applyResult.historyTag);
+            }
+
+            currentPetitionSession = null;
+            cardView.SetPetitionSubmitting(true);
+            StartCoroutine(ConfirmPetitionAdvanceRoutine());
+        }
+
+        private IEnumerator ConfirmPetitionAdvanceRoutine()
+        {
+            inputEnabled = false;
+
+            NarrativeStepResult result = narrativeRunner.Choose(true);
+            if (result.HasError)
+            {
+                Debug.LogError(result.error, this);
+                enabled = false;
+                yield break;
+            }
+
+            yield return cardView.AnimateCardExit(true, cardExitDuration);
+
+            if (result.HasEnded)
+            {
+                EndRun(result.endingCard, result.isCollapseEnding);
+                yield break;
+            }
+
+            if (resourceWarningMonitor != null)
+            {
+                resourceWarningMonitor.Tick();
+                if (resourceWarningMonitor.TryGetTriggeredWarning(out ResourceData triggeredResource))
+                {
+                    ShowResourceWarning(triggeredResource);
+                    yield break;
+                }
+            }
+
+            ShowCurrentCard();
+        }
+
+        private void OnPetitionFailed(LlmRequestError error)
+        {
+            Debug.LogWarning($"[GameManager] Petition resolution failed: {error}");
+            AutoAdvancePetitionCard();
+        }
+
+        private IEnumerator ResolvePetitionAdvanceRoutine()
+        {
+            NarrativeStepResult result = narrativeRunner.Choose(false);
+            if (result.HasError)
+            {
+                Debug.LogError(result.error, this);
+                enabled = false;
+                yield break;
+            }
+
+            if (result.HasEnded)
+            {
+                EndRun(result.endingCard, result.isCollapseEnding);
+                yield break;
+            }
+
+            if (resourceWarningMonitor != null)
+            {
+                resourceWarningMonitor.Tick();
+                if (resourceWarningMonitor.TryGetTriggeredWarning(out ResourceData triggeredResource))
+                {
+                    ShowResourceWarning(triggeredResource);
+                    yield break;
+                }
+            }
+
+            ShowCurrentCard();
+        }
+
+        private void AutoAdvancePetitionCard()
+        {
+            currentPetitionSession = null;
+            StartCoroutine(ResolvePetitionAdvanceRoutine());
+        }
+
+        private string GetSnapshotOrDefault()
+        {
+            return HistoryTracker != null ? HistoryTracker.GetSnapshot() : "Kingdom Status: Unknown";
+        }
+
+        private void AutoAdvanceReactionCard()
         {
             NarrativeStepResult result = narrativeRunner.Choose(false);
             if (result.HasError)
@@ -515,6 +746,16 @@ namespace Game.Scripts
             {
                 EndRun(result.endingCard, result.isCollapseEnding);
                 return;
+            }
+
+            if (resourceWarningMonitor != null)
+            {
+                resourceWarningMonitor.Tick();
+                if (resourceWarningMonitor.TryGetTriggeredWarning(out ResourceData triggeredResource))
+                {
+                    ShowResourceWarning(triggeredResource);
+                    return;
+                }
             }
 
             ShowCurrentCard();

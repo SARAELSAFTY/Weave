@@ -2,7 +2,6 @@ using System;
 
 namespace Game.Scripts.Definitions
 {
-    /// <summary>Represents a value change for one resource asset.</summary>
     [Serializable]
     public struct ResourceValue
     {
@@ -10,7 +9,6 @@ namespace Game.Scripts.Definitions
         public int value;
     }
 
-    /// <summary>Contains resource value changes for a card choice.</summary>
     [Serializable]
     public struct ResourceChange
     {

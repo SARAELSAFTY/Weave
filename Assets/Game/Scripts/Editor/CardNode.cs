@@ -7,8 +7,6 @@ using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
-    // Visual node representing one CardData in the graph: editable ID header, start/ending
-    // badges, a short description preview, and left/right choice rows with output ports.
     public class CardNode : BaseNode
     {
         private const int DescriptionPreviewLength = 50;
@@ -21,6 +19,7 @@ namespace Game.Scripts.Editor
         private static readonly Color NegativeResourceAccent = new Color(1.0f, 0.4f, 0.4f);
         private static readonly Color StartBorder = new Color(1.0f, 0.84f, 0.0f);
         private static readonly Color LlmBorder = new Color(0.65f, 0.35f, 1f);
+        private static readonly Color PetitionBorder = new Color(0.1f, 0.85f, 0.75f);
         private static readonly Color DefaultBorder = new Color(0.28f, 0.30f, 0.35f);
 
         public CardData Card { get; }
@@ -33,7 +32,7 @@ namespace Game.Scripts.Editor
         private bool isStartCardCached;
 
         protected override Object TargetAsset => Card;
-        protected override string TargetId => Card != null ? Card.AssetName : "Null Card";
+        protected override string TargetId => Card != null ? Card.DisplayName : "Null Card";
 
         public CardNode(CardData card, bool isStartCard, CardGraphView parentGraphView)
         {
@@ -42,7 +41,7 @@ namespace Game.Scripts.Editor
             this.isStartCardCached = isStartCard;
 
             InitializeNode(TargetId);
-            ApplyNodeChrome(isStartCard, card.isLlmReactionCard);
+            ApplyNodeChrome(isStartCard, card.isLlmReactionCard, card.isPetitionCard);
             titleContainer.Add(BuildBadges(card, isStartCard));
 
             InputPort = Port.Create<Edge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(bool));
@@ -57,15 +56,18 @@ namespace Game.Scripts.Editor
             RefreshPorts();
         }
 
-        private void ApplyNodeChrome(bool isStartCard, bool isLlmCard)
+        private void ApplyNodeChrome(bool isStartCard, bool isLlmCard, bool isPetitionCard = false)
         {
             style.width = 260;
             style.maxWidth = 260;
             style.backgroundColor = new StyleColor(new Color(0.14f, 0.15f, 0.18f));
 
-            bool highlightBorder = isStartCard || isLlmCard;
-            Color borderColor = isStartCard ? StartBorder : isLlmCard ? LlmBorder : DefaultBorder;
-            Color headerColor = isStartCard ? new Color(0.28f, 0.24f, 0.05f) : (isLlmCard ? new Color(0.22f, 0.12f, 0.32f) : new Color(0.18f, 0.19f, 0.22f));
+            bool highlightBorder = isStartCard || isLlmCard || isPetitionCard;
+            Color borderColor = isStartCard ? StartBorder : isLlmCard ? LlmBorder : isPetitionCard ? PetitionBorder : DefaultBorder;
+            Color headerColor = isStartCard ? new Color(0.28f, 0.24f, 0.05f)
+                : isLlmCard ? new Color(0.22f, 0.12f, 0.32f)
+                : isPetitionCard ? new Color(0.05f, 0.22f, 0.20f)
+                : new Color(0.18f, 0.19f, 0.22f);
 
             ApplyBaseChrome(headerColor, borderColor, highlightBorder ? 2f : 1f, 34f);
         }
@@ -95,13 +97,20 @@ namespace Game.Scripts.Editor
                     "LLM reaction card"));
             }
 
+            if (card.isPetitionCard)
+            {
+                badges.Add(MakeBadge("PETITION",
+                    new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f),
+                    "Petition card — player types free-form commands resolved by AI."));
+            }
+
             if (card.speaker == null)
             {
                 badges.Add(MakeBadge("No Speaker",
                     new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
                     "Every card must have a speaker assigned — the run will fail to start without one."));
             }
-            else if (card.isLlmReactionCard && string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
+            else if ((card.isLlmReactionCard || card.isPetitionCard) && string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
             {
                 badges.Add(MakeBadge("No Speaker Persona",
                     new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
@@ -156,7 +165,9 @@ namespace Game.Scripts.Editor
 
             string previewText = card.isLlmReactionCard
                 ? Truncate(card.llmPromptSeed, DescriptionPreviewLength, "(No prompt seed)")
-                : Truncate(card.description, DescriptionPreviewLength, "(No description)");
+                : card.isPetitionCard
+                    ? Truncate(card.petitionSeedPrompt, DescriptionPreviewLength, "(No petition seed)")
+                    : Truncate(card.description, DescriptionPreviewLength, "(No description)");
 
             Label previewLabel = new Label(previewText);
             previewLabel.style.fontSize = 11;
@@ -254,7 +265,7 @@ namespace Game.Scripts.Editor
                 }
             };
 
-            if (card.isLlmReactionCard)
+            if (card.UsesContinueExit)
             {
                 choices.Add(CreateContinueRow(out Port continuePort));
                 ContinuePort = continuePort;
@@ -376,13 +387,31 @@ namespace Game.Scripts.Editor
             evt.menu.AppendAction("Set as Starting Card", _ => parentGraphView.SetStartingCard(Card),
                 isStartCardCached ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
 
+            // Empty seeds fall back to LlmPromptTemplates defaults; do not write hardcoded seeds here.
+
             evt.menu.AppendAction("Is LLM Reaction Card", _ =>
             {
                 Undo.RecordObject(Card, "Toggle LLM Reaction");
                 Card.isLlmReactionCard = !Card.isLlmReactionCard;
+                if (Card.isLlmReactionCard)
+                {
+                    Card.isPetitionCard = false;
+                }
                 EditorUtility.SetDirty(Card);
                 parentGraphView.Populate(parentGraphView.Database);
             }, Card.isLlmReactionCard ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+
+            evt.menu.AppendAction("Is Petition Card", _ =>
+            {
+                Undo.RecordObject(Card, "Toggle Petition Card");
+                Card.isPetitionCard = !Card.isPetitionCard;
+                if (Card.isPetitionCard)
+                {
+                    Card.isLlmReactionCard = false;
+                }
+                EditorUtility.SetDirty(Card);
+                parentGraphView.Populate(parentGraphView.Database);
+            }, Card.isPetitionCard ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
 
             evt.menu.AppendSeparator();
 

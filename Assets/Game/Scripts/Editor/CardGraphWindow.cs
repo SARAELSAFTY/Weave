@@ -9,8 +9,7 @@ using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
-    // Editor window shell: owns the toolbar (database picker, starting-card picker, new-card button)
-    // and hosts a CardGraphView for the actual node graph.
+    /// <summary>Card Graph editor window: toolbar + hosted <see cref="CardGraphView"/>.</summary>
     public class CardGraphWindow : EditorWindow
     {
         private const string NewCardFolder = "Assets/Game/Data/Cards";
@@ -235,7 +234,7 @@ namespace Game.Scripts.Editor
             CardData newCard = ScriptableObject.CreateInstance<CardData>();
             newCard.name = cardName;
             newCard.assetName = cardName;
-            // displayName intentionally left empty — author sets it if a player-facing label is needed
+            // Leave displayName empty; author sets the player-facing label only when needed.
             AssetDatabase.CreateAsset(newCard, assetPath);
 
             if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newCard)))
@@ -278,7 +277,7 @@ namespace Game.Scripts.Editor
 
         private string FindNextUnusedCardName()
         {
-            // Base template follows the Scene_Speaker_Slug convention.
+            // Naming: Scene_Speaker_Slug
             const string baseTemplate = "Scene_Speaker_Slug";
             if (!CardNameInUse(baseTemplate)) return baseTemplate;
 
@@ -323,7 +322,7 @@ namespace Game.Scripts.Editor
             SpeakerData newSpeaker = ScriptableObject.CreateInstance<SpeakerData>();
             newSpeaker.name = speakerName;
             newSpeaker.assetName = speakerName;
-            // displayName intentionally left empty — author sets the player-facing name in the Inspector
+            // Leave displayName empty; author sets the player-facing name in the Inspector.
             AssetDatabase.CreateAsset(newSpeaker, assetPath);
 
             if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newSpeaker)))
@@ -511,7 +510,7 @@ namespace Game.Scripts.Editor
 
         private string FindNextUnusedSpeakerName()
         {
-            // Base template follows the Spk_<Name> convention.
+            // Naming: Spk_<Name>
             const string baseTemplate = "Spk_NewSpeaker";
             if (!SpeakerNameInUse(baseTemplate)) return baseTemplate;
 

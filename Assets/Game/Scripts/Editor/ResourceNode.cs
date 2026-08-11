@@ -5,7 +5,6 @@ using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
-    // Visual node representing one resource in the graph canvas.
     public class ResourceNode : BaseNode
     {
         private static readonly Color ResourceHeaderColor = new Color(0.10f, 0.28f, 0.22f);
@@ -14,7 +13,7 @@ namespace Game.Scripts.Editor
         public ResourceData Data { get; }
 
         protected override Object TargetAsset => Data;
-        protected override string TargetId => Data != null ? Data.AssetName : "Null Resource";
+        protected override string TargetId => Data != null ? Data.DisplayName : "Null Resource";
 
         protected override string PingActionLabel => "Ping Resource Asset";
         protected override string OpenActionLabel => "Open Resource Asset";
@@ -65,7 +64,6 @@ namespace Game.Scripts.Editor
             nameValue.style.marginBottom = 2;
             body.Add(nameValue);
 
-            // Show asset name sub-label when it differs from the display name
             if (!string.IsNullOrWhiteSpace(data.assetName) && data.assetName.Trim() != data.DisplayName)
             {
                 Label idLabel = new Label($"ID: {data.assetName.Trim()}");

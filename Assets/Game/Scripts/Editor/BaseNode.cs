@@ -5,10 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
-    /// <summary>
-    /// Shared base class for all nodes in the Card Graph (CardNode, SpeakerNode, ResourceNode).
-    /// Handles styling, ID labels, double-click to open, and selection behavior.
-    /// </summary>
+    /// <summary>Shared Card Graph node: chrome, ID label, double-click open, selection.</summary>
     public abstract class BaseNode : Node
     {
         protected abstract UnityEngine.Object TargetAsset { get; }

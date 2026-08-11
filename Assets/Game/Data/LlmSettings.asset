@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5770ef95e8f95ad489e88c0c413c3c68, type: 3}
   m_Name: LlmSettings
   m_EditorClassIdentifier: 
-  groqModel: llama-3.3-70b-versatile
+  groqModel: qwen/qwen3.6-27b
   temperature: 0.9
-  maxTokensPerResponse: 150
+  reasoningEffort: none
+  maxTokensPerResponse: 300
+  epilogueMaxTokens: 200
+  petitionResourceClampMagnitude: 20
   apiTimeoutSeconds: 10

@@ -5,8 +5,6 @@ using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
-    // Visual node representing one SpeakerData speaker in the graph canvas, allowing
-    // viewing of display name, portrait, and LLM persona prompt.
     public class SpeakerNode : BaseNode
     {
         private static readonly Color SpeakerHeaderColor = new Color(0.28f, 0.15f, 0.38f);
@@ -17,7 +15,7 @@ namespace Game.Scripts.Editor
         private readonly CardGraphView parentGraphView;
 
         protected override Object TargetAsset => Speaker;
-        protected override string TargetId => Speaker != null ? Speaker.AssetName : "Null Speaker";
+        protected override string TargetId => Speaker != null ? Speaker.DisplayName : "Null Speaker";
 
         public SpeakerNode(SpeakerData speaker, CardGraphView parentGraphView)
         {
@@ -101,22 +99,21 @@ namespace Game.Scripts.Editor
                 }
             };
 
-            Label nameValue = new Label(speaker.AssetName);
+            Label nameValue = new Label(speaker.DisplayName);
             nameValue.style.fontSize = 11;
             nameValue.style.unityFontStyleAndWeight = FontStyle.Bold;
             nameValue.style.color = new StyleColor(new Color(0.9f, 0.9f, 0.9f));
             nameValue.style.marginBottom = 2;
             body.Add(nameValue);
 
-            // Show player-facing display name only when it differs from the asset name
-            if (!string.IsNullOrWhiteSpace(speaker.displayName) &&
-                speaker.displayName.Trim() != speaker.AssetName)
+            if (!string.IsNullOrWhiteSpace(speaker.assetName) &&
+                speaker.assetName.Trim() != speaker.DisplayName)
             {
-                Label displayLabel = new Label($"UI: {speaker.displayName.Trim()}");
-                displayLabel.style.fontSize = 9;
-                displayLabel.style.color = new StyleColor(new Color(0.6f, 0.7f, 0.85f));
-                displayLabel.style.marginBottom = 4;
-                body.Add(displayLabel);
+                Label idLabel = new Label($"ID: {speaker.assetName.Trim()}");
+                idLabel.style.fontSize = 9;
+                idLabel.style.color = new StyleColor(new Color(0.55f, 0.55f, 0.55f));
+                idLabel.style.marginBottom = 4;
+                body.Add(idLabel);
             }
 
             if (hasPersona)

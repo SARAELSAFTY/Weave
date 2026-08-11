@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Scripts.Definitions;
-using Game.Scripts.Runtime.Narrative;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -10,8 +8,7 @@ using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
-    // The node-graph canvas: builds CardNodes and edges from a NarrativeDatabase, and writes
-    // edge/position/delete changes made in the graph back to underlying assets.
+    /// <summary>Graph canvas that mirrors a NarrativeDatabase and writes edge/position edits back to assets.</summary>
     public class CardGraphView : GraphView
     {
         private static readonly Vector2 DefaultNodeSize = new Vector2(260, 200);
@@ -214,7 +211,7 @@ namespace Game.Scripts.Editor
                 CardData card = sourceNode.Card;
                 if (card == null) continue;
 
-                if (card.isLlmReactionCard)
+                if (card.UsesContinueExit)
                 {
                     TryConnect(sourceNode.ContinuePort, card.continueNextCard, nodesByCard);
                 }
@@ -523,7 +520,7 @@ namespace Game.Scripts.Editor
             if (sourceCard == null || targetCard == null) return false;
 
             Undo.RecordObject(sourceCard, "Connect Card Link");
-            if (sourceCard.isLlmReactionCard && edge.output == sourceNode.ContinuePort)
+            if (sourceCard.UsesContinueExit && edge.output == sourceNode.ContinuePort)
             {
                 sourceCard.continueNextCard = targetCard;
             }
@@ -593,7 +590,7 @@ namespace Game.Scripts.Editor
 
             CardData sourceCard = sourceNode.Card;
             Undo.RecordObject(sourceCard, "Clear Card Link");
-            if (sourceCard.isLlmReactionCard && edge.output == sourceNode.ContinuePort)
+            if (sourceCard.UsesContinueExit && edge.output == sourceNode.ContinuePort)
             {
                 sourceCard.continueNextCard = null;
             }
