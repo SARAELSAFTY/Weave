@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.Scripts.Runtime.Narrative
 {
-    /// <summary>Maps a resource to the ending card shown when it reaches zero.</summary>
+    /// <summary>Maps a resource to the fallback ending card shown when its collapse generation fails.</summary>
     [Serializable]
     public class ResourceCollapseEnding
     {
@@ -18,7 +18,7 @@ namespace Game.Scripts.Runtime.Narrative
     {
         public List<ResourceData> resources = new List<ResourceData>();
 
-        [Tooltip("Per-resource ending card shown when that resource collapses to zero. Every resource " +
+        [Tooltip("Per-resource fallback ending card shown when collapse generation fails. Every resource " +
                  "that should trigger a distinct lose ending needs an entry here.")]
         public List<ResourceCollapseEnding> collapseEndings = new List<ResourceCollapseEnding>();
 

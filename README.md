@@ -1,74 +1,113 @@
 # Weave
 
-A data-driven narrative engine and visual authoring toolset for Unity. Stories are built as ScriptableObject content in a node graph, with kingdom resources, AI character reactions, multi-turn petitions, and collapse epilogues powered by the [Groq](https://groq.com) API.
+Weave is a Unity narrative-game framework built around authored card graphs. Narrative content, speakers, resources, prompts, and runtime settings are stored as ScriptableObject assets and edited through a dedicated graph tool.
 
-## Features
+The included runtime supports branching choices, resource-driven consequences, generated character reactions, multi-turn petition scenes, and LLM-generated collapse epilogues.
 
-- **Card Graph editor** (`Weave > Card Graph`) — author cards, speakers, and resources in a GraphView canvas; create assets from the toolbar; set the starting card per database
-- **Safe asset IDs** — changing `assetName` renames the `.asset` file; `DisplayName` is the optional player-facing label
-- **Resources** — catalog-driven stats, per-choice deltas, threshold warnings with cooldowns, and per-resource collapse endings
-- **LLM reaction cards** — in-character lines from persona, seed, and live game state
-- **Petition cards** — multi-turn free-form audiences with structured resolutions and player confirmation
-- **Collapse epilogues** — generated from run length, collapse cause, resources, and choice history
-- **Game loop** — start screen, pause menu, day/resource HUD, swipe or keyboard choices
-- **Editor tools** — JSON export, LLM tester, full test-story generator
+## Requirements
 
-## Getting Started
+- Unity 6.0.0.79f1 or a compatible Unity 6 release
+- TextMesh Pro and the Unity Input System
+- A Groq API key for LLM-backed features
 
-### Prerequisites
+The project remains usable without an API key: authored cards and resource logic continue to work, while LLM-dependent cards follow their configured fallback behavior.
 
-- Unity 6
-- Input System
-- TextMesh Pro
-- [Groq API key](https://console.groq.com) (optional; LLM cards auto-advance without it)
+## Open the Project
 
-### Setup
+1. Open the repository in Unity Hub.
+2. Load [Game.unity](Assets/Game/Scenes/Game.unity).
+3. Select the `GameManager` in the scene and assign the narrative database, UI references, resource state, LLM client, and LLM settings as needed.
+4. Configure the `LlmReactionClient` with a `LlmSettings` asset and a `TextAsset` containing the Groq API key.
+5. Enter Play Mode.
 
-1. Open `Assets/Game/Scenes/Game.unity`.
-2. Open **Weave > Card Graph** and select or create a `NarrativeDatabase`.
-3. Assign the database and UI references on `GameManager`.
-4. For LLM features: create or assign `LlmSettings` and `LlmPromptTemplates`, then set a Groq API key TextAsset on `LlmReactionClient`.
-5. Enter Play Mode. Choose with swipe, touch, or **A/D** / arrow keys.
+For a working sample configuration, use **Weave > Generate Full Test Story**. It creates assets under `Assets/_TestContent`.
 
-Optional: **Weave > Generate Full Test Story** creates a sample database under `Assets/_TestContent`.
+## Content Model
 
-## Authoring
+`NarrativeDatabase` is the root asset for a run. It holds the entry card, card and speaker collections, a resource catalog, graph-layout metadata, and the shared prompt templates.
 
-| Task | How |
-|------|-----|
-| Create content | Card Graph toolbar: **+ New DB / Card / Speaker / Catalog / Resource** |
-| Link cards | Connect Left, Right, or Continue ports |
-| Starting card | Toolbar **Starting Card** dropdown |
-| Reaction card | Enable **Is LLM Reaction Card**; wire continue; seed optional |
-| Petition card | Enable **Is Petition Card**; wire continue; seed optional |
-| Warnings | On `ResourceData`: threshold, speaker, seed, cooldown |
-| Collapse ending | On `ResourceCatalog.collapseEndings`: resource → ending card |
-| Export JSON | **Tools > Weave > Export Cards to JSON** |
+| Asset | Purpose |
+| --- | --- |
+| `CardData` | Authored narrative card, choice text, resource changes, routing, and optional LLM behavior. |
+| `SpeakerData` | Character portrait, display identity, and the LLM persona prompt. |
+| `ResourceData` | Starting value, warning configuration, and an editable collapse threshold. |
+| `ResourceCatalog` | Resource collection and an authored fallback ending card for each collapse condition. |
+| `LlmPromptTemplates` | Shared system instructions and default seed prompts. |
+| `LlmSettings` | Groq model, generation limits, history depth, petition limits, and request timeout. |
 
-### Naming
+Cards, speakers, and resources use an author-facing asset ID and a player-facing display name. Asset IDs can be used by editor tooling and default to the Unity asset name when omitted.
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Cards | `Scene_Speaker_Slug` | `Market_Advisor_WarnsBlight` |
-| Speakers | `Spk_<Name>` | `Spk_Advisor` |
-| Resources | `Res_<Name>` | `Res_Trust` |
+## Authoring Workflow
 
-Empty reaction or petition seeds use defaults from `LlmPromptTemplates`.
+Open **Weave > Card Graph**, then select or create a `NarrativeDatabase`.
 
-## Architecture
+1. Create cards, speakers, a resource catalog, and resources from the graph toolbar.
+2. Set the database's starting card.
+3. Connect standard cards through their left and right ports, and apply resource changes to either choice.
+4. Assign a speaker to every card. The runtime validates this before a run starts.
+5. Configure resource warnings and collapse thresholds in each `ResourceData` asset.
+6. Add a matching `ResourceCollapseEnding` entry for each resource that can end a run.
 
+### Card Types
+
+| Type | Configuration | Runtime behavior |
+| --- | --- | --- |
+| Standard card | Left/right choices and outgoing links | Applies the selected resource change, then follows the selected link. |
+| LLM reaction card | Enable `Is LLM Reaction Card`; use `Continue Next Card` | Requests one in-character line using the card seed or the shared default. |
+| Petition card | Enable `Is Petition Card`; use `Continue Next Card` | Opens a multi-turn audience. The model returns a structured proposal that the player confirms before resource changes are applied. |
+| Terminal card | Leave all outgoing links empty | Ends the run with the authored card content. |
+
+### Resources, Warnings, and Collapse
+
+Each resource begins at `defaultStartingValue` and may be modified by card choices or petition resolutions.
+
+- A warning can trigger at or below `warningThresholdPercent` of the starting value. It uses the assigned warning speaker and observes the configured cooldown.
+- A resource collapses at or below `collapseThreshold`, which defaults to zero.
+- On collapse, Weave requests a contextual epilogue using the run length, final resource state, and recorded player decisions.
+- `ResourceCollapseEnding.endingCard` is the fallback shown when that request is unavailable, times out, or returns no usable text.
+
+## LLM Configuration
+
+All requests use `LlmReactionClient` and the settings assigned to it. The client sends requests to Groq's OpenAI-compatible chat-completions endpoint.
+
+`LlmPromptTemplates` is the single source of shared prompt text. Per-card reaction and petition seed overrides take precedence over its defaults. The prompt system has three paths:
+
+- Persona prompts for reaction cards, warning alerts, and petition openings.
+- Petition-turn prompts that require a JSON response containing a phase, spoken reaction, resource changes, and a history tag.
+- Epilogue prompts for resource-collapse endings.
+
+Use **Weave > LLM Tester** to inspect the composed prompt for a selected database, card, speaker, or resource before sending a live request. This is useful for validating templates, resource names, and prompt context without starting a run.
+
+## Runtime Behavior
+
+`GameManager` coordinates input, UI, the narrative runner, resource warnings, player history, petitions, and LLM requests. `NarrativeRunner` owns card progression and detects terminal and collapse outcomes. `PlayerHistoryTracker` builds the resource summaries and decision history supplied to the LLM.
+
+The default scene includes start and pause flows, a day display, resource display, and card view. Choice input supports the configured swipe/touch flow as well as keyboard input.
+
+## Project Layout
+
+```text
+Assets/Game/
+|-- Scenes/                 Main Unity scenes
+|-- Data/                   Shared runtime configuration assets
+|-- Scripts/
+|   |-- Definitions/        ScriptableObject content definitions
+|   |-- Runtime/
+|   |   |-- Llm/            Prompt composition, Groq client, petitions, settings
+|   |   `-- Narrative/      Progression, resources, warnings, and history
+|   |-- UI/                 Card, HUD, start, and pause views
+|   |-- Input/              Player-choice input
+|   `-- Editor/             Graph editor, LLM tester, exporters, and test tools
+`-- _TestContent/           Generated sample content
 ```
-Assets/Game/Scripts/
-├── GameManager.cs          # Run lifecycle and card / LLM orchestration
-├── Definitions/            # Card, speaker, resource, database assets
-├── Runtime/
-│   ├── Llm/                # Groq client, prompts, petition session
-│   └── Narrative/          # Runner, resources, warnings, history
-├── UI/                     # Card, HUD, start, pause views
-├── Input/                  # Choice input
-└── Editor/                 # Card Graph, exporters, test tools
-```
+
+## Utilities
+
+- **Weave > Card Graph**: create and connect narrative content.
+- **Weave > LLM Tester**: compose and optionally send test LLM requests.
+- **Weave > Generate Full Test Story**: generate a sample database and supporting assets.
+- **Tools > Weave > Export Cards to JSON**: export a narrative database to `Assets/StreamingAssets/cards.json`.
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE).
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).

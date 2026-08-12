@@ -10,6 +10,7 @@ namespace Game.Scripts.Runtime.Llm
     public class PetitionSession
     {
         private readonly List<GroqApiMessage> history = new List<GroqApiMessage>();
+        private readonly List<string> transcript = new List<string>();
 
         public int MaxTurns { get; }
         public int TurnsUsed { get; private set; }
@@ -32,9 +33,8 @@ namespace Game.Scripts.Runtime.Llm
         }
 
         /// <summary>
-        /// Builds the ordered message list for the next submission: a fresh system prompt
-        /// (so turn/final-turn framing stays current), prior history, then the new user turn.
-        /// Increments the turn counter and clears any pending proposal — confirmation must
+        /// Builds the prompt for the next petition turn.
+        /// Increments the turn counter and clears any pending proposal - confirmation must
         /// go through <see cref="LastProposal"/>, not this method.
         /// </summary>
         public List<GroqApiMessage> BuildMessagesForSubmission(
@@ -50,11 +50,12 @@ namespace Game.Scripts.Runtime.Llm
             TurnsUsed++;
             bool isFinalTurn = TurnsUsed >= MaxTurns;
 
-            string systemPrompt = PetitionPromptBuilder.Build(
+            string systemPrompt = SpeakerPromptBuilder.BuildPetitionTurnPrompt(
                 speaker, gameStateSnapshot, situationalPrompt, validResources,
                 clampMagnitude, systemInstructionsTemplate, TurnsUsed, MaxTurns, isFinalTurn);
 
             history.Add(new GroqApiMessage { role = "user", content = playerInput });
+            transcript.Add($"Ruler: {playerInput}");
 
             List<GroqApiMessage> messages = new List<GroqApiMessage>(history.Count + 1)
             {
@@ -73,10 +74,23 @@ namespace Game.Scripts.Runtime.Llm
         {
             history.Add(new GroqApiMessage { role = "assistant", content = rawContent });
 
+            string reply = resolution != null && !string.IsNullOrWhiteSpace(resolution.reaction)
+                ? resolution.reaction
+                : rawContent;
+            if (!string.IsNullOrWhiteSpace(reply))
+            {
+                transcript.Add($"Petitioner: {reply}");
+            }
+
             if (resolution != null && resolution.IsProposal)
             {
                 LastProposal = resolution;
             }
+        }
+
+        public string GetTranscript()
+        {
+            return transcript.Count > 0 ? string.Join("\n", transcript) : string.Empty;
         }
     }
 }

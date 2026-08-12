@@ -63,26 +63,6 @@ namespace Game.Scripts.Editor
             return badges;
         }
 
-        private static Label MakeBadge(string text, Color foreground, Color background, string tooltip)
-        {
-            Label label = new Label(text);
-            label.style.fontSize = 9;
-            label.style.unityFontStyleAndWeight = FontStyle.Bold;
-            label.style.color = new StyleColor(foreground);
-            label.style.backgroundColor = new StyleColor(background);
-            label.style.paddingLeft = 5;
-            label.style.paddingRight = 5;
-            label.style.paddingTop = 2;
-            label.style.paddingBottom = 2;
-            label.style.marginRight = 6;
-            label.style.borderTopLeftRadius = 3;
-            label.style.borderTopRightRadius = 3;
-            label.style.borderBottomLeftRadius = 3;
-            label.style.borderBottomRightRadius = 3;
-            label.tooltip = tooltip;
-            return label;
-        }
-
         private VisualElement BuildBody(SpeakerData speaker, bool hasPersona)
         {
             VisualElement body = new VisualElement
@@ -99,22 +79,7 @@ namespace Game.Scripts.Editor
                 }
             };
 
-            Label nameValue = new Label(speaker.DisplayName);
-            nameValue.style.fontSize = 11;
-            nameValue.style.unityFontStyleAndWeight = FontStyle.Bold;
-            nameValue.style.color = new StyleColor(new Color(0.9f, 0.9f, 0.9f));
-            nameValue.style.marginBottom = 2;
-            body.Add(nameValue);
-
-            if (!string.IsNullOrWhiteSpace(speaker.assetName) &&
-                speaker.assetName.Trim() != speaker.DisplayName)
-            {
-                Label idLabel = new Label($"ID: {speaker.assetName.Trim()}");
-                idLabel.style.fontSize = 9;
-                idLabel.style.color = new StyleColor(new Color(0.55f, 0.55f, 0.55f));
-                idLabel.style.marginBottom = 4;
-                body.Add(idLabel);
-            }
+            AddIdentityLabels(body, speaker.DisplayName, speaker.assetName);
 
             if (hasPersona)
             {
@@ -128,27 +93,7 @@ namespace Game.Scripts.Editor
                 body.Add(personaValue);
             }
 
-            if (speaker.portrait != null)
-            {
-                Image portraitImage = new Image
-                {
-                    sprite = speaker.portrait,
-                    scaleMode = ScaleMode.ScaleToFit
-                };
-                portraitImage.style.width = 64;
-                portraitImage.style.height = 64;
-                portraitImage.style.marginTop = 8;
-                portraitImage.style.alignSelf = Align.Center;
-                portraitImage.style.borderTopWidth = 1;
-                portraitImage.style.borderBottomWidth = 1;
-                portraitImage.style.borderLeftWidth = 1;
-                portraitImage.style.borderRightWidth = 1;
-                portraitImage.style.borderTopColor = new StyleColor(new Color(0.3f, 0.3f, 0.3f));
-                portraitImage.style.borderBottomColor = new StyleColor(new Color(0.3f, 0.3f, 0.3f));
-                portraitImage.style.borderLeftColor = new StyleColor(new Color(0.3f, 0.3f, 0.3f));
-                portraitImage.style.borderRightColor = new StyleColor(new Color(0.3f, 0.3f, 0.3f));
-                body.Add(portraitImage);
-            }
+            AddPreviewImage(body, speaker.portrait, 64f, withBorder: true);
 
             return body;
         }

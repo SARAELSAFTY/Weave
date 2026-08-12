@@ -18,6 +18,4 @@ MonoBehaviour:
   defaultStartingValue: 60
   warningThresholdPercent: 35
   warningSpeaker: {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
-  warningSeedPrompt: '{resourceName} among the people is sinking. React with concern
-    and suggest a gesture is needed.'
   warningCooldownCards: 3

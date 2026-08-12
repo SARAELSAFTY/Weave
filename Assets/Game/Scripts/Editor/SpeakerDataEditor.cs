@@ -24,7 +24,7 @@ namespace Game.Scripts.Editor
             EditorGUILayout.PropertyField(assetNameProp, new GUIContent(
                 "Asset Name (ID)",
                 "Author-facing identifier. Convention: Spk_<PascalName>. " +
-                "Drives the asset filename — changing this renames the .asset file. " +
+                "Drives the asset filename - changing this renames the .asset file. " +
                 "Leave empty to keep the current filename ('" + speaker.name + "')."));
 
             EditorGUILayout.PropertyField(displayNameProp, new GUIContent(
@@ -35,7 +35,7 @@ namespace Game.Scripts.Editor
             if (string.IsNullOrWhiteSpace(displayNameProp.stringValue))
             {
                 EditorGUILayout.HelpBox(
-                    "Display Name is empty — in-game UI will show the Asset Name (\"" + speaker.AssetName + "\") instead.",
+                    "Display Name is empty - in-game UI will show the Asset Name (\"" + speaker.AssetName + "\") instead.",
                     MessageType.None);
             }
 

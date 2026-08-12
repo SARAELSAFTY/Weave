@@ -124,23 +124,18 @@ namespace Game.Scripts.Runtime.Narrative
 
             foreach (ResourceData resource in resourceCatalog.resources)
             {
-                if (resource != null && resourceState.Get(resource) <= 0)
+                if (resource != null && resourceState.Get(resource) <= resource.collapseThreshold)
                 {
                     collapseCard = resourceCatalog.GetCollapseEndingCard(resource);
                     if (collapseCard == null)
                     {
-                        Debug.LogWarning($"[NarrativeRunner] '{resource.AssetName}' collapsed to zero but has no collapse-ending CardData assigned. Add an entry to ResourceCatalog.collapseEndings.");
+                        Debug.LogWarning($"[NarrativeRunner] '{resource.AssetName}' reached its collapse threshold but has no fallback collapse-ending CardData assigned. Add an entry to ResourceCatalog.collapseEndings.");
                     }
                     return true;
                 }
             }
 
             return false;
-        }
-
-        public SpeakerData GetSpeaker(CardData card)
-        {
-            return card != null ? card.speaker : null;
         }
 
         private bool ValidateSpeakers(out string error)

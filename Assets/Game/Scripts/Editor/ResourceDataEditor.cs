@@ -24,7 +24,7 @@ namespace Game.Scripts.Editor
             EditorGUILayout.PropertyField(assetNameProp, new GUIContent(
                 "Asset Name (ID)",
                 "Author-facing identifier. Convention: Res_<PascalName>, e.g. Res_Trust. " +
-                "Drives the asset filename — changing this renames the .asset file. " +
+                "Drives the asset filename - changing this renames the .asset file. " +
                 "Leave empty to keep the current filename ('" + resource.name + "')."));
 
             EditorGUILayout.PropertyField(displayNameProp, new GUIContent(
@@ -35,7 +35,7 @@ namespace Game.Scripts.Editor
             if (string.IsNullOrWhiteSpace(displayNameProp.stringValue))
             {
                 EditorGUILayout.HelpBox(
-                    "Display Name is empty — HUD will show the Asset Name (\"" + resource.AssetName + "\") instead.",
+                    "Display Name is empty - HUD will show the Asset Name (\"" + resource.AssetName + "\") instead.",
                     MessageType.None);
             }
 
@@ -49,20 +49,12 @@ namespace Game.Scripts.Editor
 
             EditorGUILayout.Space(10);
             SerializedProperty warningSpeakerProp = serializedObject.FindProperty("warningSpeaker");
-            SerializedProperty warningSeedPromptProp = serializedObject.FindProperty("warningSeedPrompt");
             SerializedProperty cooldownProp = serializedObject.FindProperty("warningCooldownCards");
 
             EditorGUILayout.PropertyField(warningSpeakerProp, new GUIContent("Warning Speaker",
                 "Speaker who reacts when this resource crosses the Warning threshold."));
             EditorGUILayout.PropertyField(cooldownProp, new GUIContent("Warning Cooldown (Cards)",
                 "Minimum cards that must pass before this resource can warn again."));
-
-            EditorGUILayout.Space(4);
-            EditorGUILayout.HelpBox("Use {resourceName} as a placeholder in the seed prompt. It will automatically be replaced with this resource's display name at runtime.", MessageType.Info);
-            EditorGUILayout.LabelField("Warning Seed Prompt", EditorStyles.miniBoldLabel);
-            EditorGUILayout.PropertyField(warningSeedPromptProp, GUIContent.none);
-
-
 
             if (GUI.changed)
             {

@@ -1,27 +1,43 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Game.Scripts.Definitions;
 using Game.Scripts.Runtime.Llm;
+using Game.Scripts.Runtime.Narrative;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace Game.Scripts.Editor
 {
     /// <summary>
-    /// Manual Groq request inspector (Weave → LLM Tester). Requires Play Mode for coroutines.
+    /// Manual Groq request inspector (Weave -> LLM Tester). Builds the exact system prompt GameManager would
+    /// send for a chosen Speaker/Card/Resource from a real NarrativeDatabase - including per-card seed
+    /// overrides - so you can read the composed prompt without Play Mode, and optionally fire it for real.
+    /// Sending still requires Play Mode (LlmReactionClient needs a running MonoBehaviour for its coroutines).
     /// </summary>
     public class LlmTesterWindow : EditorWindow
     {
+        private enum TestMode { Reaction, ResourceWarning, PetitionOpening, PetitionTurn, Epilogue }
+
+        private NarrativeDatabase database;
         private LlmSettings settings;
         private TextAsset apiKeyAsset;
+        private TestMode mode = TestMode.Reaction;
 
-        private enum RequestMode { Reaction, Petition }
-        private RequestMode mode = RequestMode.Reaction;
-        private string systemPrompt = "You are a wise royal advisor. Speak one sentence in character.";
-        private string userTurn = "What do you think of the harvest situation?";
+        private int resourceIndex;        // for ResourceWarning / Epilogue's collapsed resource
+        private SpeakerData manualSpeaker;
+        private string manualSeed = string.Empty;
 
-        private string sentPayload = string.Empty;
+        private int sampleDay = 5;
+        private string sampleSnapshot = string.Empty;
+        private string sampleFullHistory = "Rationed the granary; Reassured the court; Enforced the curfew.";
+        private string petitionPlayerInput = "Send reinforcements to the eastern wall.";
+
+        private LlmReactionClient runnerClient;
+        private PetitionSession activePetitionSession;
+        private CardData cachedSelectedCard;
+
+        private string sentPayloadOrPrompt = string.Empty;
         private string rawResponse = string.Empty;
         private string parsedResult = string.Empty;
         private string statusLine = string.Empty;
@@ -29,13 +45,11 @@ namespace Game.Scripts.Editor
         private Vector2 promptScroll;
         private Vector2 resultScroll;
 
-        private TesterRunner runner;
-
         [MenuItem("Weave/LLM Tester")]
         public static void Open()
         {
             LlmTesterWindow window = GetWindow<LlmTesterWindow>("LLM Tester");
-            window.minSize = new Vector2(480, 560);
+            window.minSize = new Vector2(520, 640);
             window.Show();
         }
 
@@ -43,90 +57,372 @@ namespace Game.Scripts.Editor
         {
             DrawHeader();
             EditorGUILayout.Space(6);
-            DrawSettings();
+            DrawSourceSettings();
             EditorGUILayout.Space(6);
-            DrawPromptArea();
+
+            if (database == null)
+            {
+                EditorGUILayout.HelpBox("Assign a Narrative Database above to pick real speakers, cards, and resources.", MessageType.Info);
+                return;
+            }
+
+            DrawModeAndTarget();
             EditorGUILayout.Space(6);
-            DrawSendButton();
+            DrawSampleState();
+            EditorGUILayout.Space(6);
+            DrawComposedPromptPreview();
+            EditorGUILayout.Space(6);
+            DrawSendControls();
             EditorGUILayout.Space(6);
             DrawResults();
         }
 
         private void DrawHeader()
         {
-            GUIStyle titleStyle = new GUIStyle(EditorStyles.boldLabel)
-            {
-                fontSize = 14,
-                alignment = TextAnchor.MiddleLeft
-            };
+            GUIStyle titleStyle = new GUIStyle(EditorStyles.boldLabel) { fontSize = 14, alignment = TextAnchor.MiddleLeft };
             EditorGUILayout.LabelField("Groq API Manual Tester", titleStyle);
-            EditorGUILayout.LabelField("Fires real requests with the same payload as the game.", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("Composes the exact prompt GameManager would send, then fires it with the same client.", EditorStyles.miniLabel);
 
             if (!Application.isPlaying)
             {
-                EditorGUILayout.HelpBox("Enter Play Mode to send requests (coroutines require a running MonoBehaviour).", MessageType.Warning);
+                EditorGUILayout.HelpBox("Prompt preview works in Edit Mode. Enter Play Mode to actually send a request (coroutines require a running MonoBehaviour).", MessageType.Info);
             }
         }
 
-        private void DrawSettings()
+        private void DrawSourceSettings()
         {
-            EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Source", EditorStyles.boldLabel);
+            NarrativeDatabase newDatabase = (NarrativeDatabase)EditorGUILayout.ObjectField("Narrative Database", database, typeof(NarrativeDatabase), false);
+            if (newDatabase != database)
+            {
+                database = newDatabase;
+                cachedSelectedCard = null;
+                resourceIndex = 0;
+                ResetPetitionSession();
+                RegenerateSampleSnapshot();
+            }
+
             settings = (LlmSettings)EditorGUILayout.ObjectField("LLM Settings", settings, typeof(LlmSettings), false);
             apiKeyAsset = (TextAsset)EditorGUILayout.ObjectField("API Key Asset", apiKeyAsset, typeof(TextAsset), false);
 
-            if (settings != null)
+            if (database != null && database.promptTemplates == null)
             {
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.TextField("Model", settings.groqModel);
-                    EditorGUILayout.IntField("Max Tokens", settings.maxTokensPerResponse);
-                    EditorGUILayout.FloatField("Temperature", settings.temperature);
-                }
+                EditorGUILayout.HelpBox("This database has no LlmPromptTemplates assigned - system instructions will be empty, same as in-game.", MessageType.Warning);
             }
         }
 
-        private void DrawPromptArea()
+        private void DrawModeAndTarget()
         {
-            EditorGUILayout.LabelField("Request", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Target", EditorStyles.boldLabel);
 
-            mode = (RequestMode)EditorGUILayout.EnumPopup("Mode", mode);
-
-            EditorGUILayout.LabelField("System Prompt:");
-            promptScroll = EditorGUILayout.BeginScrollView(promptScroll, GUILayout.Height(100));
-            systemPrompt = EditorGUILayout.TextArea(systemPrompt, GUILayout.ExpandHeight(true));
-            EditorGUILayout.EndScrollView();
-
-            if (mode == RequestMode.Reaction)
+            TestMode newMode = (TestMode)EditorGUILayout.EnumPopup("Mode", mode);
+            if (newMode != mode)
             {
-                EditorGUILayout.LabelField("User Turn:");
-                userTurn = EditorGUILayout.TextField(userTurn);
+                mode = newMode;
+                if (mode == TestMode.PetitionTurn)
+                {
+                    ResetPetitionSession();
+                }
+            }
+
+            switch (mode)
+            {
+                case TestMode.Reaction:
+                    DrawCardPicker(c => c != null && c.isLlmReactionCard, "Reaction Card");
+                    break;
+                case TestMode.PetitionOpening:
+                case TestMode.PetitionTurn:
+                    DrawCardPicker(c => c != null && c.isPetitionCard, "Petition Card");
+                    break;
+                case TestMode.ResourceWarning:
+                    DrawResourcePicker("Resource");
+                    break;
+                case TestMode.Epilogue:
+                    DrawResourcePicker("Collapsed Resource");
+                    break;
+            }
+        }
+
+        private void DrawCardPicker(Func<CardData, bool> filter, string label)
+        {
+            List<CardData> matching = (database.cards ?? new List<CardData>()).Where(filter).ToList();
+            string[] options = new[] { "(Custom - pick speaker manually)" }
+                .Concat(matching.Select(c => c.DisplayName))
+                .ToArray();
+
+            int currentSelection = cachedSelectedCard != null && matching.Contains(cachedSelectedCard)
+                ? matching.IndexOf(cachedSelectedCard) + 1
+                : 0;
+            int newSelection = EditorGUILayout.Popup(label, currentSelection, options);
+
+            if (newSelection == 0)
+            {
+                cachedSelectedCard = null;
+                manualSpeaker = (SpeakerData)EditorGUILayout.ObjectField("Speaker", manualSpeaker, typeof(SpeakerData), false);
+                manualSeed = EditorGUILayout.TextField("Seed", manualSeed);
             }
             else
             {
-                EditorGUILayout.HelpBox("Petition mode sends system prompt only (no user turn) and requests json_object response_format.", MessageType.Info);
-
-                if (string.IsNullOrWhiteSpace(systemPrompt) || systemPrompt.IndexOf("json", System.StringComparison.OrdinalIgnoreCase) < 0)
+                cachedSelectedCard = matching[newSelection - 1];
+                using (new EditorGUI.DisabledScope(true))
                 {
-                    EditorGUILayout.HelpBox("Groq petition requests need the prompt to mention 'json' when response_format is json_object.", MessageType.Warning);
+                    EditorGUILayout.ObjectField("Speaker (from card)", cachedSelectedCard.speaker, typeof(SpeakerData), false);
                 }
             }
         }
 
-        private void DrawSendButton()
+        private CardData GetSelectedCard(List<CardData> matching) =>
+            cachedSelectedCard != null && matching.Contains(cachedSelectedCard) ? cachedSelectedCard : null;
+
+        private void DrawResourcePicker(string label)
         {
-            using (new EditorGUI.DisabledScope(isBusy || !Application.isPlaying || settings == null || apiKeyAsset == null))
+            List<ResourceData> resources = (database.resourceCatalog != null ? database.resourceCatalog.resources : null) ?? new List<ResourceData>();
+            resources = resources.Where(r => r != null).ToList();
+
+            if (resources.Count == 0)
             {
-                string label = isBusy ? "Sending…" : $"Send {mode} Request";
-                if (GUILayout.Button(label, GUILayout.Height(32)))
+                EditorGUILayout.HelpBox("This database's Resource Catalog has no resources.", MessageType.Warning);
+                return;
+            }
+
+            resourceIndex = Mathf.Clamp(resourceIndex, 0, resources.Count - 1);
+            string[] names = resources.Select(r => r.DisplayName).ToArray();
+            resourceIndex = EditorGUILayout.Popup(label, resourceIndex, names);
+
+            ResourceData resource = resources[resourceIndex];
+            if (mode == TestMode.ResourceWarning)
+            {
+                using (new EditorGUI.DisabledScope(true))
                 {
-                    Send();
+                    EditorGUILayout.ObjectField("Warning Speaker (from resource)", resource.warningSpeaker, typeof(SpeakerData), false);
                 }
+                if (resource.warningSpeaker == null)
+                {
+                    EditorGUILayout.HelpBox("This resource has no Warning Speaker assigned - in-game, its warning would silently skip straight to the next card.", MessageType.Warning);
+                }
+            }
+        }
+
+        private void DrawSampleState()
+        {
+            EditorGUILayout.LabelField("Sample Game State", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("No live run exists in Edit Mode, so this snapshot is a stand-in - edit it freely to test different situations.", MessageType.None);
+
+            EditorGUI.BeginChangeCheck();
+            sampleDay = EditorGUILayout.IntField("Day", sampleDay);
+            if (EditorGUI.EndChangeCheck())
+            {
+                RegenerateSampleSnapshot();
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel("Kingdom Snapshot");
+            if (GUILayout.Button("Regenerate from Catalog", GUILayout.Width(170)))
+            {
+                RegenerateSampleSnapshot();
+            }
+            EditorGUILayout.EndHorizontal();
+            sampleSnapshot = EditorGUILayout.TextArea(sampleSnapshot, GUILayout.MinHeight(60));
+
+            if (mode == TestMode.PetitionTurn)
+            {
+                petitionPlayerInput = EditorGUILayout.TextField("Player Input (this turn)", petitionPlayerInput);
+            }
+
+            if (mode == TestMode.Epilogue)
+            {
+                EditorGUILayout.LabelField("Full Choice History (sample)");
+                sampleFullHistory = EditorGUILayout.TextArea(sampleFullHistory, GUILayout.MinHeight(40));
+            }
+        }
+
+        private void RegenerateSampleSnapshot()
+        {
+            List<ResourceData> resources = database?.resourceCatalog != null ? database.resourceCatalog.resources : null;
+            string resourceSummary = "None";
+            if (resources != null && resources.Count > 0)
+            {
+                resourceSummary = string.Join(", ", resources.Where(r => r != null).Select(r => $"{r.DisplayName}: {r.defaultStartingValue}"));
+            }
+
+            sampleSnapshot =
+                $"Current Day: {sampleDay}\n" +
+                $"Kingdom Resources -> {resourceSummary}\n" +
+                "Recent Narrative History: None\n" +
+                "Completed Petition Conversations: None";
+        }
+
+        private void DrawComposedPromptPreview()
+        {
+            EditorGUILayout.LabelField("Composed Prompt (exact - read before sending)", EditorStyles.boldLabel);
+
+            string prompt;
+            try
+            {
+                prompt = ComposeCurrentPrompt(out string modeWarning);
+                if (!string.IsNullOrEmpty(modeWarning))
+                {
+                    EditorGUILayout.HelpBox(modeWarning, MessageType.Warning);
+                }
+            }
+            catch (Exception exception)
+            {
+                prompt = $"(Could not compose prompt: {exception.Message})";
+            }
+
+            promptScroll = EditorGUILayout.BeginScrollView(promptScroll, GUILayout.Height(160));
+            EditorGUILayout.SelectableLabel(prompt, EditorStyles.textArea, GUILayout.ExpandHeight(true));
+            EditorGUILayout.EndScrollView();
+        }
+
+        private LlmPromptTemplates Templates => database != null ? database.promptTemplates : null;
+
+        private SpeakerData ResolveSpeaker(List<CardData> matching)
+        {
+            if (mode == TestMode.ResourceWarning)
+            {
+                return GetSelectedResource()?.warningSpeaker;
+            }
+
+            if (mode == TestMode.Epilogue)
+            {
+                return null;
+            }
+
+            CardData card = GetSelectedCard(matching);
+            return card != null ? card.speaker : manualSpeaker;
+        }
+
+        private ResourceData GetSelectedResource()
+        {
+            List<ResourceData> resources = database?.resourceCatalog != null ? database.resourceCatalog.resources : null;
+            if (resources == null || resources.Count == 0) return null;
+            return resources[Mathf.Clamp(resourceIndex, 0, resources.Count - 1)];
+        }
+
+        // Builds the same prompt GameManager would for the current selection. Read-only - never mutates
+        // activePetitionSession, so it's safe to call every OnGUI repaint.
+        private string ComposeCurrentPrompt(out string warning)
+        {
+            warning = null;
+            LlmPromptTemplates templates = Templates;
+            List<CardData> matching = mode == TestMode.Reaction
+                ? (database.cards ?? new List<CardData>()).Where(c => c != null && c.isLlmReactionCard).ToList()
+                : (database.cards ?? new List<CardData>()).Where(c => c != null && c.isPetitionCard).ToList();
+            CardData card = GetSelectedCard(matching);
+            SpeakerData speaker = ResolveSpeaker(matching);
+
+            if (speaker != null && string.IsNullOrWhiteSpace(speaker.llmPersonaPrompt))
+            {
+                warning = $"Speaker '{speaker.DisplayName}' has no persona prompt authored - this will be voiced with no persona.";
+            }
+
+            switch (mode)
+            {
+                case TestMode.Reaction:
+                {
+                    string seed = card != null ? card.EffectiveReactionSeed(templates) : manualSeed;
+                    string instructions = templates != null ? templates.personaSystemInstructions : string.Empty;
+                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions);
+                }
+
+                case TestMode.PetitionOpening:
+                {
+                    string seed = card != null ? card.EffectivePetitionSeed(templates) : manualSeed;
+                    string instructions = templates != null ? templates.personaSystemInstructions : string.Empty;
+                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions);
+                }
+
+                case TestMode.ResourceWarning:
+                {
+                    ResourceData resource = GetSelectedResource();
+                    string seed = PromptTemplateUtility.Fill(
+                        templates != null ? templates.defaultWarningSeedPrompt : string.Empty,
+                        "resourceName", resource != null ? resource.DisplayName : "(resource)");
+                    string instructions = templates != null ? templates.personaSystemInstructions : string.Empty;
+                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions);
+                }
+
+                case TestMode.PetitionTurn:
+                {
+                    EnsurePetitionSession();
+                    string seed = card != null ? card.EffectivePetitionSeed(templates) : manualSeed;
+                    string instructions = templates != null ? templates.petitionSystemInstructions : string.Empty;
+                    IReadOnlyList<ResourceData> validResources = database.resourceCatalog != null ? database.resourceCatalog.resources : null;
+                    int clamp = settings != null ? settings.petitionResourceClampMagnitude : 20;
+                    int nextTurn = activePetitionSession.TurnsUsed + 1;
+                    bool isFinalTurn = nextTurn >= activePetitionSession.MaxTurns;
+                    return SpeakerPromptBuilder.BuildPetitionTurnPrompt(
+                        speaker, sampleSnapshot, seed, validResources, clamp, instructions,
+                        nextTurn, activePetitionSession.MaxTurns, isFinalTurn)
+                        + "\n\n[Prior turns in this session: " + activePetitionSession.TurnsUsed + " - see Results below for transcript]";
+                }
+
+                case TestMode.Epilogue:
+                {
+                    ResourceData resource = GetSelectedResource();
+                    string instructions = templates != null ? templates.epilogueSystemInstructions : string.Empty;
+                    return SpeakerPromptBuilder.BuildEpiloguePrompt(
+                        sampleDay, resource != null ? resource.DisplayName : "(resource)",
+                        BuildFallbackResourceSummary(), sampleFullHistory, instructions);
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private string BuildFallbackResourceSummary()
+        {
+            List<ResourceData> resources = database?.resourceCatalog != null ? database.resourceCatalog.resources : null;
+            if (resources == null || resources.Count == 0) return "None";
+            return string.Join(", ", resources.Where(r => r != null).Select(r => $"{r.DisplayName}: {r.defaultStartingValue}"));
+        }
+
+        private void DrawSendControls()
+        {
+            bool canSend = Application.isPlaying && !isBusy && settings != null && apiKeyAsset != null;
+
+            using (new EditorGUI.DisabledScope(!canSend))
+            {
+                if (mode == TestMode.PetitionTurn)
+                {
+                    EnsurePetitionSession();
+                    EditorGUILayout.LabelField($"Petition session: turn {activePetitionSession.TurnsUsed} of {activePetitionSession.MaxTurns}" +
+                        (activePetitionSession.AwaitingConfirmation ? " - awaiting confirmation" : ""));
+
+                    EditorGUILayout.BeginHorizontal();
+                    if (GUILayout.Button(isBusy ? "Sending..." : "Send Turn", GUILayout.Height(30)))
+                    {
+                        SendPetitionTurn();
+                    }
+                    if (GUILayout.Button("Reset Session", GUILayout.Width(120), GUILayout.Height(30)))
+                    {
+                        ResetPetitionSession();
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+                else
+                {
+                    if (GUILayout.Button(isBusy ? "Sending..." : "Send", GUILayout.Height(32)))
+                    {
+                        SendCurrentPrompt();
+                    }
+                }
+            }
+
+            if (!Application.isPlaying)
+            {
+                EditorGUILayout.HelpBox("Enter Play Mode to send.", MessageType.Warning);
+            }
+            else if (settings == null || apiKeyAsset == null)
+            {
+                EditorGUILayout.HelpBox("Assign LLM Settings and an API Key Asset to send.", MessageType.Warning);
             }
         }
 
         private void DrawResults()
         {
-            if (string.IsNullOrEmpty(statusLine) && string.IsNullOrEmpty(sentPayload))
+            if (string.IsNullOrEmpty(statusLine) && string.IsNullOrEmpty(sentPayloadOrPrompt))
             {
                 return;
             }
@@ -135,8 +431,8 @@ namespace Game.Scripts.Editor
 
             if (!string.IsNullOrEmpty(statusLine))
             {
-                MessageType msgType = statusLine.StartsWith("✓") ? MessageType.Info
-                    : statusLine.StartsWith("⚠") ? MessageType.Warning
+                MessageType msgType = statusLine.StartsWith("[OK]") ? MessageType.Info
+                    : statusLine.StartsWith("[Warning]") ? MessageType.Warning
                     : MessageType.Error;
                 EditorGUILayout.HelpBox(statusLine, msgType);
             }
@@ -147,178 +443,139 @@ namespace Game.Scripts.Editor
                 EditorGUILayout.HelpBox(parsedResult, MessageType.None);
             }
 
-            resultScroll = EditorGUILayout.BeginScrollView(resultScroll);
-
-            if (!string.IsNullOrEmpty(sentPayload))
+            if (mode == TestMode.PetitionTurn && activePetitionSession != null)
             {
-                EditorGUILayout.LabelField("JSON Sent:", EditorStyles.miniBoldLabel);
-                EditorGUILayout.TextArea(sentPayload, EditorStyles.helpBox, GUILayout.ExpandHeight(false));
+                string transcript = activePetitionSession.GetTranscript();
+                if (!string.IsNullOrEmpty(transcript))
+                {
+                    EditorGUILayout.LabelField("Session Transcript:", EditorStyles.miniBoldLabel);
+                    EditorGUILayout.HelpBox(transcript, MessageType.None);
+                }
             }
 
+            resultScroll = EditorGUILayout.BeginScrollView(resultScroll);
             if (!string.IsNullOrEmpty(rawResponse))
             {
                 EditorGUILayout.LabelField("Raw Response:", EditorStyles.miniBoldLabel);
                 EditorGUILayout.TextArea(rawResponse, EditorStyles.helpBox, GUILayout.ExpandHeight(false));
             }
-
             EditorGUILayout.EndScrollView();
         }
 
-        private void Send()
+        private void EnsurePetitionSession()
         {
-            if (!Application.isPlaying)
+            if (activePetitionSession == null)
             {
-                return;
+                activePetitionSession = new PetitionSession(settings != null ? settings.petitionMaxTurns : 1);
             }
+        }
 
-            isBusy = true;
-            sentPayload = string.Empty;
+        private void ResetPetitionSession()
+        {
+            activePetitionSession = null;
             rawResponse = string.Empty;
             parsedResult = string.Empty;
-            statusLine = "Sending…";
+            statusLine = string.Empty;
+        }
+
+        private void EnsureRunnerClient()
+        {
+            if (runnerClient == null)
+            {
+                GameObject go = new GameObject("[LlmTesterRunner]") { hideFlags = HideFlags.HideAndDontSave };
+                runnerClient = go.AddComponent<LlmReactionClient>();
+            }
+            runnerClient.Configure(settings, apiKeyAsset);
+        }
+
+        private void SendCurrentPrompt()
+        {
+            if (!Application.isPlaying) return;
+
+            string prompt = ComposeCurrentPrompt(out _);
+            sentPayloadOrPrompt = prompt;
+            rawResponse = string.Empty;
+            parsedResult = string.Empty;
+            statusLine = "Sending...";
+            isBusy = true;
             Repaint();
 
-            if (runner == null)
-            {
-                GameObject go = new GameObject("[LlmTesterRunner]")
-                {
-                    hideFlags = HideFlags.HideAndDontSave
-                };
-                runner = go.AddComponent<TesterRunner>();
-            }
+            EnsureRunnerClient();
+            int? maxTokens = mode == TestMode.Epilogue && settings != null ? settings.epilogueMaxTokens : (int?)null;
 
-            string apiKey = apiKeyAsset != null ? apiKeyAsset.text.Trim() : string.Empty;
-            string payload = BuildPayload(out string payloadStr);
-            sentPayload = payloadStr;
-
-            runner.Run(payload, apiKey, settings.apiTimeoutSeconds,
-                onDone: (httpCode, responseBody) =>
+            runnerClient.RequestReaction(prompt,
+                line =>
                 {
-                    rawResponse = responseBody;
-                    HandleResponse(httpCode, responseBody);
+                    parsedResult = string.IsNullOrWhiteSpace(line) ? "(empty content)" : line;
+                    statusLine = "[OK]";
+                    isBusy = false;
+                    Repaint();
+                },
+                error =>
+                {
+                    statusLine = $"[Error] {error}";
+                    isBusy = false;
+                    Repaint();
+                },
+                maxTokens);
+        }
+
+        private void SendPetitionTurn()
+        {
+            if (!Application.isPlaying) return;
+
+            EnsurePetitionSession();
+            LlmPromptTemplates templates = Templates;
+            List<CardData> matching = (database.cards ?? new List<CardData>()).Where(c => c != null && c.isPetitionCard).ToList();
+            CardData card = GetSelectedCard(matching);
+            SpeakerData speaker = ResolveSpeaker(matching);
+            string seed = card != null ? card.EffectivePetitionSeed(templates) : manualSeed;
+            string instructions = templates != null ? templates.petitionSystemInstructions : string.Empty;
+            IReadOnlyList<ResourceData> validResources = database.resourceCatalog != null ? database.resourceCatalog.resources : null;
+            int clamp = settings != null ? settings.petitionResourceClampMagnitude : 20;
+
+            bool wasFinalTurn = activePetitionSession.NextTurnIsFinal;
+            List<GroqApiMessage> messages = activePetitionSession.BuildMessagesForSubmission(
+                petitionPlayerInput, speaker, sampleSnapshot, seed, validResources, clamp, instructions);
+
+            sentPayloadOrPrompt = string.Join("\n---\n", messages.Select(m => $"[{m.role}] {m.content}"));
+            rawResponse = string.Empty;
+            parsedResult = string.Empty;
+            statusLine = "Sending...";
+            isBusy = true;
+            Repaint();
+
+            EnsureRunnerClient();
+            runnerClient.RequestPetitionTurn(messages,
+                (result, raw) =>
+                {
+                    rawResponse = raw;
+                    if (result == null || string.IsNullOrWhiteSpace(result.reaction))
+                    {
+                        statusLine = "[Error] Empty or unparsable resolution";
+                        isBusy = false;
+                        Repaint();
+                        return;
+                    }
+
+                    activePetitionSession.RecordReply(result, raw);
+                    parsedResult = $"phase={result.phase}, reaction=\"{result.reaction}\", historyTag=\"{result.historyTag}\"" +
+                        (result.resourceChanges != null && result.resourceChanges.Length > 0
+                            ? "\nresourceChanges: " + string.Join(", ", result.resourceChanges.Select(r => $"{r.resource}:{r.delta}"))
+                            : string.Empty);
+
+                    statusLine = wasFinalTurn && !result.IsProposal
+                        ? "[Warning] Model kept deliberating past the final turn - in-game this would auto-advance."
+                        : "[OK]";
+                    isBusy = false;
+                    Repaint();
+                },
+                error =>
+                {
+                    statusLine = $"[Error] {error}";
                     isBusy = false;
                     Repaint();
                 });
-        }
-
-        private string BuildPayload(out string prettyJson)
-        {
-            string json;
-
-            if (mode == RequestMode.Petition)
-            {
-                GroqPetitionApiRequest req = new GroqPetitionApiRequest
-                {
-                    model = settings.groqModel,
-                    max_completion_tokens = settings.maxTokensPerResponse,
-                    temperature = settings.temperature,
-                    reasoning_effort = string.IsNullOrWhiteSpace(settings.reasoningEffort) ? "none" : settings.reasoningEffort
-                };
-                req.messages.Add(new GroqApiMessage { role = "system", content = systemPrompt });
-                json = JsonUtility.ToJson(req, true);
-            }
-            else
-            {
-                GroqApiRequest req = new GroqApiRequest
-                {
-                    model = settings.groqModel,
-                    max_completion_tokens = settings.maxTokensPerResponse,
-                    temperature = settings.temperature,
-                    reasoning_effort = string.IsNullOrWhiteSpace(settings.reasoningEffort) ? "none" : settings.reasoningEffort
-                };
-                req.messages.Add(new GroqApiMessage { role = "system", content = systemPrompt });
-                req.messages.Add(new GroqApiMessage { role = "user", content = userTurn });
-                json = JsonUtility.ToJson(req, true);
-            }
-
-            prettyJson = json;
-            return json;
-        }
-
-        private void HandleResponse(long httpCode, string body)
-        {
-            if (httpCode >= 200 && httpCode < 300)
-            {
-                try
-                {
-                    GroqResponse resp = JsonUtility.FromJson<GroqResponse>(body);
-                    string content = resp?.choices?[0]?.message?.content;
-                    parsedResult = string.IsNullOrWhiteSpace(content) ? "(empty content)" : content;
-                    statusLine = $"✓ HTTP {httpCode} — OK";
-                }
-                catch (Exception ex)
-                {
-                    parsedResult = string.Empty;
-                    statusLine = $"✗ HTTP {httpCode} — Parse error: {ex.Message}";
-                }
-            }
-            else
-            {
-                parsedResult = string.Empty;
-
-                string errorDetail = TryExtractGroqError(body);
-                statusLine = $"✗ HTTP {httpCode}{(string.IsNullOrEmpty(errorDetail) ? string.Empty : " — " + errorDetail)}";
-            }
-        }
-
-        private static string TryExtractGroqError(string body)
-        {
-            if (string.IsNullOrWhiteSpace(body))
-            {
-                return string.Empty;
-            }
-
-            // Shape: {"error":{"message":"...","type":"...","code":"..."}}
-            try
-            {
-                GroqErrorWrapper wrapper = JsonUtility.FromJson<GroqErrorWrapper>(body);
-                return wrapper?.error?.message ?? string.Empty;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        [Serializable]
-        private class GroqErrorWrapper
-        {
-            public GroqErrorBody error;
-        }
-
-        [Serializable]
-        private class GroqErrorBody
-        {
-            public string message;
-            public string type;
-            public string code;
-        }
-
-        private class TesterRunner : MonoBehaviour
-        {
-            public void Run(string jsonPayload, string apiKey, float timeout, Action<long, string> onDone)
-            {
-                StartCoroutine(SendRoutine(jsonPayload, apiKey, timeout, onDone));
-            }
-
-            private IEnumerator SendRoutine(string jsonPayload, string apiKey, float timeout, Action<long, string> onDone)
-            {
-                const string url = "https://api.groq.com/openai/v1/chat/completions";
-
-                using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
-                {
-                    byte[] body = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
-                    request.uploadHandler = new UploadHandlerRaw(body);
-                    request.downloadHandler = new DownloadHandlerBuffer();
-                    request.SetRequestHeader("Content-Type", "application/json");
-                    request.SetRequestHeader("Authorization", $"Bearer {apiKey}");
-                    request.timeout = Mathf.CeilToInt(timeout);
-
-                    yield return request.SendWebRequest();
-
-                    onDone?.Invoke(request.responseCode, request.downloadHandler.text ?? string.Empty);
-                }
-            }
         }
     }
 }

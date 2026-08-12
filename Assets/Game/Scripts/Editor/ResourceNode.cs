@@ -11,6 +11,7 @@ namespace Game.Scripts.Editor
         private static readonly Color ResourceBorderColor = new Color(0.25f, 0.75f, 0.55f);
 
         public ResourceData Data { get; }
+        public Port CollapsePort { get; private set; }
 
         protected override Object TargetAsset => Data;
         protected override string TargetId => Data != null ? Data.DisplayName : "Null Resource";
@@ -28,6 +29,10 @@ namespace Game.Scripts.Editor
             if (data != null)
             {
                 extensionContainer.Add(BuildBody(data));
+                CollapsePort = Port.Create<Edge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
+                CollapsePort.portName = "Collapse Ending";
+                CollapsePort.portColor = new Color(1f, 0.35f, 0.35f);
+                outputContainer.Add(CollapsePort);
             }
 
             RefreshExpandedState();
@@ -57,40 +62,14 @@ namespace Game.Scripts.Editor
                 }
             };
 
-            Label nameValue = new Label(data.DisplayName);
-            nameValue.style.fontSize = 11;
-            nameValue.style.unityFontStyleAndWeight = FontStyle.Bold;
-            nameValue.style.color = new StyleColor(new Color(0.9f, 0.9f, 0.9f));
-            nameValue.style.marginBottom = 2;
-            body.Add(nameValue);
-
-            if (!string.IsNullOrWhiteSpace(data.assetName) && data.assetName.Trim() != data.DisplayName)
-            {
-                Label idLabel = new Label($"ID: {data.assetName.Trim()}");
-                idLabel.style.fontSize = 9;
-                idLabel.style.color = new StyleColor(new Color(0.55f, 0.55f, 0.55f));
-                idLabel.style.marginBottom = 4;
-                body.Add(idLabel);
-            }
+            AddIdentityLabels(body, data.DisplayName, data.assetName);
 
             Label startValue = new Label($"Starting Value: {data.defaultStartingValue}");
             startValue.style.fontSize = 10;
             startValue.style.color = new StyleColor(new Color(0.7f, 0.7f, 0.7f));
             body.Add(startValue);
 
-            if (data.icon != null)
-            {
-                Image iconImage = new Image
-                {
-                    sprite = data.icon,
-                    scaleMode = ScaleMode.ScaleToFit
-                };
-                iconImage.style.width = 40;
-                iconImage.style.height = 40;
-                iconImage.style.marginTop = 8;
-                iconImage.style.alignSelf = Align.Center;
-                body.Add(iconImage);
-            }
+            AddPreviewImage(body, data.icon, 40f, withBorder: false);
 
             return body;
         }

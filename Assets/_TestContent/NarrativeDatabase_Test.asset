@@ -23,33 +23,42 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 276e2b0c6e9982348a90d383f341bc68, type: 2}
   - {fileID: 11400000, guid: b327bafbd1438cb42ae39f5ba77ec134, type: 2}
   - {fileID: 11400000, guid: c53edc063d903d140856ad16ecb100b2, type: 2}
+  - {fileID: 11400000, guid: e2c1422fa5c2ded4298bab24011058e6, type: 2}
+  - {fileID: 11400000, guid: 8958c150e163e8f4382fa70cc9f73c0a, type: 2}
+  - {fileID: 11400000, guid: c2e7839333734df4e99f0c1c9185ee0c, type: 2}
   speakers:
   - {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
   - {fileID: 11400000, guid: bfb477a00a82eb743883a1d0316c78c1, type: 2}
   editorGraphPositions:
   - card: {fileID: 11400000, guid: 47b187eb1168e0148a0fe16ce0e09489, type: 2}
-    position: {x: 4, y: -162}
+    position: {x: -11.2, y: -94.4}
   - card: {fileID: 11400000, guid: d820acf18a7f7cb4db5000767dff8f32, type: 2}
-    position: {x: 415, y: -274}
+    position: {x: 468.80002, y: -312}
   - card: {fileID: 11400000, guid: 89f9636b9e558ae48b6c25e117aa135a, type: 2}
-    position: {x: 434, y: -5}
+    position: {x: 423.2, y: -14.400002}
   - card: {fileID: 11400000, guid: bf05ac8504441bc478c86eedaef0bc50, type: 2}
-    position: {x: 896, y: 15}
+    position: {x: 804, y: -48}
   - card: {fileID: 11400000, guid: 276e2b0c6e9982348a90d383f341bc68, type: 2}
-    position: {x: 1315, y: 17}
+    position: {x: 1164.7999, y: -65.6}
   - card: {fileID: 11400000, guid: b327bafbd1438cb42ae39f5ba77ec134, type: 2}
-    position: {x: 1711, y: 44}
+    position: {x: 1501, y: -42}
   - card: {fileID: 11400000, guid: c53edc063d903d140856ad16ecb100b2, type: 2}
-    position: {x: 1748, y: 261}
+    position: {x: 1842, y: -44}
+  - card: {fileID: 11400000, guid: e2c1422fa5c2ded4298bab24011058e6, type: 2}
+    position: {x: -276, y: -290}
+  - card: {fileID: 11400000, guid: 8958c150e163e8f4382fa70cc9f73c0a, type: 2}
+    position: {x: -257, y: 319}
+  - card: {fileID: 11400000, guid: c2e7839333734df4e99f0c1c9185ee0c, type: 2}
+    position: {x: -237, y: 610}
   editorSpeakerPositions:
   - speaker: {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
-    position: {x: -261, y: 60}
+    position: {x: -546, y: -18}
   - speaker: {fileID: 11400000, guid: bfb477a00a82eb743883a1d0316c78c1, type: 2}
-    position: {x: -260, y: 270}
+    position: {x: -561, y: 156}
   editorResourcePositions:
   - resource: {fileID: 11400000, guid: 5a0196efc6c6aca4e80dd289639a76bb, type: 2}
-    position: {x: -520, y: 60}
+    position: {x: -524, y: -168}
   - resource: {fileID: 11400000, guid: 28865345534e13046b9f8b9d492912ab, type: 2}
-    position: {x: -520, y: 252}
+    position: {x: -508, y: 347}
   - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
-    position: {x: -520, y: 440}
+    position: {x: -517, y: 618}

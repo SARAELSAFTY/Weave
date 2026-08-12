@@ -13,13 +13,22 @@ namespace Game.Scripts.Runtime.Llm
         [SerializeField, Tooltip("Global LLM settings.")]
         private LlmSettings settings;
 
-        [SerializeField, Tooltip("Prompt templates and default copy.")]
-        private LlmPromptTemplates promptTemplates;
-
         [SerializeField, Tooltip("TextAsset containing the Groq API key. Drag the key file here.")]
         private TextAsset apiKeyAsset;
 
         private string cachedApiKey;
+
+        /// <summary>
+        /// Assigns settings/apiKeyAsset in code instead of via the Inspector. Intended for editor tooling
+        /// (LlmTesterWindow) that spins up a temporary instance of this component so it can reuse the real
+        /// request/parse logic below instead of duplicating it.
+        /// </summary>
+        public void Configure(LlmSettings settingsToUse, TextAsset apiKey)
+        {
+            settings = settingsToUse;
+            apiKeyAsset = apiKey;
+            cachedApiKey = null;
+        }
 
         public void RequestReaction(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
@@ -215,12 +224,8 @@ namespace Game.Scripts.Runtime.Llm
                 reasoning_effort = string.IsNullOrWhiteSpace(settings.reasoningEffort) ? "none" : settings.reasoningEffort
             };
 
-            string userTurnPrompt = promptTemplates != null
-                ? promptTemplates.reactionUserTurnPrompt
-                : string.Empty;
-
             request.messages.Add(new GroqApiMessage { role = "system", content = systemPrompt });
-            request.messages.Add(new GroqApiMessage { role = "user", content = userTurnPrompt });
+            request.messages.Add(new GroqApiMessage { role = "user", content = "Respond to the situation above." });
 
             return JsonUtility.ToJson(request);
         }
@@ -284,7 +289,7 @@ namespace Game.Scripts.Runtime.Llm
 
                     content = content.Trim();
 
-                    // Strip <think> blocks before JSON parse — a leading block would break FromJson.
+                    // Strip <think> blocks before JSON parse - a leading block would break FromJson.
                     content = System.Text.RegularExpressions.Regex.Replace(content, @"<think>[\s\S]*?</think>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
 
                     if (content.StartsWith("```json", StringComparison.OrdinalIgnoreCase))

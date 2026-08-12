@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Test_Reaction_CourtReacts
+  m_Name: Test_Ending_MoraleCollapse
   m_EditorClassIdentifier: 
-  assetName: Test_Reaction_CourtReacts
-  displayName: 
+  assetName: Test_Ending_MoraleCollapse
+  displayName: Morale Collapse
   speaker: {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
   description: 
   dayAdvance: 1
@@ -25,8 +25,8 @@ MonoBehaviour:
   rightResourceChange:
     values: []
   rightNextCard: {fileID: 0}
-  isLlmReactionCard: 1
+  isLlmReactionCard: 0
   reactionSeedOverride: 
   isPetitionCard: 0
   petitionSeedOverride: 
-  continueNextCard: {fileID: 11400000, guid: 276e2b0c6e9982348a90d383f341bc68, type: 2}
+  continueNextCard: {fileID: 0}

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Scripts.Definitions;
+using Game.Scripts.Runtime.Narrative;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -29,6 +31,33 @@ namespace Game.Scripts.Editor
         private CardData pendingNewCard;
         private SpeakerData pendingNewSpeaker;
         private ResourceData pendingNewResource;
+
+        private static bool TrySavePosition<TAsset, TEntry>(
+            List<TEntry> list, Dictionary<TAsset, Vector2> cache, TAsset asset, Vector2 position,
+            Func<TEntry, TAsset> getAsset, Func<TAsset, Vector2, TEntry> makeEntry)
+            where TAsset : UnityEngine.Object
+        {
+            if (list == null || asset == null) return false;
+            if (cache.TryGetValue(asset, out Vector2 existing) && existing == position) return false;
+
+            cache[asset] = position;
+            int index = list.FindIndex(e => getAsset(e) == asset);
+            if (index >= 0) list[index] = makeEntry(asset, position);
+            else list.Add(makeEntry(asset, position));
+            return true;
+        }
+
+        private static bool TryRemovePosition<TAsset, TEntry>(
+            List<TEntry> list, Dictionary<TAsset, Vector2> cache, TAsset asset, Func<TEntry, TAsset> getAsset)
+            where TAsset : UnityEngine.Object
+        {
+            if (list == null || asset == null) return false;
+            cache.Remove(asset);
+            int index = list.FindIndex(e => getAsset(e) == asset);
+            if (index < 0) return false;
+            list.RemoveAt(index);
+            return true;
+        }
 
         public NarrativeDatabase Database => database;
 
@@ -106,9 +135,12 @@ namespace Game.Scripts.Editor
             List<CardNode> nodeList = CreateNodes(nodesByCard);
             DrawEdges(nodeList, nodesByCard);
             CreateSpeakerNodes();
-            CreateResourceNodes();
+            Dictionary<ResourceData, ResourceNode> nodesByResource = CreateResourceNodes();
+            DrawCollapseEdges(nodesByResource, nodesByCard);
 
-            isPopulating = false;
+            // Node layout can resolve a frame late; defer the flag reset so a late
+            // graphViewChanged event doesn't re-save positions before they've settled.
+            EditorApplication.delayCall += () => isPopulating = false;
         }
 
         private void LoadPositionsFromDatabase()
@@ -282,9 +314,10 @@ namespace Game.Scripts.Editor
 
         private static readonly Vector2 DefaultResourceNodeSize = new Vector2(200, 150);
 
-        private void CreateResourceNodes()
+        private Dictionary<ResourceData, ResourceNode> CreateResourceNodes()
         {
-            if (database?.resourceCatalog?.resources == null) return;
+            Dictionary<ResourceData, ResourceNode> nodesByResource = new Dictionary<ResourceData, ResourceNode>();
+            if (database?.resourceCatalog?.resources == null) return nodesByResource;
 
             int i = 0;
             foreach (ResourceData resource in database.resourceCatalog.resources)
@@ -295,7 +328,26 @@ namespace Game.Scripts.Editor
                 Vector2 pos = ResolveResourceNodePosition(resource, i);
                 resourceNode.SetPosition(new Rect(pos, DefaultResourceNodeSize));
                 AddElement(resourceNode);
+                nodesByResource[resource] = resourceNode;
                 i++;
+            }
+
+            return nodesByResource;
+        }
+
+        private void DrawCollapseEdges(Dictionary<ResourceData, ResourceNode> nodesByResource, Dictionary<CardData, CardNode> nodesByCard)
+        {
+            if (database?.resourceCatalog?.collapseEndings == null) return;
+
+            foreach (ResourceCollapseEnding entry in database.resourceCatalog.collapseEndings)
+            {
+                if (entry?.resource == null || entry.endingCard == null) continue;
+                if (!nodesByResource.TryGetValue(entry.resource, out ResourceNode resourceNode)) continue;
+                if (!nodesByCard.TryGetValue(entry.endingCard, out CardNode endingNode)) continue;
+
+                Edge edge = resourceNode.CollapsePort.ConnectTo(endingNode.InputPort);
+                edge.capabilities &= ~Capabilities.Deletable;
+                AddElement(edge);
             }
         }
 
@@ -319,31 +371,23 @@ namespace Game.Scripts.Editor
             return defaultPos;
         }
 
-        private void SaveCurrentNodePositions()
+        private void SaveMovedNodePositions(List<GraphElement> movedElements)
         {
-            if (database == null) return;
+            if (database == null || movedElements == null) return;
 
-            foreach (CardNode node in graphElements.OfType<CardNode>())
+            foreach (GraphElement element in movedElements)
             {
-                if (node.Card != null)
+                switch (element)
                 {
-                    SavePositionToDatabase(node.Card, node.GetPosition().position);
-                }
-            }
-
-            foreach (SpeakerNode node in graphElements.OfType<SpeakerNode>())
-            {
-                if (node.Speaker != null)
-                {
-                    SaveSpeakerPositionToDatabase(node.Speaker, node.GetPosition().position);
-                }
-            }
-
-            foreach (ResourceNode node in graphElements.OfType<ResourceNode>())
-            {
-                if (node.Data != null)
-                {
-                    SaveResourcePositionToDatabase(node.Data, node.GetPosition().position);
+                    case CardNode cardNode when cardNode.Card != null:
+                        SavePositionToDatabase(cardNode.Card, cardNode.GetPosition().position);
+                        break;
+                    case SpeakerNode speakerNode when speakerNode.Speaker != null:
+                        SaveSpeakerPositionToDatabase(speakerNode.Speaker, speakerNode.GetPosition().position);
+                        break;
+                    case ResourceNode resourceNode when resourceNode.Data != null:
+                        SaveResourcePositionToDatabase(resourceNode.Data, resourceNode.GetPosition().position);
+                        break;
                 }
             }
         }
@@ -351,35 +395,20 @@ namespace Game.Scripts.Editor
         private void SavePositionToDatabase(CardData card, Vector2 position)
         {
             if (database == null || card == null) return;
-
             database.editorGraphPositions ??= new List<NarrativeDatabase.CardGraphPosition>();
-            if (positionsByCard.TryGetValue(card, out Vector2 existing) && existing == position) return;
-
-            positionsByCard[card] = position;
-            int index = database.editorGraphPositions.FindIndex(e => e.card == card);
-
             Undo.RecordObject(database, "Move Card Node");
-            if (index >= 0)
-            {
-                database.editorGraphPositions[index] = new NarrativeDatabase.CardGraphPosition { card = card, position = position };
-            }
-            else
-            {
-                database.editorGraphPositions.Add(new NarrativeDatabase.CardGraphPosition { card = card, position = position });
-            }
-            EditorUtility.SetDirty(database);
+            bool changed = TrySavePosition(database.editorGraphPositions, positionsByCard, card, position,
+                e => e.card, (c, p) => new NarrativeDatabase.CardGraphPosition { card = c, position = p });
+            if (changed) EditorUtility.SetDirty(database);
         }
 
         private void RemovePositionFromDatabase(CardData card)
         {
             if (database?.editorGraphPositions == null || card == null) return;
 
-            positionsByCard.Remove(card);
-            int index = database.editorGraphPositions.FindIndex(e => e.card == card);
-            if (index >= 0)
+            Undo.RecordObject(database, "Delete Card Node Position");
+            if (TryRemovePosition(database.editorGraphPositions, positionsByCard, card, e => e.card))
             {
-                Undo.RecordObject(database, "Delete Card Node Position");
-                database.editorGraphPositions.RemoveAt(index);
                 EditorUtility.SetDirty(database);
             }
         }
@@ -387,35 +416,20 @@ namespace Game.Scripts.Editor
         private void SaveSpeakerPositionToDatabase(SpeakerData speaker, Vector2 position)
         {
             if (database == null || speaker == null) return;
-
             database.editorSpeakerPositions ??= new List<NarrativeDatabase.SpeakerGraphPosition>();
-            if (positionsBySpeaker.TryGetValue(speaker, out Vector2 existing) && existing == position) return;
-
-            positionsBySpeaker[speaker] = position;
-            int index = database.editorSpeakerPositions.FindIndex(e => e.speaker == speaker);
-
             Undo.RecordObject(database, "Move Speaker Node");
-            if (index >= 0)
-            {
-                database.editorSpeakerPositions[index] = new NarrativeDatabase.SpeakerGraphPosition { speaker = speaker, position = position };
-            }
-            else
-            {
-                database.editorSpeakerPositions.Add(new NarrativeDatabase.SpeakerGraphPosition { speaker = speaker, position = position });
-            }
-            EditorUtility.SetDirty(database);
+            bool changed = TrySavePosition(database.editorSpeakerPositions, positionsBySpeaker, speaker, position,
+                e => e.speaker, (s, p) => new NarrativeDatabase.SpeakerGraphPosition { speaker = s, position = p });
+            if (changed) EditorUtility.SetDirty(database);
         }
 
         private void RemoveSpeakerPositionFromDatabase(SpeakerData speaker)
         {
             if (database?.editorSpeakerPositions == null || speaker == null) return;
 
-            positionsBySpeaker.Remove(speaker);
-            int index = database.editorSpeakerPositions.FindIndex(e => e.speaker == speaker);
-            if (index >= 0)
+            Undo.RecordObject(database, "Delete Speaker Node Position");
+            if (TryRemovePosition(database.editorSpeakerPositions, positionsBySpeaker, speaker, e => e.speaker))
             {
-                Undo.RecordObject(database, "Delete Speaker Node Position");
-                database.editorSpeakerPositions.RemoveAt(index);
                 EditorUtility.SetDirty(database);
             }
         }
@@ -423,35 +437,20 @@ namespace Game.Scripts.Editor
         private void SaveResourcePositionToDatabase(ResourceData resource, Vector2 position)
         {
             if (database == null || resource == null) return;
-
             database.editorResourcePositions ??= new List<NarrativeDatabase.ResourceGraphPosition>();
-            if (positionsByResource.TryGetValue(resource, out Vector2 existing) && existing == position) return;
-
-            positionsByResource[resource] = position;
-            int index = database.editorResourcePositions.FindIndex(e => e.resource == resource);
-
             Undo.RecordObject(database, "Move Resource Node");
-            if (index >= 0)
-            {
-                database.editorResourcePositions[index] = new NarrativeDatabase.ResourceGraphPosition { resource = resource, position = position };
-            }
-            else
-            {
-                database.editorResourcePositions.Add(new NarrativeDatabase.ResourceGraphPosition { resource = resource, position = position });
-            }
-            EditorUtility.SetDirty(database);
+            bool changed = TrySavePosition(database.editorResourcePositions, positionsByResource, resource, position,
+                e => e.resource, (r, p) => new NarrativeDatabase.ResourceGraphPosition { resource = r, position = p });
+            if (changed) EditorUtility.SetDirty(database);
         }
 
         private void RemoveResourcePositionFromDatabase(ResourceData resource)
         {
             if (database?.editorResourcePositions == null || resource == null) return;
 
-            positionsByResource.Remove(resource);
-            int index = database.editorResourcePositions.FindIndex(e => e.resource == resource);
-            if (index >= 0)
+            Undo.RecordObject(database, "Delete Resource Node Position");
+            if (TryRemovePosition(database.editorResourcePositions, positionsByResource, resource, e => e.resource))
             {
-                Undo.RecordObject(database, "Delete Resource Node Position");
-                database.editorResourcePositions.RemoveAt(index);
                 EditorUtility.SetDirty(database);
             }
         }
@@ -480,7 +479,7 @@ namespace Game.Scripts.Editor
 
             if (change.movedElements != null)
             {
-                SaveCurrentNodePositions();
+                SaveMovedNodePositions(change.movedElements);
             }
 
             bool needsRepopulate = false;

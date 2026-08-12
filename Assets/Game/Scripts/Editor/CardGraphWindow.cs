@@ -222,26 +222,9 @@ namespace Game.Scripts.Editor
         {
             if (currentDatabase == null) return;
 
-            if (!Directory.Exists(NewCardFolder))
-            {
-                Directory.CreateDirectory(NewCardFolder);
-                AssetDatabase.Refresh();
-            }
-
             string cardName = FindNextUnusedCardName();
-            string assetPath = Path.Combine(NewCardFolder, cardName + ".asset");
-
-            CardData newCard = ScriptableObject.CreateInstance<CardData>();
-            newCard.name = cardName;
-            newCard.assetName = cardName;
-            // Leave displayName empty; author sets the player-facing label only when needed.
-            AssetDatabase.CreateAsset(newCard, assetPath);
-
-            if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newCard)))
-            {
-                Debug.LogError($"[CardGraphWindow] Failed to create card asset at '{assetPath}'.");
-                return;
-            }
+            CardData newCard = CardGraphEditor.CreateCard(NewCardFolder, cardName);
+            if (newCard == null) return;
 
             Undo.RecordObject(currentDatabase, "Add New Card");
             currentDatabase.cards ??= new List<CardData>();
@@ -277,20 +260,7 @@ namespace Game.Scripts.Editor
 
         private string FindNextUnusedCardName()
         {
-            // Naming: Scene_Speaker_Slug
-            const string baseTemplate = "Scene_Speaker_Slug";
-            if (!CardNameInUse(baseTemplate)) return baseTemplate;
-
-            int index = 2;
-            string cardName;
-            do
-            {
-                cardName = $"{baseTemplate}_{index:D2}";
-                index++;
-            }
-            while (CardNameInUse(cardName));
-
-            return cardName;
+            return CardGraphEditor.FindNextUnusedName("Scene_Speaker_Slug", CardNameInUse);
         }
 
         private bool CardNameInUse(string cardName)
@@ -310,26 +280,9 @@ namespace Game.Scripts.Editor
         {
             if (currentDatabase == null) return;
 
-            if (!Directory.Exists(NewSpeakerFolder))
-            {
-                Directory.CreateDirectory(NewSpeakerFolder);
-                AssetDatabase.Refresh();
-            }
-
             string speakerName = FindNextUnusedSpeakerName();
-            string assetPath = Path.Combine(NewSpeakerFolder, speakerName + ".asset");
-
-            SpeakerData newSpeaker = ScriptableObject.CreateInstance<SpeakerData>();
-            newSpeaker.name = speakerName;
-            newSpeaker.assetName = speakerName;
-            // Leave displayName empty; author sets the player-facing name in the Inspector.
-            AssetDatabase.CreateAsset(newSpeaker, assetPath);
-
-            if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newSpeaker)))
-            {
-                Debug.LogError($"[CardGraphWindow] Failed to create speaker asset at '{assetPath}'.");
-                return;
-            }
+            SpeakerData newSpeaker = CardGraphEditor.CreateSpeaker(NewSpeakerFolder, speakerName);
+            if (newSpeaker == null) return;
 
             Undo.RecordObject(currentDatabase, "Add New Speaker");
             currentDatabase.speakers ??= new List<SpeakerData>();
@@ -400,23 +353,9 @@ namespace Game.Scripts.Editor
         public void OnCreateNewDatabaseClicked()
         {
             string databaseFolder = "Assets/Game/Data";
-            if (!Directory.Exists(databaseFolder))
-            {
-                Directory.CreateDirectory(databaseFolder);
-                AssetDatabase.Refresh();
-            }
-
             string databaseName = FindNextUnusedDatabaseName(databaseFolder);
-            string assetPath = Path.Combine(databaseFolder, databaseName + ".asset");
-
-            NarrativeDatabase newDb = ScriptableObject.CreateInstance<NarrativeDatabase>();
-            newDb.name = databaseName;
-            AssetDatabase.CreateAsset(newDb, assetPath);
-            if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newDb)))
-            {
-                Debug.LogError($"[CardGraphWindow] Failed to create database asset at '{assetPath}'.");
-                return;
-            }
+            NarrativeDatabase newDb = CardGraphEditor.CreateDatabase(databaseFolder, databaseName);
+            if (newDb == null) return;
             AssetDatabase.SaveAssets();
 
             currentDatabase = newDb;
@@ -434,22 +373,8 @@ namespace Game.Scripts.Editor
 
         private static string FindNextUnusedDatabaseName(string folder)
         {
-            string defaultPath = Path.Combine(folder, "NarrativeDatabase.asset");
-            if (!File.Exists(defaultPath))
-            {
-                return "NarrativeDatabase";
-            }
-
-            int index = 1;
-            string dbName;
-            do
-            {
-                dbName = $"NarrativeDatabase_{index:D3}";
-                index++;
-            }
-            while (File.Exists(Path.Combine(folder, dbName + ".asset")));
-
-            return dbName;
+            return CardGraphEditor.FindNextUnusedName("NarrativeDatabase",
+                name => File.Exists(Path.Combine(folder, name + ".asset")), startIndex: 1, digitFormat: "D3");
         }
 
         public void OnCreateNewCatalogClicked()
@@ -457,24 +382,9 @@ namespace Game.Scripts.Editor
             if (currentDatabase == null) return;
 
             string folder = "Assets/Game/Data";
-            if (!Directory.Exists(folder))
-            {
-                Directory.CreateDirectory(folder);
-                AssetDatabase.Refresh();
-            }
-
             string catalogName = FindNextUnusedCatalogName(folder);
-            string assetPath = Path.Combine(folder, catalogName + ".asset");
-
-            ResourceCatalog newCatalog = ScriptableObject.CreateInstance<ResourceCatalog>();
-            newCatalog.name = catalogName;
-            AssetDatabase.CreateAsset(newCatalog, assetPath);
-
-            if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newCatalog)))
-            {
-                Debug.LogError($"[CardGraphWindow] Failed to create resource catalog asset at '{assetPath}'.");
-                return;
-            }
+            ResourceCatalog newCatalog = CardGraphEditor.CreateCatalog(folder, catalogName);
+            if (newCatalog == null) return;
 
             Undo.RecordObject(currentDatabase, "Assign Resource Catalog");
             currentDatabase.resourceCatalog = newCatalog;
@@ -490,40 +400,13 @@ namespace Game.Scripts.Editor
 
         private static string FindNextUnusedCatalogName(string folder)
         {
-            string defaultPath = Path.Combine(folder, "ResourceCatalog.asset");
-            if (!File.Exists(defaultPath))
-            {
-                return "ResourceCatalog";
-            }
-
-            int index = 1;
-            string catalogName;
-            do
-            {
-                catalogName = $"ResourceCatalog_{index:D3}";
-                index++;
-            }
-            while (File.Exists(Path.Combine(folder, catalogName + ".asset")));
-
-            return catalogName;
+            return CardGraphEditor.FindNextUnusedName("ResourceCatalog",
+                name => File.Exists(Path.Combine(folder, name + ".asset")), startIndex: 1, digitFormat: "D3");
         }
 
         private string FindNextUnusedSpeakerName()
         {
-            // Naming: Spk_<Name>
-            const string baseTemplate = "Spk_NewSpeaker";
-            if (!SpeakerNameInUse(baseTemplate)) return baseTemplate;
-
-            int index = 2;
-            string speakerName;
-            do
-            {
-                speakerName = $"Spk_NewSpeaker_{index:D2}";
-                index++;
-            }
-            while (SpeakerNameInUse(speakerName));
-
-            return speakerName;
+            return CardGraphEditor.FindNextUnusedName("Spk_NewSpeaker", SpeakerNameInUse);
         }
 
         private bool SpeakerNameInUse(string speakerName)

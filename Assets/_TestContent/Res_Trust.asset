@@ -18,6 +18,4 @@ MonoBehaviour:
   defaultStartingValue: 50
   warningThresholdPercent: 25
   warningSpeaker: {fileID: 11400000, guid: bfb477a00a82eb743883a1d0316c78c1, type: 2}
-  warningSeedPrompt: '{resourceName} among the court is eroding. React with quiet
-    concern about what might happen next.'
   warningCooldownCards: 4

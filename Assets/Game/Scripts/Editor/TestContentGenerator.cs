@@ -42,7 +42,6 @@ namespace Game.Scripts.Editor
             supplies.defaultStartingValue = 50;
             supplies.warningThresholdPercent = 30;
             supplies.warningSpeaker = advisor;
-            supplies.warningSeedPrompt = "{resourceName} is dangerously low. React with mild alarm and urge the player to address it soon.";
             supplies.warningCooldownCards = 5;
             SaveAsset(supplies, "Res_Supplies");
 
@@ -52,7 +51,6 @@ namespace Game.Scripts.Editor
             trust.defaultStartingValue = 50;
             trust.warningThresholdPercent = 25;
             trust.warningSpeaker = spymaster;
-            trust.warningSeedPrompt = "{resourceName} among the court is eroding. React with quiet concern about what might happen next.";
             trust.warningCooldownCards = 4;
             SaveAsset(trust, "Res_Trust");
 
@@ -62,7 +60,6 @@ namespace Game.Scripts.Editor
             morale.defaultStartingValue = 60;
             morale.warningThresholdPercent = 35;
             morale.warningSpeaker = advisor;
-            morale.warningSeedPrompt = "{resourceName} among the people is sinking. React with concern and suggest a gesture is needed.";
             morale.warningCooldownCards = 3;
             SaveAsset(morale, "Res_Morale");
 
@@ -114,8 +111,6 @@ namespace Game.Scripts.Editor
             postPetitionReaction.assetName = "Test_Reaction_AdvisorReflects";
             postPetitionReaction.speaker = advisor;
             postPetitionReaction.isLlmReactionCard = true;
-            postPetitionReaction.llmPromptSeed =
-                "Privately reflect on the outcome of the spymaster's petition and what it means for the kingdom's future, in one or two lines.";
             postPetitionReaction.continueNextCard = ending;
             SaveAsset(postPetitionReaction, "Test_Reaction_AdvisorReflects");
 
@@ -123,9 +118,6 @@ namespace Game.Scripts.Editor
             petition.assetName = "Test_Petition_SpymasterRequest";
             petition.speaker = spymaster;
             petition.isPetitionCard = true;
-            petition.petitionSeedPrompt =
-                "The spymaster invites the player to issue any covert command — bribes, threats, spying orders. " +
-                "React in character and adjust resources accordingly.";
             petition.continueNextCard = postPetitionReaction;
             SaveAsset(petition, "Test_Petition_SpymasterRequest");
 
@@ -133,8 +125,6 @@ namespace Game.Scripts.Editor
             courtReacts.assetName = "Test_Reaction_CourtReacts";
             courtReacts.speaker = advisor;
             courtReacts.isLlmReactionCard = true;
-            courtReacts.llmPromptSeed =
-                "React briefly to the court's response to the player's recent ration/reassurance decision, before the spymaster steps in.";
             courtReacts.continueNextCard = petition;
             SaveAsset(courtReacts, "Test_Reaction_CourtReacts");
 
@@ -142,7 +132,7 @@ namespace Game.Scripts.Editor
             branchRation.assetName = "Test_Branch_Ration";
             branchRation.displayName = "Rationing Begins";
             branchRation.speaker = advisor;
-            branchRation.description = "Rationing begins. Grain stores are locked and guarded. The people grumble but comply — for now.";
+            branchRation.description = "Rationing begins. Grain stores are locked and guarded. The people grumble but comply - for now.";
             branchRation.dayAdvance = 1;
             branchRation.leftChoiceText = "Enforce strictly";
             branchRation.leftResourceChange = new ResourceChange

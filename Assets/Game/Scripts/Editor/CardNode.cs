@@ -101,14 +101,14 @@ namespace Game.Scripts.Editor
             {
                 badges.Add(MakeBadge("PETITION",
                     new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f),
-                    "Petition card — player types free-form commands resolved by AI."));
+                    "Petition card - player types free-form commands resolved by AI."));
             }
 
             if (card.speaker == null)
             {
                 badges.Add(MakeBadge("No Speaker",
                     new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
-                    "Every card must have a speaker assigned — the run will fail to start without one."));
+                    "Every card must have a speaker assigned - the run will fail to start without one."));
             }
             else if ((card.isLlmReactionCard || card.isPetitionCard) && string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
             {
@@ -125,26 +125,6 @@ namespace Game.Scripts.Editor
             }
 
             return badges;
-        }
-
-        private static Label MakeBadge(string text, Color foreground, Color background, string tooltip)
-        {
-            Label label = new Label(text);
-            label.style.fontSize = 9;
-            label.style.unityFontStyleAndWeight = FontStyle.Bold;
-            label.style.color = new StyleColor(foreground);
-            label.style.backgroundColor = new StyleColor(background);
-            label.style.paddingLeft = 5;
-            label.style.paddingRight = 5;
-            label.style.paddingTop = 2;
-            label.style.paddingBottom = 2;
-            label.style.marginRight = 6;
-            label.style.borderTopLeftRadius = 3;
-            label.style.borderTopRightRadius = 3;
-            label.style.borderBottomLeftRadius = 3;
-            label.style.borderBottomRightRadius = 3;
-            label.tooltip = tooltip;
-            return label;
         }
 
         private VisualElement BuildBody(CardData card)
@@ -164,9 +144,9 @@ namespace Game.Scripts.Editor
             body.Add(BuildMetaRow(card));
 
             string previewText = card.isLlmReactionCard
-                ? Truncate(card.llmPromptSeed, DescriptionPreviewLength, "(No prompt seed)")
+                ? BuildSeedPreview(card.reactionSeedOverride, "reaction")
                 : card.isPetitionCard
-                    ? Truncate(card.petitionSeedPrompt, DescriptionPreviewLength, "(No petition seed)")
+                    ? BuildSeedPreview(card.petitionSeedOverride, "petition")
                     : Truncate(card.description, DescriptionPreviewLength, "(No description)");
 
             Label previewLabel = new Label(previewText);
@@ -372,6 +352,13 @@ namespace Game.Scripts.Editor
             return row;
         }
 
+        private static string BuildSeedPreview(string seedOverride, string kind)
+        {
+            return !string.IsNullOrWhiteSpace(seedOverride)
+                ? Truncate(seedOverride, DescriptionPreviewLength, seedOverride)
+                : $"(Uses global {kind} seed prompt)";
+        }
+
         private static string Truncate(string text, int maxLength, string emptyFallback)
         {
             if (string.IsNullOrEmpty(text))
@@ -379,7 +366,7 @@ namespace Game.Scripts.Editor
                 return emptyFallback;
             }
 
-            return text.Length > maxLength ? text.Substring(0, maxLength) + "…" : text;
+            return text.Length > maxLength ? text.Substring(0, maxLength) + "..." : text;
         }
 
         protected override void AddCustomContextMenuActions(ContextualMenuPopulateEvent evt)

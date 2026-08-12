@@ -18,6 +18,4 @@ MonoBehaviour:
   defaultStartingValue: 50
   warningThresholdPercent: 30
   warningSpeaker: {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
-  warningSeedPrompt: '{resourceName} is dangerously low. React with mild alarm and
-    urge the player to address it soon.'
   warningCooldownCards: 5

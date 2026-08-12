@@ -37,7 +37,7 @@ MonoBehaviour:
       value: 5
   rightNextCard: {fileID: 11400000, guid: bf05ac8504441bc478c86eedaef0bc50, type: 2}
   isLlmReactionCard: 0
-  llmPromptSeed: 
+  reactionSeedOverride: 
   isPetitionCard: 0
-  petitionSeedPrompt: 
+  petitionSeedOverride: 
   continueNextCard: {fileID: 0}

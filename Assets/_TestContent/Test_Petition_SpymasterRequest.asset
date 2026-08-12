@@ -26,7 +26,7 @@ MonoBehaviour:
     values: []
   rightNextCard: {fileID: 0}
   isLlmReactionCard: 0
-  llmPromptSeed: 
+  reactionSeedOverride: 
   isPetitionCard: 1
-  petitionSeedPrompt: 
+  petitionSeedOverride: 
   continueNextCard: {fileID: 11400000, guid: b327bafbd1438cb42ae39f5ba77ec134, type: 2}

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Game.Scripts.Editor
 {
-    /// <summary>Exports a NarrativeDatabase to Assets/StreamingAssets/cards.json (Tools → Weave → Export Cards to JSON).</summary>
+    /// <summary>Exports a NarrativeDatabase to Assets/StreamingAssets/cards.json (Tools -> Weave -> Export Cards to JSON).</summary>
     public static class CardJsonExporter
     {
         [MenuItem("Tools/Weave/Export Cards to JSON")]
@@ -48,9 +48,7 @@ namespace Game.Scripts.Editor
                     rightNextCard = card.rightNextCard != null ? card.rightNextCard.AssetName : string.Empty,
                     rightResourceChange = ToResourceJson(card.rightResourceChange),
                     isLlmReactionCard = card.isLlmReactionCard,
-                    llmPromptSeed = card.llmPromptSeed,
                     isPetitionCard = card.isPetitionCard,
-                    petitionSeedPrompt = card.petitionSeedPrompt,
                     continueNextCard = card.continueNextCard != null ? card.continueNextCard.AssetName : string.Empty,
                     isEnding = card.IsEnding
                 });
@@ -144,9 +142,7 @@ namespace Game.Scripts.Editor
             public string rightNextCard;
             public ResourceEntryJson[] rightResourceChange;
             public bool isLlmReactionCard;
-            public string llmPromptSeed;
             public bool isPetitionCard;
-            public string petitionSeedPrompt;
             public string continueNextCard;
             public bool isEnding;
         }

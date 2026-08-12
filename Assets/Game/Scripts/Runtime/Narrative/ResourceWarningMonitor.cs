@@ -70,7 +70,7 @@ namespace Game.Scripts.Runtime.Narrative
 
                 if (currentValue > thresholdValue)
                 {
-                    // Recovered above threshold — may warn again the next time it dips.
+                    // Recovered above threshold - may warn again the next time it dips.
                     warnedResources.Remove(resource);
                     continue;
                 }
