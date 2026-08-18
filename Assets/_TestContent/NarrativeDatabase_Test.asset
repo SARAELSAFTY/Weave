@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c9ad9e3b8ad4b6da6e0a01a6f2ce002, type: 3}
+  m_Name: NarrativeDatabase_Test
+  m_EditorClassIdentifier: 
+  startingCard: {fileID: 11400000, guid: 47b187eb1168e0148a0fe16ce0e09489, type: 2}
+  resourceCatalog: {fileID: 11400000, guid: 3320935bf33801a4c970abdb3ada6945, type: 2}
+  promptTemplates: {fileID: 11400000, guid: 5e1950d91ec766f4088af6592e76760d, type: 2}
+  cards:
+  - {fileID: 11400000, guid: 47b187eb1168e0148a0fe16ce0e09489, type: 2}
+  - {fileID: 11400000, guid: d820acf18a7f7cb4db5000767dff8f32, type: 2}
+  - {fileID: 11400000, guid: 89f9636b9e558ae48b6c25e117aa135a, type: 2}
+  - {fileID: 11400000, guid: bf05ac8504441bc478c86eedaef0bc50, type: 2}
+  - {fileID: 11400000, guid: 276e2b0c6e9982348a90d383f341bc68, type: 2}
+  - {fileID: 11400000, guid: b327bafbd1438cb42ae39f5ba77ec134, type: 2}
+  - {fileID: 11400000, guid: c53edc063d903d140856ad16ecb100b2, type: 2}
+  - {fileID: 11400000, guid: e2c1422fa5c2ded4298bab24011058e6, type: 2}
+  - {fileID: 11400000, guid: 8958c150e163e8f4382fa70cc9f73c0a, type: 2}
+  - {fileID: 11400000, guid: c2e7839333734df4e99f0c1c9185ee0c, type: 2}
+  speakers:
+  - {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
+  - {fileID: 11400000, guid: bfb477a00a82eb743883a1d0316c78c1, type: 2}
+  editorGraphPositions:
+  - card: {fileID: 11400000, guid: 47b187eb1168e0148a0fe16ce0e09489, type: 2}
+    position: {x: -16, y: -48}
+  - card: {fileID: 11400000, guid: d820acf18a7f7cb4db5000767dff8f32, type: 2}
+    position: {x: 468.80002, y: -312}
+  - card: {fileID: 11400000, guid: 89f9636b9e558ae48b6c25e117aa135a, type: 2}
+    position: {x: 423.2, y: -14.400002}
+  - card: {fileID: 11400000, guid: bf05ac8504441bc478c86eedaef0bc50, type: 2}
+    position: {x: 804, y: -48}
+  - card: {fileID: 11400000, guid: 276e2b0c6e9982348a90d383f341bc68, type: 2}
+    position: {x: 1164.7999, y: -65.6}
+  - card: {fileID: 11400000, guid: b327bafbd1438cb42ae39f5ba77ec134, type: 2}
+    position: {x: 1503.2, y: -44}
+  - card: {fileID: 11400000, guid: c53edc063d903d140856ad16ecb100b2, type: 2}
+    position: {x: 1844, y: -44}
+  - card: {fileID: 11400000, guid: e2c1422fa5c2ded4298bab24011058e6, type: 2}
+    position: {x: -276, y: -290}
+  - card: {fileID: 11400000, guid: 8958c150e163e8f4382fa70cc9f73c0a, type: 2}
+    position: {x: -257, y: 319}
+  - card: {fileID: 11400000, guid: c2e7839333734df4e99f0c1c9185ee0c, type: 2}
+    position: {x: -237, y: 610}
+  editorSpeakerPositions:
+  - speaker: {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
+    position: {x: -546, y: -18}
+  - speaker: {fileID: 11400000, guid: bfb477a00a82eb743883a1d0316c78c1, type: 2}
+    position: {x: -561, y: 156}
+  editorResourcePositions:
+  - resource: {fileID: 11400000, guid: 5a0196efc6c6aca4e80dd289639a76bb, type: 2}
+    position: {x: -524, y: -168}
+  - resource: {fileID: 11400000, guid: 28865345534e13046b9f8b9d492912ab, type: 2}
+    position: {x: -508, y: 347}
+  - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
+    position: {x: -517, y: 618}
