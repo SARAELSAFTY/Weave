@@ -1381,7 +1381,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings: {fileID: 11400000, guid: 95329d44010f7954fa88a16ed6363df5, type: 2}
-  apiKeyAsset: {fileID: 4900000, guid: 123933fe9c5789c43be28b0fa868b9fb, type: 3}
+  proxyUrl: https://weave-groq-proxy.abdullah-weave-dev.workers.dev
 --- !u!1 &598457467
 GameObject:
   m_ObjectHideFlags: 0

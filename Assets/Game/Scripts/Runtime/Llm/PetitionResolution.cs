@@ -54,7 +54,7 @@ namespace Game.Scripts.Runtime.Llm
 
             List<ResourceValue> changeList = new List<ResourceValue>();
 
-            if (resolution?.resourceChanges != null && catalog != null)
+            if (resolution.resourceChanges != null && catalog != null)
             {
                 foreach (PetitionResourceDelta delta in resolution.resourceChanges)
                 {
@@ -75,7 +75,7 @@ namespace Game.Scripts.Runtime.Llm
             }
 
             ResourceChange? change = changeList.Count > 0 ? new ResourceChange { values = changeList.ToArray() } : (ResourceChange?)null;
-            string historyTag = resolution != null && !string.IsNullOrWhiteSpace(resolution.historyTag)
+            string historyTag = !string.IsNullOrWhiteSpace(resolution.historyTag)
                 ? resolution.historyTag.Trim()
                 : null;
 

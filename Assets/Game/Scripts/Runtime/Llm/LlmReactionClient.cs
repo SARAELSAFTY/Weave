@@ -8,26 +8,21 @@ namespace Game.Scripts.Runtime.Llm
 {
     public class LlmReactionClient : MonoBehaviour
     {
-        private const string GroqApiUrl = "https://api.groq.com/openai/v1/chat/completions";
-
         [SerializeField, Tooltip("Global LLM settings.")]
         private LlmSettings settings;
 
-        [SerializeField, Tooltip("TextAsset containing the Groq API key. Drag the key file here.")]
-        private TextAsset apiKeyAsset;
-
-        private string cachedApiKey;
+        [SerializeField, Tooltip("URL of the LLM proxy server.")]
+        private string proxyUrl = "https://your-proxy.workers.dev";
 
         /// <summary>
-        /// Assigns settings/apiKeyAsset in code instead of via the Inspector. Intended for editor tooling
+        /// Assigns settings/proxyUrl in code instead of via the Inspector. Intended for editor tooling
         /// (LlmTesterWindow) that spins up a temporary instance of this component so it can reuse the real
         /// request/parse logic below instead of duplicating it.
         /// </summary>
-        public void Configure(LlmSettings settingsToUse, TextAsset apiKey)
+        public void Configure(LlmSettings settingsToUse, string proxyUrlToUse)
         {
             settings = settingsToUse;
-            apiKeyAsset = apiKey;
-            cachedApiKey = null;
+            proxyUrl = proxyUrlToUse;
         }
 
         public void RequestReaction(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
@@ -39,9 +34,9 @@ namespace Game.Scripts.Runtime.Llm
                 return;
             }
 
-            if (string.IsNullOrEmpty(GetApiKey()))
+            if (string.IsNullOrWhiteSpace(proxyUrl))
             {
-                Debug.LogError("[LlmReactionClient] API key is missing. Assign a TextAsset containing the Groq API key to the apiKeyAsset field in the Inspector.");
+                Debug.LogError("[LlmReactionClient] Proxy URL is missing. Assign a valid Proxy URL in the Inspector.");
                 onFailure?.Invoke(LlmRequestError.NotConfigured);
                 return;
             }
@@ -62,9 +57,9 @@ namespace Game.Scripts.Runtime.Llm
                 return;
             }
 
-            if (string.IsNullOrEmpty(GetApiKey()))
+            if (string.IsNullOrWhiteSpace(proxyUrl))
             {
-                Debug.LogError("[LlmReactionClient] API key is missing. Assign a TextAsset containing the Groq API key to the apiKeyAsset field in the Inspector.");
+                Debug.LogError("[LlmReactionClient] Proxy URL is missing. Assign a valid Proxy URL in the Inspector.");
                 onFailure?.Invoke(LlmRequestError.NotConfigured);
                 return;
             }
@@ -74,10 +69,6 @@ namespace Game.Scripts.Runtime.Llm
 
         private IEnumerator RequestPetitionRoutine(List<GroqApiMessage> messages, Action<PetitionResolution, string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
-            LlmRequestError? error = null;
-            PetitionResolution result = null;
-            string rawContent = null;
-
             string jsonPayload;
             try
             {
@@ -86,68 +77,30 @@ namespace Game.Scripts.Runtime.Llm
             catch (Exception exception)
             {
                 Debug.LogError($"[LlmReactionClient] Unexpected error while building petition request payload: {exception}");
-                error = LlmRequestError.NetworkError;
-                jsonPayload = null;
+                onFailure?.Invoke(LlmRequestError.NetworkError);
+                yield break;
             }
 
-            if (!error.HasValue)
-            {
-                using (UnityWebRequest request = new UnityWebRequest(GroqApiUrl, "POST"))
+            yield return SendProxyRequest(
+                jsonPayload,
+                responseText =>
                 {
-                    byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
-                    request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-                    request.downloadHandler = new DownloadHandlerBuffer();
-                    request.SetRequestHeader("Content-Type", "application/json");
-                    request.SetRequestHeader("Authorization", $"Bearer {GetApiKey()}");
-                    request.timeout = Mathf.CeilToInt(settings.apiTimeoutSeconds);
-
-                    yield return request.SendWebRequest();
-
-                    if (request.result == UnityWebRequest.Result.Success)
+                    PetitionResolution result = ParsePetitionResponse(responseText, out string rawContent);
+                    if (result != null)
                     {
-                        try
-                        {
-                            result = ParsePetitionResponse(request.downloadHandler.text, out rawContent);
-                            if (result == null)
-                            {
-                                Debug.LogWarning($"[LlmReactionClient] Petition request succeeded but no resolution was parsed. Response body: {request.downloadHandler.text}");
-                                error = LlmRequestError.EmptyResponse;
-                            }
-                        }
-                        catch (Exception exception)
-                        {
-                            Debug.LogError($"[LlmReactionClient] Unexpected error while parsing petition response: {exception}");
-                            error = LlmRequestError.EmptyResponse;
-                        }
-                    }
-                    else if (request.responseCode == 429)
-                    {
-                        Debug.LogWarning("[LlmReactionClient] Rate limited (429).");
-                        error = LlmRequestError.RateLimited;
+                        onSuccess?.Invoke(result, rawContent);
                     }
                     else
                     {
-                        Debug.LogWarning($"[LlmReactionClient] Petition request failed: {request.result}, HTTP {request.responseCode}, error: {request.error}, body: {request.downloadHandler.text}.");
-                        error = LlmRequestError.NetworkError;
+                        Debug.LogWarning($"[LlmReactionClient] Petition request succeeded but no resolution was parsed. Response body: {responseText}");
+                        onFailure?.Invoke(LlmRequestError.EmptyResponse);
                     }
-                }
-            }
-
-            if (error.HasValue)
-            {
-                onFailure?.Invoke(error.Value);
-            }
-            else
-            {
-                onSuccess?.Invoke(result, rawContent);
-            }
+                },
+                onFailure);
         }
 
         private IEnumerator RequestRoutine(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
-            LlmRequestError? error = null;
-            string result = null;
-
             string jsonPayload;
             try
             {
@@ -156,60 +109,54 @@ namespace Game.Scripts.Runtime.Llm
             catch (Exception exception)
             {
                 Debug.LogError($"[LlmReactionClient] Unexpected error while building request payload: {exception}");
-                error = LlmRequestError.NetworkError;
-                jsonPayload = null;
+                onFailure?.Invoke(LlmRequestError.NetworkError);
+                yield break;
             }
 
-            if (!error.HasValue)
-            {
-                using (UnityWebRequest request = new UnityWebRequest(GroqApiUrl, "POST"))
+            yield return SendProxyRequest(
+                jsonPayload,
+                responseText =>
                 {
-                    byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
-                    request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-                    request.downloadHandler = new DownloadHandlerBuffer();
-                    request.SetRequestHeader("Content-Type", "application/json");
-                    request.SetRequestHeader("Authorization", $"Bearer {GetApiKey()}");
-                    request.timeout = Mathf.CeilToInt(settings.apiTimeoutSeconds);
-
-                    yield return request.SendWebRequest();
-
-                    if (request.result == UnityWebRequest.Result.Success)
+                    string result = ParseResponse(responseText);
+                    if (!string.IsNullOrEmpty(result))
                     {
-                        try
-                        {
-                            result = ParseResponse(request.downloadHandler.text);
-                            if (string.IsNullOrEmpty(result))
-                            {
-                                Debug.LogWarning($"[LlmReactionClient] Request succeeded but no reaction text was parsed. Response body: {request.downloadHandler.text}");
-                                error = LlmRequestError.EmptyResponse;
-                            }
-                        }
-                        catch (Exception exception)
-                        {
-                            Debug.LogError($"[LlmReactionClient] Unexpected error while parsing response: {exception}");
-                            error = LlmRequestError.NetworkError;
-                        }
-                    }
-                    else if (request.responseCode == 429)
-                    {
-                        Debug.LogWarning("[LlmReactionClient] Rate limited (429).");
-                        error = LlmRequestError.RateLimited;
+                        onSuccess?.Invoke(result);
                     }
                     else
                     {
-                        Debug.LogWarning($"[LlmReactionClient] Request failed: {request.result}, HTTP {request.responseCode}, error: {request.error}, body: {request.downloadHandler.text}.");
-                        error = LlmRequestError.NetworkError;
+                        Debug.LogWarning($"[LlmReactionClient] Request succeeded but no reaction text was parsed. Response body: {responseText}");
+                        onFailure?.Invoke(LlmRequestError.EmptyResponse);
                     }
-                }
-            }
+                },
+                onFailure);
+        }
 
-            if (error.HasValue)
+        private IEnumerator SendProxyRequest(string jsonPayload, Action<string> onSuccess, Action<LlmRequestError> onFailure)
+        {
+            using (UnityWebRequest request = new UnityWebRequest(proxyUrl, "POST"))
             {
-                onFailure?.Invoke(error.Value);
-            }
-            else
-            {
-                onSuccess?.Invoke(result);
+                byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.timeout = Mathf.CeilToInt(settings.apiTimeoutSeconds);
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    onSuccess?.Invoke(request.downloadHandler.text);
+                }
+                else if (request.responseCode == 429)
+                {
+                    Debug.LogWarning("[LlmReactionClient] Rate limited (429).");
+                    onFailure?.Invoke(LlmRequestError.RateLimited);
+                }
+                else
+                {
+                    Debug.LogWarning($"[LlmReactionClient] Request failed: {request.result}, HTTP {request.responseCode}, error: {request.error}, body: {request.downloadHandler?.text}.");
+                    onFailure?.Invoke(LlmRequestError.NetworkError);
+                }
             }
         }
 
@@ -245,6 +192,12 @@ namespace Game.Scripts.Runtime.Llm
             return JsonUtility.ToJson(request);
         }
 
+        private static string StripThoughtBlocks(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            return System.Text.RegularExpressions.Regex.Replace(text, @"<think>[\s\S]*?</think>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
+        }
+
         private string ParseResponse(string json)
         {
             try
@@ -252,11 +205,11 @@ namespace Game.Scripts.Runtime.Llm
                 GroqResponse response = JsonUtility.FromJson<GroqResponse>(json);
                 if (response?.choices != null && response.choices.Length > 0)
                 {
-                    string content = response.choices[0].message?.content;
+                    string content = response.choices[0]?.message?.content;
                     if (string.IsNullOrWhiteSpace(content)) return null;
 
                     // Defense in depth if reasoning_effort is misconfigured away from "none".
-                    content = System.Text.RegularExpressions.Regex.Replace(content, @"<think>[\s\S]*?</think>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
+                    content = StripThoughtBlocks(content);
 
                     // Strip stage directions the model sometimes wraps in () or * *.
                     content = System.Text.RegularExpressions.Regex.Replace(content, @"\([^)]*\)", "").Trim();
@@ -284,13 +237,13 @@ namespace Game.Scripts.Runtime.Llm
                 GroqResponse response = JsonUtility.FromJson<GroqResponse>(json);
                 if (response?.choices != null && response.choices.Length > 0)
                 {
-                    string content = response.choices[0].message?.content;
+                    string content = response.choices[0]?.message?.content;
                     if (string.IsNullOrWhiteSpace(content)) return null;
 
                     content = content.Trim();
 
                     // Strip <think> blocks before JSON parse - a leading block would break FromJson.
-                    content = System.Text.RegularExpressions.Regex.Replace(content, @"<think>[\s\S]*?</think>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
+                    content = StripThoughtBlocks(content);
 
                     if (content.StartsWith("```json", StringComparison.OrdinalIgnoreCase))
                     {
@@ -322,21 +275,6 @@ namespace Game.Scripts.Runtime.Llm
             }
 
             return null;
-        }
-
-        private string GetApiKey()
-        {
-            if (!string.IsNullOrEmpty(cachedApiKey))
-            {
-                return cachedApiKey;
-            }
-
-            if (apiKeyAsset != null && !string.IsNullOrWhiteSpace(apiKeyAsset.text))
-            {
-                cachedApiKey = apiKeyAsset.text.Trim();
-            }
-
-            return cachedApiKey;
         }
     }
 }

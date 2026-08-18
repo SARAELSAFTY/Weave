@@ -21,7 +21,7 @@ namespace Game.Scripts.Editor
 
         private NarrativeDatabase database;
         private LlmSettings settings;
-        private TextAsset apiKeyAsset;
+        private string proxyUrl = "https://your-proxy.workers.dev";
         private TestMode mode = TestMode.Reaction;
 
         private int resourceIndex;        // for ResourceWarning / Epilogue's collapsed resource
@@ -103,7 +103,7 @@ namespace Game.Scripts.Editor
             }
 
             settings = (LlmSettings)EditorGUILayout.ObjectField("LLM Settings", settings, typeof(LlmSettings), false);
-            apiKeyAsset = (TextAsset)EditorGUILayout.ObjectField("API Key Asset", apiKeyAsset, typeof(TextAsset), false);
+            proxyUrl = EditorGUILayout.TextField("Proxy URL", proxyUrl);
 
             if (database != null && database.promptTemplates == null)
             {
@@ -380,7 +380,7 @@ namespace Game.Scripts.Editor
 
         private void DrawSendControls()
         {
-            bool canSend = Application.isPlaying && !isBusy && settings != null && apiKeyAsset != null;
+            bool canSend = Application.isPlaying && !isBusy && settings != null && !string.IsNullOrEmpty(proxyUrl);
 
             using (new EditorGUI.DisabledScope(!canSend))
             {
@@ -414,9 +414,9 @@ namespace Game.Scripts.Editor
             {
                 EditorGUILayout.HelpBox("Enter Play Mode to send.", MessageType.Warning);
             }
-            else if (settings == null || apiKeyAsset == null)
+            else if (settings == null || string.IsNullOrEmpty(proxyUrl))
             {
-                EditorGUILayout.HelpBox("Assign LLM Settings and an API Key Asset to send.", MessageType.Warning);
+                EditorGUILayout.HelpBox("Assign LLM Settings and a Proxy URL to send.", MessageType.Warning);
             }
         }
 
@@ -485,7 +485,7 @@ namespace Game.Scripts.Editor
                 GameObject go = new GameObject("[LlmTesterRunner]") { hideFlags = HideFlags.HideAndDontSave };
                 runnerClient = go.AddComponent<LlmReactionClient>();
             }
-            runnerClient.Configure(settings, apiKeyAsset);
+            runnerClient.Configure(settings, proxyUrl);
         }
 
         private void SendCurrentPrompt()

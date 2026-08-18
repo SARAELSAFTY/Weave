@@ -384,23 +384,22 @@ namespace Game.Scripts.UI
 
         public void ShowPetitionDeliberation(string reactionText)
         {
-            if (petitionConfirmButton != null)
-            {
-                petitionConfirmButton.gameObject.SetActive(false);
-            }
-
-            descriptionText.text = reactionText ?? string.Empty;
-            ShowPetitionInput();
+            DisplayPetitionResponse(reactionText, showConfirm: false);
         }
 
         public void ShowPetitionProposal(string reactionText)
+        {
+            DisplayPetitionResponse(reactionText, showConfirm: true);
+        }
+
+        private void DisplayPetitionResponse(string reactionText, bool showConfirm)
         {
             descriptionText.text = reactionText ?? string.Empty;
             ShowPetitionInput();
 
             if (petitionConfirmButton != null)
             {
-                petitionConfirmButton.gameObject.SetActive(true);
+                petitionConfirmButton.gameObject.SetActive(showConfirm);
             }
         }
 

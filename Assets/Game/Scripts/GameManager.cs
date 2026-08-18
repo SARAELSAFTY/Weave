@@ -148,6 +148,8 @@ namespace Game.Scripts
             if (cardView != null)
             {
                 cardView.RestartRequested += RestartRun;
+                cardView.PetitionCommandSubmitted += HandlePetitionSubmitted;
+                cardView.PetitionConfirmRequested += HandlePetitionConfirmed;
             }
 
             if (startScreenView != null)
@@ -160,12 +162,6 @@ namespace Game.Scripts
             {
                 pauseMenuView.ResumeRequested += Resume;
                 pauseMenuView.QuitRequested += QuitGame;
-            }
-
-            if (cardView != null)
-            {
-                cardView.PetitionCommandSubmitted += HandlePetitionSubmitted;
-                cardView.PetitionConfirmRequested += HandlePetitionConfirmed;
             }
         }
 
