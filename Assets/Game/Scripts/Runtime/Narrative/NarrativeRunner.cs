@@ -70,7 +70,7 @@ namespace Game.Scripts.Runtime.Narrative
             return true;
         }
 
-        public NarrativeStepResult Choose(bool choseRight)
+        public NarrativeStepResult Choose(bool choseRight, bool ignoreContinueExit = false)
         {
             if (CurrentCard == null)
             {
@@ -82,11 +82,13 @@ namespace Game.Scripts.Runtime.Narrative
                 return new NarrativeStepResult(CurrentCard, null);
             }
 
-            CardData nextCard = choseRight
-                ? CurrentCard.ResolveRightNextCard()
-                : CurrentCard.ResolveLeftNextCard();
+            bool usesContinueExit = CurrentCard.UsesContinueExit && !ignoreContinueExit;
 
-            if (!CurrentCard.isLlmReactionCard && !CurrentCard.isPetitionCard)
+            CardData nextCard = choseRight
+                ? (usesContinueExit ? CurrentCard.continueNextCard : CurrentCard.rightNextCard)
+                : (usesContinueExit ? CurrentCard.continueNextCard : CurrentCard.leftNextCard);
+
+            if (!usesContinueExit)
             {
                 ResourceChange change = choseRight ? CurrentCard.rightResourceChange : CurrentCard.leftResourceChange;
                 resourceState.Apply(change);

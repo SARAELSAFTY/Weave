@@ -179,6 +179,21 @@ namespace Game.Scripts.UI
             ApplySpeaker(speaker);
         }
 
+        public void ConvertPetitionToNormalChoices(CardData cardData, string finalReactionText)
+        {
+            isPetitionCard = false;
+            HidePetitionInput();
+
+            if (cardData != null)
+            {
+                descriptionText.text = finalReactionText ?? string.Empty;
+                leftChoiceText.text = cardData.leftChoiceText;
+                rightChoiceText.text = cardData.rightChoiceText;
+            }
+
+            ResetCardPosition();
+        }
+
         public void RevealPetitionInput()
         {
             ShowPetitionInput();
@@ -230,6 +245,12 @@ namespace Game.Scripts.UI
             cardRectTransform.localScale = Vector3.one;
             canvasGroup.alpha = 1f;
             SetChoiceVisibility(0f);
+
+            DecisionCard decisionCard = GetComponent<DecisionCard>();
+            if (decisionCard != null)
+            {
+                decisionCard.CancelDragVisuals();
+            }
         }
 
         public bool ContainsScreenPoint(Vector2 screenPoint, Camera eventCamera)

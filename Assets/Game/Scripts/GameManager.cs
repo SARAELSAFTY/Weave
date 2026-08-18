@@ -31,6 +31,7 @@ namespace Game.Scripts
         private CardData warningCardInstance;
         private CardData generatedCollapseEndingCard;
         private PetitionSession currentPetitionSession;
+        private bool isCurrentCardConvertedToNormal;
 
         // NarrativeDatabase.promptTemplates is the single source of truth for prompt text - see LlmPromptTemplates.
         private LlmPromptTemplates Templates => narrativeDatabase != null ? narrativeDatabase.promptTemplates : null;
@@ -284,7 +285,9 @@ namespace Game.Scripts
                 ? (choseRight ? currentCard.rightChoiceText : currentCard.leftChoiceText)
                 : null;
 
-            NarrativeStepResult result = narrativeRunner.Choose(choseRight);
+            NarrativeStepResult result = narrativeRunner.Choose(choseRight, isCurrentCardConvertedToNormal);
+            isCurrentCardConvertedToNormal = false;
+
             if (result.HasError)
             {
                 Debug.LogError(result.error, this);
@@ -469,6 +472,7 @@ namespace Game.Scripts
 
         private void ShowCurrentCard()
         {
+            isCurrentCardConvertedToNormal = false;
             CardData card = narrativeRunner.CurrentCard;
             if (card == null)
             {
@@ -605,17 +609,19 @@ namespace Game.Scripts
             currentPetitionSession?.RecordReply(result, rawContent);
             cardView.SetPetitionSubmitting(false);
 
-            if (result.IsProposal)
+            if (wasFinalTurn && !result.IsProposal)
             {
-                cardView.ShowPetitionProposal(result.reaction);
+                currentPetitionSession = null;
+                isCurrentCardConvertedToNormal = true;
+                CardData currentCard = narrativeRunner.CurrentCard;
+                cardView.ConvertPetitionToNormalChoices(currentCard, result.reaction);
+                inputEnabled = true;
                 return;
             }
 
-            if (wasFinalTurn)
+            if (result.IsProposal)
             {
-                // Model ignored the final-turn instruction and kept deliberating - don't stall the run.
-                Debug.LogWarning("[GameManager] Petition exceeded max turns without a proposal; auto-advancing.", this);
-                AutoAdvancePetitionCard();
+                cardView.ShowPetitionProposal(result.reaction);
                 return;
             }
 

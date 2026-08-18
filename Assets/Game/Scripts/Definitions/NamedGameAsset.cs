@@ -18,25 +18,7 @@ namespace Game.Scripts.Definitions
         protected virtual void OnValidate()
         {
             if (string.IsNullOrWhiteSpace(assetName)) return;
-            ScheduleRenameToMatch(this, assetName.Trim());
-        }
-
-        private static void ScheduleRenameToMatch(Object asset, string trimmedName)
-        {
-            if (asset == null || string.IsNullOrWhiteSpace(trimmedName)) return;
-
-            UnityEditor.EditorApplication.delayCall += () =>
-            {
-                if (asset == null) return;
-                string assetPath = UnityEditor.AssetDatabase.GetAssetPath(asset);
-                if (string.IsNullOrEmpty(assetPath)) return;
-
-                string currentFilename = System.IO.Path.GetFileNameWithoutExtension(assetPath);
-                if (currentFilename == trimmedName) return;
-
-                UnityEditor.AssetDatabase.RenameAsset(assetPath, trimmedName);
-                UnityEditor.AssetDatabase.SaveAssets();
-            };
+            DefinitionAssetRenamer.ScheduleRenameToMatch(this, assetName.Trim());
         }
 #endif
     }

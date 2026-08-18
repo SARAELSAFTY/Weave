@@ -42,6 +42,9 @@ namespace Game.Scripts.Editor
             EditorGUILayout.PropertyField(iconProp, new GUIContent("Icon", "Resource icon image."));
             EditorGUILayout.PropertyField(startingValProp, new GUIContent("Starting Value", "Default value when a run begins."));
 
+            SerializedProperty collapseThresholdProp = serializedObject.FindProperty("collapseThreshold");
+            EditorGUILayout.PropertyField(collapseThresholdProp, new GUIContent("Collapse Threshold", "Resource triggers its collapse ending at or below this value (default 0)."));
+
             EditorGUILayout.Space(10);
             SerializedProperty warningThresholdProp = serializedObject.FindProperty("warningThresholdPercent");
             EditorGUILayout.PropertyField(warningThresholdProp, new GUIContent("Warning Threshold (%)",

@@ -111,3 +111,6 @@ InitTestScene*.unity*
 *.slnx
 
 *groq_api_key
+*api_key_1
+Assets/Game/Scripts/Runtime/api_key_1.txt
+Assets/Game/Scripts/Runtime/api_key_1.txt.meta
