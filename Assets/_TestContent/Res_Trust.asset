@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: Trust
   icon: {fileID: 0}
   defaultStartingValue: 50
-  warningThresholdPercent: 25
+  collapseThreshold: 0
+  warningThresholdPercent: 17
   warningSpeaker: {fileID: 11400000, guid: bfb477a00a82eb743883a1d0316c78c1, type: 2}
   warningCooldownCards: 4
