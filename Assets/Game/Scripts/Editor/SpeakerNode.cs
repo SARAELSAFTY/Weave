@@ -12,15 +12,15 @@ namespace Game.Scripts.Editor
         private static readonly Color LlmAccent = new Color(0.85f, 0.6f, 1.0f);
 
         public SpeakerData Speaker { get; }
-        private readonly CardGraphView parentGraphView;
 
         protected override Object TargetAsset => Speaker;
         protected override string TargetId => Speaker != null ? Speaker.DisplayName : "Null Speaker";
+        protected override string PingActionLabel => "Ping Speaker Asset";
+        protected override string OpenActionLabel => "Open Speaker Asset";
 
-        public SpeakerNode(SpeakerData speaker, CardGraphView parentGraphView)
+        public SpeakerNode(SpeakerData speaker)
         {
             Speaker = speaker;
-            this.parentGraphView = parentGraphView;
             bool hasPersona = speaker != null && !string.IsNullOrWhiteSpace(speaker.llmPersonaPrompt);
 
             InitializeNode(TargetId);
@@ -83,8 +83,7 @@ namespace Game.Scripts.Editor
 
             if (hasPersona)
             {
-                string personaText = string.IsNullOrEmpty(speaker.llmPersonaPrompt) ? "(No Persona Prompt)" : speaker.llmPersonaPrompt;
-                Label personaValue = new Label(personaText);
+                Label personaValue = new Label(speaker.llmPersonaPrompt);
                 personaValue.style.fontSize = 9;
                 personaValue.style.color = new StyleColor(new Color(0.6f, 0.6f, 0.65f));
                 personaValue.style.whiteSpace = WhiteSpace.Normal;

@@ -1,5 +1,15 @@
 {
+  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.nosuchstudio.rtltmpro"
+      ]
+    }
+  ],
   "dependencies": {
+    "com.nosuchstudio.rtltmpro": "4.0.0",
     "com.unity.collab-proxy": "2.12.4",
     "com.unity.feature.2d": "2.0.1",
     "com.unity.ide.rider": "3.0.40",

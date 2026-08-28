@@ -10,6 +10,5 @@ namespace Game.Scripts.Definitions
 
         [TextArea(4, 8), Tooltip("Base persona sent to the LLM whenever this speaker is voiced by AI: identity, tone, and behavior rules.")]
         public string llmPersonaPrompt;
-
     }
 }

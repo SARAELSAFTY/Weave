@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Game.Scripts.Definitions;
+using Game.Scripts.Localization;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -33,6 +34,8 @@ namespace Game.Scripts.Editor
 
         protected override Object TargetAsset => Card;
         protected override string TargetId => Card != null ? Card.DisplayName : "Null Card";
+        protected override string PingActionLabel => "Ping Card Asset";
+        protected override string OpenActionLabel => "Open Card Asset";
 
         public CardNode(CardData card, bool isStartCard, CardGraphView parentGraphView)
         {
@@ -147,7 +150,7 @@ namespace Game.Scripts.Editor
                 ? BuildSeedPreview(card.reactionSeedOverride, "reaction")
                 : card.isPetitionCard
                     ? BuildSeedPreview(card.petitionSeedOverride, "petition")
-                    : Truncate(card.description, DescriptionPreviewLength, "(No description)");
+                    : Truncate(card.GetDescription(GameLanguage.English), DescriptionPreviewLength, "(No description)");
 
             Label previewLabel = new Label(previewText);
             previewLabel.style.fontSize = 11;
@@ -190,12 +193,13 @@ namespace Game.Scripts.Editor
             List<SpeakerData> speakerList = db?.speakers ?? new List<SpeakerData>();
 
             List<string> choices = new List<string> { "(None)" };
+            List<SpeakerData> choiceSpeakers = new List<SpeakerData> { null };
             int selectedIndex = 0;
-            for (int i = 0; i < speakerList.Count; i++)
+            foreach (SpeakerData s in speakerList)
             {
-                SpeakerData s = speakerList[i];
                 if (s == null) continue;
                 choices.Add(s.DisplayName);
+                choiceSpeakers.Add(s);
                 if (card.speaker == s)
                 {
                     selectedIndex = choices.Count - 1;
@@ -209,7 +213,7 @@ namespace Game.Scripts.Editor
             speakerPopup.RegisterValueChangedCallback(evt =>
             {
                 int newIdx = choices.IndexOf(evt.newValue);
-                SpeakerData newSpeaker = (newIdx > 0 && newIdx - 1 < speakerList.Count) ? speakerList[newIdx - 1] : null;
+                SpeakerData newSpeaker = newIdx >= 0 && newIdx < choiceSpeakers.Count ? choiceSpeakers[newIdx] : null;
                 if (card.speaker != newSpeaker)
                 {
                     Undo.RecordObject(card, "Assign Card Speaker");
@@ -252,10 +256,10 @@ namespace Game.Scripts.Editor
                 return choices;
             }
 
-            choices.Add(CreateChoiceRow("L", card.leftChoiceText, LeftAccent, card.leftResourceChange, out Port leftPort));
+            choices.Add(CreateChoiceRow("L", card.GetLeftChoice(GameLanguage.English), LeftAccent, card.leftResourceChange, out Port leftPort));
             LeftPort = leftPort;
 
-            choices.Add(CreateChoiceRow("R", card.rightChoiceText, RightAccent, card.rightResourceChange, out Port rightPort));
+            choices.Add(CreateChoiceRow("R", card.GetRightChoice(GameLanguage.English), RightAccent, card.rightResourceChange, out Port rightPort));
             RightPort = rightPort;
 
             return choices;
@@ -327,7 +331,7 @@ namespace Game.Scripts.Editor
                 resourceContainer.style.flexDirection = FlexDirection.Row;
                 resourceContainer.style.marginLeft = 4;
 
-                foreach (var rv in resourceChange.values)
+                foreach (ResourceValue rv in resourceChange.values)
                 {
                     if (rv.resource == null) continue;
 

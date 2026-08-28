@@ -16,9 +16,8 @@ namespace Game.Scripts.Runtime.Narrative
         private void Awake()
         {
             values.Clear();
-            if (catalog == null)
+            if (InspectorValidation.RequireField(catalog, nameof(catalog), nameof(ResourceState), this))
             {
-                Debug.LogError($"[ResourceState] Missing required Inspector field '{nameof(catalog)}' on '{gameObject.name}'.", this);
                 enabled = false;
                 return;
             }

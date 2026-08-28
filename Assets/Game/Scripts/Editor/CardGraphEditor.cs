@@ -42,11 +42,7 @@ namespace Game.Scripts.Editor
             string catalogPath = AssetDatabase.GetAssetPath(catalog);
             string directory = string.IsNullOrEmpty(catalogPath) ? "Assets" : Path.GetDirectoryName(catalogPath);
             string resourcesDirectory = Path.Combine(directory, "Resources");
-
-            if (!AssetDatabase.IsValidFolder(resourcesDirectory))
-            {
-                AssetDatabase.CreateFolder(directory, "Resources");
-            }
+            EnsureFolderExists(resourcesDirectory);
 
             string assetPath = Path.Combine(resourcesDirectory, $"{name}.asset");
             assetPath = AssetDatabase.GenerateUniqueAssetPath(assetPath);
@@ -143,10 +139,16 @@ namespace Game.Scripts.Editor
 
         private static void EnsureFolderExists(string folder)
         {
-            if (Directory.Exists(folder)) return;
+            folder = folder.Replace('\\', '/');
+            if (AssetDatabase.IsValidFolder(folder)) return;
 
-            Directory.CreateDirectory(folder);
-            AssetDatabase.Refresh();
+            int separatorIndex = folder.LastIndexOf('/');
+            if (separatorIndex <= 0) return;
+
+            string parent = folder.Substring(0, separatorIndex);
+            string leaf = folder.Substring(separatorIndex + 1);
+            EnsureFolderExists(parent);
+            AssetDatabase.CreateFolder(parent, leaf);
         }
 
         private static string FindNextUnusedResourceName(ResourceCatalog catalog)

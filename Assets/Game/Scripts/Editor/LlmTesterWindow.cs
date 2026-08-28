@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Scripts.Definitions;
+using Game.Scripts.Localization;
 using Game.Scripts.Runtime.Llm;
 using Game.Scripts.Runtime.Narrative;
 using UnityEditor;
@@ -37,7 +38,6 @@ namespace Game.Scripts.Editor
         private PetitionSession activePetitionSession;
         private CardData cachedSelectedCard;
 
-        private string sentPayloadOrPrompt = string.Empty;
         private string rawResponse = string.Empty;
         private string parsedResult = string.Empty;
         private string statusLine = string.Empty;
@@ -277,6 +277,13 @@ namespace Game.Scripts.Editor
 
         private LlmPromptTemplates Templates => database != null ? database.promptTemplates : null;
 
+        private GameLanguage TesterLanguage => LanguageManager.Instance != null
+            ? LanguageManager.Instance.CurrentLanguage
+            : GameLanguage.English;
+
+        private IReadOnlyList<ResourceData> CatalogResources =>
+            database != null && database.resourceCatalog != null ? database.resourceCatalog.resources : null;
+
         private SpeakerData ResolveSpeaker(List<CardData> matching)
         {
             if (mode == TestMode.ResourceWarning)
@@ -323,14 +330,14 @@ namespace Game.Scripts.Editor
                 {
                     string seed = card != null ? card.EffectiveReactionSeed(templates) : manualSeed;
                     string instructions = templates != null ? templates.personaSystemInstructions : string.Empty;
-                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions);
+                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions, TesterLanguage, CatalogResources);
                 }
 
                 case TestMode.PetitionOpening:
                 {
                     string seed = card != null ? card.EffectivePetitionSeed(templates) : manualSeed;
                     string instructions = templates != null ? templates.personaSystemInstructions : string.Empty;
-                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions);
+                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions, TesterLanguage, CatalogResources);
                 }
 
                 case TestMode.ResourceWarning:
@@ -338,9 +345,9 @@ namespace Game.Scripts.Editor
                     ResourceData resource = GetSelectedResource();
                     string seed = PromptTemplateUtility.Fill(
                         templates != null ? templates.defaultWarningSeedPrompt : string.Empty,
-                        "resourceName", resource != null ? resource.DisplayName : "(resource)");
+                        "resourceName", resource != null ? resource.GetDisplayName(TesterLanguage) : "(resource)");
                     string instructions = templates != null ? templates.personaSystemInstructions : string.Empty;
-                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions);
+                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions, TesterLanguage, CatalogResources);
                 }
 
                 case TestMode.PetitionTurn:
@@ -348,14 +355,11 @@ namespace Game.Scripts.Editor
                     EnsurePetitionSession();
                     string seed = card != null ? card.EffectivePetitionSeed(templates) : manualSeed;
                     string instructions = templates != null ? templates.petitionSystemInstructions : string.Empty;
-                    IReadOnlyList<ResourceData> validResources = database.resourceCatalog != null ? database.resourceCatalog.resources : null;
+                    IReadOnlyList<ResourceData> validResources = CatalogResources;
                     int clamp = settings != null ? settings.petitionResourceClampMagnitude : 20;
-                    int nextTurn = activePetitionSession.TurnsUsed + 1;
-                    bool isFinalTurn = nextTurn >= activePetitionSession.MaxTurns;
                     return SpeakerPromptBuilder.BuildPetitionTurnPrompt(
-                        speaker, sampleSnapshot, seed, validResources, clamp, instructions,
-                        nextTurn, activePetitionSession.MaxTurns, isFinalTurn)
-                        + "\n\n[Prior turns in this session: " + activePetitionSession.TurnsUsed + " - see Results below for transcript]";
+                        speaker, sampleSnapshot, seed, validResources, clamp, instructions, TesterLanguage)
+                        + "\n\n[Spam dots remaining: " + activePetitionSession.DotsRemaining + " of " + activePetitionSession.DotBudget + " - see Results below for transcript]";
                 }
 
                 case TestMode.Epilogue:
@@ -363,8 +367,8 @@ namespace Game.Scripts.Editor
                     ResourceData resource = GetSelectedResource();
                     string instructions = templates != null ? templates.epilogueSystemInstructions : string.Empty;
                     return SpeakerPromptBuilder.BuildEpiloguePrompt(
-                        sampleDay, resource != null ? resource.DisplayName : "(resource)",
-                        BuildFallbackResourceSummary(), sampleFullHistory, instructions);
+                        sampleDay, resource != null ? resource.GetDisplayName(TesterLanguage) : "(resource)",
+                        BuildFallbackResourceSummary(), sampleFullHistory, instructions, TesterLanguage);
                 }
             }
 
@@ -387,7 +391,8 @@ namespace Game.Scripts.Editor
                 if (mode == TestMode.PetitionTurn)
                 {
                     EnsurePetitionSession();
-                    EditorGUILayout.LabelField($"Petition session: turn {activePetitionSession.TurnsUsed} of {activePetitionSession.MaxTurns}" +
+                    EditorGUILayout.LabelField($"Petition session: {activePetitionSession.DotsRemaining} of {activePetitionSession.DotBudget} spam dots remaining" +
+                        (activePetitionSession.DotsExhausted ? " - dots exhausted" : "") +
                         (activePetitionSession.AwaitingConfirmation ? " - awaiting confirmation" : ""));
 
                     EditorGUILayout.BeginHorizontal();
@@ -422,7 +427,7 @@ namespace Game.Scripts.Editor
 
         private void DrawResults()
         {
-            if (string.IsNullOrEmpty(statusLine) && string.IsNullOrEmpty(sentPayloadOrPrompt))
+            if (string.IsNullOrEmpty(statusLine))
             {
                 return;
             }
@@ -445,7 +450,10 @@ namespace Game.Scripts.Editor
 
             if (mode == TestMode.PetitionTurn && activePetitionSession != null)
             {
-                string transcript = activePetitionSession.GetTranscript();
+                IReadOnlyList<string> transcriptLines = activePetitionSession.GetTranscript();
+                string transcript = transcriptLines != null && transcriptLines.Count > 0
+                    ? string.Join("\n", transcriptLines)
+                    : string.Empty;
                 if (!string.IsNullOrEmpty(transcript))
                 {
                     EditorGUILayout.LabelField("Session Transcript:", EditorStyles.miniBoldLabel);
@@ -466,7 +474,7 @@ namespace Game.Scripts.Editor
         {
             if (activePetitionSession == null)
             {
-                activePetitionSession = new PetitionSession(settings != null ? settings.petitionMaxTurns : 1);
+                activePetitionSession = new PetitionSession(settings != null ? settings.petitionSpamDotBudget : 3);
             }
         }
 
@@ -493,7 +501,6 @@ namespace Game.Scripts.Editor
             if (!Application.isPlaying) return;
 
             string prompt = ComposeCurrentPrompt(out _);
-            sentPayloadOrPrompt = prompt;
             rawResponse = string.Empty;
             parsedResult = string.Empty;
             statusLine = "Sending...";
@@ -503,7 +510,7 @@ namespace Game.Scripts.Editor
             EnsureRunnerClient();
             int? maxTokens = mode == TestMode.Epilogue && settings != null ? settings.epilogueMaxTokens : (int?)null;
 
-            runnerClient.RequestReaction(prompt,
+            runnerClient.RequestReaction(prompt, TesterLanguage,
                 line =>
                 {
                     parsedResult = string.IsNullOrWhiteSpace(line) ? "(empty content)" : line;
@@ -534,11 +541,9 @@ namespace Game.Scripts.Editor
             IReadOnlyList<ResourceData> validResources = database.resourceCatalog != null ? database.resourceCatalog.resources : null;
             int clamp = settings != null ? settings.petitionResourceClampMagnitude : 20;
 
-            bool wasFinalTurn = activePetitionSession.NextTurnIsFinal;
             List<GroqApiMessage> messages = activePetitionSession.BuildMessagesForSubmission(
-                petitionPlayerInput, speaker, sampleSnapshot, seed, validResources, clamp, instructions);
+                petitionPlayerInput, speaker, sampleSnapshot, seed, validResources, clamp, instructions, TesterLanguage);
 
-            sentPayloadOrPrompt = string.Join("\n---\n", messages.Select(m => $"[{m.role}] {m.content}"));
             rawResponse = string.Empty;
             parsedResult = string.Empty;
             statusLine = "Sending...";
@@ -546,7 +551,7 @@ namespace Game.Scripts.Editor
             Repaint();
 
             EnsureRunnerClient();
-            runnerClient.RequestPetitionTurn(messages,
+            runnerClient.RequestPetitionTurn(messages, TesterLanguage,
                 (result, raw) =>
                 {
                     rawResponse = raw;
@@ -559,13 +564,13 @@ namespace Game.Scripts.Editor
                     }
 
                     activePetitionSession.RecordReply(result, raw);
-                    parsedResult = $"phase={result.phase}, reaction=\"{result.reaction}\", historyTag=\"{result.historyTag}\"" +
+                    parsedResult = $"phase={result.phase}, reaction=\"{result.reaction}\", historyTag=\"{result.historyTag}\", isSpam={result.isSpam}" +
                         (result.resourceChanges != null && result.resourceChanges.Length > 0
                             ? "\nresourceChanges: " + string.Join(", ", result.resourceChanges.Select(r => $"{r.resource}:{r.delta}"))
                             : string.Empty);
 
-                    statusLine = wasFinalTurn && !result.IsProposal
-                        ? "[Warning] Model kept deliberating past the final turn - in-game this would auto-advance."
+                    statusLine = activePetitionSession.DotsExhausted
+                        ? "[Warning] Spam-dot budget exhausted - in-game this would request a closing line and convert the card."
                         : "[OK]";
                     isBusy = false;
                     Repaint();

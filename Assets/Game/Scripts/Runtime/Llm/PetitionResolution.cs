@@ -4,6 +4,7 @@ using Game.Scripts.Definitions;
 using Game.Scripts.Runtime.Narrative;
 using UnityEngine;
 
+// Keep this schema in sync with LlmPromptTemplates.petitionSystemInstructions.
 namespace Game.Scripts.Runtime.Llm
 {
     [Serializable]
@@ -21,6 +22,7 @@ namespace Game.Scripts.Runtime.Llm
         public string reaction;
         public PetitionResourceDelta[] resourceChanges;
         public string historyTag;
+        public bool isSpam;
 
         /// <summary>
         /// True only for an explicit "proposal" phase. Missing/malformed phase is treated as

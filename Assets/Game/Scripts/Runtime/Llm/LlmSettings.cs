@@ -10,7 +10,7 @@ namespace Game.Scripts.Runtime.Llm
         public string groqModel = "qwen/qwen3.6-27b";
 
         [Range(0f, 2f), Tooltip("Controls randomness: 0 is deterministic, 2 is very creative.")]
-        public float temperature = 0.9f;
+        public float temperature = 0.65f;
 
         [Tooltip("Only used by reasoning models (openai/gpt-oss-20b, openai/gpt-oss-120b, qwen3 models). " +
                  "Qwen fully disables hidden reasoning with 'none' - keep it there for this game so " +
@@ -41,10 +41,12 @@ namespace Game.Scripts.Runtime.Llm
         [Min(0), Tooltip("Max absolute resource delta the AI may apply per resource on a Petition Card resolution.")]
         public int petitionResourceClampMagnitude = 20;
 
-        [Min(1), Tooltip("Max player submissions allowed in one petition audience before the NPC is forced " +
-                          "to deliver a final proposal. Deliberation turns (questions, back-and-forth) count " +
-                          "toward this same budget - there's no separate cap.")]
-        public int petitionMaxTurns = 6;
+        [Min(1), Tooltip("How many off-topic, abusive, or spam submissions a petitioner will tolerate " +
+                          "before withdrawing. Genuine negotiation does not spend this budget.")]
+        public int petitionSpamDotBudget = 3;
+
+        [Min(0f), Tooltip("Seconds to wait after a failed petition turn before the submit button is re-enabled.")]
+        public float petitionRetryCooldownSeconds = 2f;
 
         [Min(1f), Tooltip("Network timeout in seconds for API calls.")]
         public float apiTimeoutSeconds = 10f;

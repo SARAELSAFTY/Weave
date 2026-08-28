@@ -1,55 +1,37 @@
 using System;
+using Game.Scripts.Localization;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.Scripts.UI
 {
-    public class StartScreenView : MonoBehaviour
+    public class StartScreenView : SingleLocalizedButtonView
     {
         [SerializeField, Tooltip("Button that begins the run.")] private Button playButton;
-        [SerializeField, Tooltip("Button that quits the game.")] private Button quitButton;
+        [SerializeField, Tooltip("Play button label. Auto-fetched from the button if left empty.")]
+        private TMP_Text playButtonText;
+        [SerializeField, Tooltip("Localized Play button label.")]
+        private LocalizedText playButtonLocalized = new LocalizedText
+        {
+            english = "Play",
+            arabic = "ابدأ"
+        };
 
         public event Action PlayRequested;
-        public event Action QuitRequested;
 
-        private void Awake()
+        protected override Button ViewButton => playButton;
+
+        protected override TMP_Text ViewLabel
         {
-            if (playButton == null)
-            {
-                Debug.LogError($"[StartScreenView] Missing required Inspector reference '{nameof(playButton)}' on '{gameObject.name}'.", this);
-                enabled = false;
-                return;
-            }
-
-            if (quitButton == null)
-            {
-                Debug.LogError($"[StartScreenView] Missing required Inspector reference '{nameof(quitButton)}' on '{gameObject.name}'.", this);
-                enabled = false;
-                return;
-            }
-
-            playButton.onClick.AddListener(RequestPlay);
-            quitButton.onClick.AddListener(RequestQuit);
+            get => playButtonText;
+            set => playButtonText = value;
         }
 
-        public void Hide()
-        {
-            gameObject.SetActive(false);
-        }
+        protected override LocalizedText DefaultLabelText => playButtonLocalized;
+        protected override string ComponentTag => nameof(StartScreenView);
+        protected override string ButtonFieldName => nameof(playButton);
 
-        public void Show()
-        {
-            gameObject.SetActive(true);
-        }
-
-        private void RequestPlay()
-        {
-            PlayRequested?.Invoke();
-        }
-
-        private void RequestQuit()
-        {
-            QuitRequested?.Invoke();
-        }
+        protected override void HandleButtonClicked() => PlayRequested?.Invoke();
     }
 }

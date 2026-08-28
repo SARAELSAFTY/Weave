@@ -17,53 +17,83 @@ MonoBehaviour:
   promptTemplates: {fileID: 11400000, guid: 5e1950d91ec766f4088af6592e76760d, type: 2}
   cards:
   - {fileID: 11400000, guid: 47b187eb1168e0148a0fe16ce0e09489, type: 2}
-  - {fileID: 11400000, guid: d820acf18a7f7cb4db5000767dff8f32, type: 2}
-  - {fileID: 11400000, guid: 89f9636b9e558ae48b6c25e117aa135a, type: 2}
-  - {fileID: 11400000, guid: bf05ac8504441bc478c86eedaef0bc50, type: 2}
-  - {fileID: 11400000, guid: 276e2b0c6e9982348a90d383f341bc68, type: 2}
-  - {fileID: 11400000, guid: b327bafbd1438cb42ae39f5ba77ec134, type: 2}
-  - {fileID: 11400000, guid: c53edc063d903d140856ad16ecb100b2, type: 2}
-  - {fileID: 11400000, guid: e2c1422fa5c2ded4298bab24011058e6, type: 2}
-  - {fileID: 11400000, guid: 8958c150e163e8f4382fa70cc9f73c0a, type: 2}
+  - {fileID: 11400000, guid: acce510dd7777d74db03f028585f1d71, type: 2}
+  - {fileID: 11400000, guid: b669e82bc32ff5146a72c1b5181f6a96, type: 2}
+  - {fileID: 11400000, guid: 7af200161a5f86242a02b4f64e1dcac9, type: 2}
+  - {fileID: 11400000, guid: 2a5fcefde53cec543855a68b0c3c279d, type: 2}
+  - {fileID: 11400000, guid: 11ef5150bf610cc4596892f8ca3aab0b, type: 2}
+  - {fileID: 11400000, guid: 9461369e1a7df9743a430378fecc321c, type: 2}
+  - {fileID: 11400000, guid: aaf6aac954106a4429477d3c803ecb48, type: 2}
+  - {fileID: 11400000, guid: ee9ac86b317dd1d409312e597712b24b, type: 2}
+  - {fileID: 11400000, guid: 4c9068a747240e445bce6df33726022f, type: 2}
+  - {fileID: 11400000, guid: da181440820f4f4418590b721b171642, type: 2}
+  - {fileID: 11400000, guid: 18f8d9c684090d948bbf716833d4a019, type: 2}
+  - {fileID: 11400000, guid: 30c1fd1e6af81c04a8ee6106c741ee25, type: 2}
+  - {fileID: 11400000, guid: deaeced7743cb104fa6903247a475d9b, type: 2}
+  - {fileID: 11400000, guid: 4e4be987a2e123b4f883c81194b030d3, type: 2}
+  - {fileID: 11400000, guid: f6211be7343803e4083cdd8e4781d10e, type: 2}
   - {fileID: 11400000, guid: c2e7839333734df4e99f0c1c9185ee0c, type: 2}
   speakers:
-  - {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
-  - {fileID: 11400000, guid: bfb477a00a82eb743883a1d0316c78c1, type: 2}
-  - {fileID: 11400000, guid: d5e1ab544ac9afa4983691a0253bb67d, type: 2}
+  - {fileID: 11400000, guid: e88d1e153d9a35d4bae59abf669e4a93, type: 2}
+  - {fileID: 11400000, guid: 8ae3b499470a8134a8246588163389f3, type: 2}
+  - {fileID: 11400000, guid: 9056cff22f8660e4c88d97f7d7f6548b, type: 2}
+  - {fileID: 11400000, guid: da796e51b6a4e4b40852385f9741f737, type: 2}
+  - {fileID: 11400000, guid: 86ddb2ff8d2793a4491b486d218c24cf, type: 2}
+  - {fileID: 11400000, guid: 7d6e3ecbc00cd21448a3fddfbf82651e, type: 2}
   editorGraphPositions:
   - card: {fileID: 11400000, guid: 47b187eb1168e0148a0fe16ce0e09489, type: 2}
-    position: {x: 59.2, y: -180.8}
-  - card: {fileID: 11400000, guid: d820acf18a7f7cb4db5000767dff8f32, type: 2}
-    position: {x: 446.40002, y: -306.4}
-  - card: {fileID: 11400000, guid: 89f9636b9e558ae48b6c25e117aa135a, type: 2}
-    position: {x: 415.2, y: -14.400002}
-  - card: {fileID: 11400000, guid: bf05ac8504441bc478c86eedaef0bc50, type: 2}
-    position: {x: 820.8, y: -95.2}
-  - card: {fileID: 11400000, guid: 276e2b0c6e9982348a90d383f341bc68, type: 2}
-    position: {x: 1188, y: -105.6}
-  - card: {fileID: 11400000, guid: b327bafbd1438cb42ae39f5ba77ec134, type: 2}
-    position: {x: 1501, y: -42}
-  - card: {fileID: 11400000, guid: c53edc063d903d140856ad16ecb100b2, type: 2}
-    position: {x: 1842, y: -44}
-  - card: {fileID: 11400000, guid: e2c1422fa5c2ded4298bab24011058e6, type: 2}
-    position: {x: -276, y: -290}
-  - card: {fileID: 11400000, guid: 8958c150e163e8f4382fa70cc9f73c0a, type: 2}
-    position: {x: -257, y: 319}
+    position: {x: 100, y: 300}
+  - card: {fileID: 11400000, guid: acce510dd7777d74db03f028585f1d71, type: 2}
+    position: {x: 450, y: 150}
+  - card: {fileID: 11400000, guid: b669e82bc32ff5146a72c1b5181f6a96, type: 2}
+    position: {x: 450, y: 450}
+  - card: {fileID: 11400000, guid: 7af200161a5f86242a02b4f64e1dcac9, type: 2}
+    position: {x: 800, y: 150}
+  - card: {fileID: 11400000, guid: 2a5fcefde53cec543855a68b0c3c279d, type: 2}
+    position: {x: 800, y: 300}
+  - card: {fileID: 11400000, guid: 11ef5150bf610cc4596892f8ca3aab0b, type: 2}
+    position: {x: 800, y: 450}
+  - card: {fileID: 11400000, guid: 9461369e1a7df9743a430378fecc321c, type: 2}
+    position: {x: 1150, y: 300}
+  - card: {fileID: 11400000, guid: aaf6aac954106a4429477d3c803ecb48, type: 2}
+    position: {x: 1500, y: 300}
+  - card: {fileID: 11400000, guid: ee9ac86b317dd1d409312e597712b24b, type: 2}
+    position: {x: 1850, y: 300}
+  - card: {fileID: 11400000, guid: 4c9068a747240e445bce6df33726022f, type: 2}
+    position: {x: 2200, y: 300}
+  - card: {fileID: 11400000, guid: da181440820f4f4418590b721b171642, type: 2}
+    position: {x: 2550, y: 300}
+  - card: {fileID: 11400000, guid: 18f8d9c684090d948bbf716833d4a019, type: 2}
+    position: {x: 2900, y: 150}
+  - card: {fileID: 11400000, guid: 30c1fd1e6af81c04a8ee6106c741ee25, type: 2}
+    position: {x: 2900, y: 450}
+  - card: {fileID: 11400000, guid: deaeced7743cb104fa6903247a475d9b, type: 2}
+    position: {x: 1504, y: 6}
+  - card: {fileID: 11400000, guid: 4e4be987a2e123b4f883c81194b030d3, type: 2}
+    position: {x: 1854, y: 6}
+  - card: {fileID: 11400000, guid: f6211be7343803e4083cdd8e4781d10e, type: 2}
+    position: {x: 2204, y: 6}
   - card: {fileID: 11400000, guid: c2e7839333734df4e99f0c1c9185ee0c, type: 2}
-    position: {x: -209.6, y: 579.2}
+    position: {x: 2554, y: 6}
   editorSpeakerPositions:
-  - speaker: {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
-    position: {x: -588.8, y: -11.200001}
-  - speaker: {fileID: 11400000, guid: bfb477a00a82eb743883a1d0316c78c1, type: 2}
-    position: {x: -561, y: 156}
-  - speaker: {fileID: 11400000, guid: d5e1ab544ac9afa4983691a0253bb67d, type: 2}
-    position: {x: -250.40001, y: 11.199997}
+  - speaker: {fileID: 11400000, guid: e88d1e153d9a35d4bae59abf669e4a93, type: 2}
+    position: {x: 100, y: -200}
+  - speaker: {fileID: 11400000, guid: 8ae3b499470a8134a8246588163389f3, type: 2}
+    position: {x: 350, y: -200}
+  - speaker: {fileID: 11400000, guid: 9056cff22f8660e4c88d97f7d7f6548b, type: 2}
+    position: {x: 600, y: -200}
+  - speaker: {fileID: 11400000, guid: da796e51b6a4e4b40852385f9741f737, type: 2}
+    position: {x: 850, y: -200}
+  - speaker: {fileID: 11400000, guid: 86ddb2ff8d2793a4491b486d218c24cf, type: 2}
+    position: {x: 1100, y: -200}
+  - speaker: {fileID: 11400000, guid: 7d6e3ecbc00cd21448a3fddfbf82651e, type: 2}
+    position: {x: 1350, y: -200}
   editorResourcePositions:
-  - resource: {fileID: 11400000, guid: 5a0196efc6c6aca4e80dd289639a76bb, type: 2}
-    position: {x: -524, y: -168}
-  - resource: {fileID: 11400000, guid: 28865345534e13046b9f8b9d492912ab, type: 2}
-    position: {x: -508, y: 347}
+  - resource: {fileID: 11400000, guid: 902ab88e3a90700468bdd056abc51b13, type: 2}
+    position: {x: 1650, y: -200}
+  - resource: {fileID: 11400000, guid: 72bd89d08c3d98a4eb384aa6fff1bea4, type: 2}
+    position: {x: 1900, y: -200}
+  - resource: {fileID: 11400000, guid: 9352dbb1ccbf9ea49beb3543a943b5bd, type: 2}
+    position: {x: 2150, y: -200}
   - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
-    position: {x: -517, y: 618}
-  - resource: {fileID: 11400000, guid: 58d8fa4af3f1c4d42b7736deaceba518, type: 2}
-    position: {x: 11.2, y: 386.4}
+    position: {x: 2400, y: -200}

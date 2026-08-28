@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Game.Scripts.Definitions;
+using Game.Scripts.Localization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,13 +32,19 @@ namespace Game.Scripts.UI
         [SerializeField, Tooltip("Maximum rotation angle during exit.")] private float exitRotationDegrees = 18f;
         [SerializeField, Tooltip("Easing curve for exit animation.")] private AnimationCurve exitEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+        [Header("Choice Card Feel")]
+        [SerializeField, Tooltip("Animator driver on the left choice card object.")] private ChoiceCardAnimator leftChoiceCardAnimator;
+        [SerializeField, Tooltip("Animator driver on the right choice card object.")] private ChoiceCardAnimator rightChoiceCardAnimator;
+
         private RectTransform cardRectTransform;
         private Vector2 homePosition;
         private Quaternion homeRotation;
-        private float leftChoiceBaseAlpha;
-        private float rightChoiceBaseAlpha;
         private bool isEndingCard;
         private bool isPetitionCard;
+        private bool isLlmReactionPresentation;
+        private CardData currentCardData;
+        private SpeakerData currentSpeaker;
+        private string currentDynamicDescription;
 
         public event Action RestartRequested;
         public event Action<string> PetitionCommandSubmitted;
@@ -45,59 +52,25 @@ namespace Game.Scripts.UI
 
         public bool AcceptsDrag => !isEndingCard && !isPetitionCard;
 
+        private GameLanguage CurrentLanguage => LanguageManager.Instance != null
+            ? LanguageManager.Instance.CurrentLanguage
+            : GameLanguage.English;
+
         private void Awake()
         {
-            if (descriptionText == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(descriptionText)}' on '{gameObject.name}'.", this);
-            }
+            bool missingReference =
+                InspectorValidation.RequireField(descriptionText, nameof(descriptionText), nameof(CardView), this) |
+                InspectorValidation.RequireField(leftChoiceText, nameof(leftChoiceText), nameof(CardView), this) |
+                InspectorValidation.RequireField(rightChoiceText, nameof(rightChoiceText), nameof(CardView), this) |
+                InspectorValidation.RequireField(canvasGroup, nameof(canvasGroup), nameof(CardView), this) |
+                InspectorValidation.RequireField(speakerPortrait, nameof(speakerPortrait), nameof(CardView), this) |
+                InspectorValidation.RequireField(speakerNameText, nameof(speakerNameText), nameof(CardView), this) |
+                InspectorValidation.RequireField(restartButton, nameof(restartButton), nameof(CardView), this) |
+                InspectorValidation.RequireField(petitionInputRoot, nameof(petitionInputRoot), nameof(CardView), this) |
+                InspectorValidation.RequireField(petitionInputField, nameof(petitionInputField), nameof(CardView), this) |
+                InspectorValidation.RequireField(petitionSubmitButton, nameof(petitionSubmitButton), nameof(CardView), this);
 
-            if (leftChoiceText == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(leftChoiceText)}' on '{gameObject.name}'.", this);
-            }
-
-            if (rightChoiceText == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(rightChoiceText)}' on '{gameObject.name}'.", this);
-            }
-
-            if (canvasGroup == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(canvasGroup)}' on '{gameObject.name}'.", this);
-            }
-
-            if (speakerPortrait == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(speakerPortrait)}' on '{gameObject.name}'.", this);
-            }
-
-            if (speakerNameText == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(speakerNameText)}' on '{gameObject.name}'.", this);
-            }
-
-            if (restartButton == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(restartButton)}' on '{gameObject.name}'.", this);
-            }
-
-            if (petitionInputRoot == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(petitionInputRoot)}' on '{gameObject.name}'.", this);
-            }
-
-            if (petitionInputField == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(petitionInputField)}' on '{gameObject.name}'.", this);
-            }
-
-            if (petitionSubmitButton == null)
-            {
-                Debug.LogError($"[CardView] Missing required Inspector reference '{nameof(petitionSubmitButton)}' on '{gameObject.name}'.", this);
-            }
-
-            if (descriptionText == null || leftChoiceText == null || rightChoiceText == null || canvasGroup == null || speakerPortrait == null || speakerNameText == null || restartButton == null || petitionInputRoot == null || petitionInputField == null || petitionSubmitButton == null)
+            if (missingReference)
             {
                 enabled = false;
                 return;
@@ -106,8 +79,15 @@ namespace Game.Scripts.UI
             cardRectTransform = (RectTransform)transform;
             homePosition = cardRectTransform.anchoredPosition;
             homeRotation = cardRectTransform.localRotation;
-            leftChoiceBaseAlpha = leftChoiceText.color.a;
-            rightChoiceBaseAlpha = rightChoiceText.color.a;
+
+            RtlTextHelper.Configure(descriptionText);
+            RtlTextHelper.Configure(leftChoiceText);
+            RtlTextHelper.Configure(rightChoiceText);
+            RtlTextHelper.Configure(speakerNameText);
+            if (petitionInputField.textComponent != null)
+            {
+                RtlTextHelper.Configure(petitionInputField.textComponent);
+            }
 
             restartButton.gameObject.SetActive(false);
             restartButton.onClick.AddListener(RequestRestart);
@@ -128,53 +108,70 @@ namespace Game.Scripts.UI
             }
         }
 
+        private void OnEnable()
+        {
+            if (LanguageManager.Instance != null)
+            {
+                LanguageManager.Instance.LanguageChanged += RefreshLanguage;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (LanguageManager.HasInstance)
+            {
+                LanguageManager.Instance.LanguageChanged -= RefreshLanguage;
+            }
+        }
+
         public void Show(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
             isPetitionCard = false;
+            isLlmReactionPresentation = false;
+            currentDynamicDescription = null;
+            currentCardData = cardData;
+            currentSpeaker = speaker;
             ResetCardPosition();
             restartButton.gameObject.SetActive(false);
             HidePetitionInput();
 
-            if (cardData != null)
-            {
-                descriptionText.text = cardData.description;
-                leftChoiceText.text = cardData.leftChoiceText;
-                rightChoiceText.text = cardData.rightChoiceText;
-            }
-
             ApplySpeaker(speaker);
+            ApplyStaticCardText(cardData, useReactionFallbacks: false);
         }
 
         public void ShowLlmReaction(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
             isPetitionCard = false;
+            isLlmReactionPresentation = true;
+            currentDynamicDescription = string.Empty;
+            currentCardData = cardData;
+            currentSpeaker = speaker;
             ResetCardPosition();
             restartButton.gameObject.SetActive(false);
             HidePetitionInput();
 
-            if (cardData != null)
-            {
-                descriptionText.text = string.Empty;
-                leftChoiceText.text = !string.IsNullOrWhiteSpace(cardData.leftChoiceText) ? cardData.leftChoiceText : "Dismiss";
-                rightChoiceText.text = !string.IsNullOrWhiteSpace(cardData.rightChoiceText) ? cardData.rightChoiceText : "Continue";
-            }
-
             ApplySpeaker(speaker);
+            SetLabel(descriptionText, string.Empty);
+            ApplyChoiceTexts(cardData, useReactionFallbacks: true);
         }
 
         public void ShowPetition(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
             isPetitionCard = true;
+            isLlmReactionPresentation = false;
+            currentDynamicDescription = string.Empty;
+            currentCardData = cardData;
+            currentSpeaker = speaker;
             ResetCardPosition();
             restartButton.gameObject.SetActive(false);
             HidePetitionInput();
 
-            descriptionText.text = string.Empty;
-            leftChoiceText.text = string.Empty;
-            rightChoiceText.text = string.Empty;
+            SetLabel(descriptionText, string.Empty);
+            SetLabel(leftChoiceText, string.Empty);
+            SetLabel(rightChoiceText, string.Empty);
 
             ApplySpeaker(speaker);
         }
@@ -182,41 +179,55 @@ namespace Game.Scripts.UI
         public void ConvertPetitionToNormalChoices(CardData cardData, string finalReactionText)
         {
             isPetitionCard = false;
+            isLlmReactionPresentation = false;
+            currentCardData = cardData;
+            currentDynamicDescription = finalReactionText ?? string.Empty;
             HidePetitionInput();
 
-            if (cardData != null)
-            {
-                descriptionText.text = finalReactionText ?? string.Empty;
-                leftChoiceText.text = cardData.leftChoiceText;
-                rightChoiceText.text = cardData.rightChoiceText;
-            }
+            SetLabel(descriptionText, currentDynamicDescription);
+            ApplyChoiceTexts(cardData, useReactionFallbacks: true);
 
             ResetCardPosition();
         }
 
-        public void RevealPetitionInput()
+        public void ShowPetitionInput()
         {
-            ShowPetitionInput();
+            if (petitionInputField != null)
+            {
+                petitionInputField.text = string.Empty;
+            }
+
+            if (petitionInputRoot != null)
+            {
+                petitionInputRoot.SetActive(true);
+            }
+
+            SetPetitionSubmitting(false);
         }
 
         public void SetDescriptionText(string text)
         {
-            if (descriptionText != null)
-            {
-                descriptionText.text = text ?? string.Empty;
-            }
+            currentDynamicDescription = text ?? string.Empty;
+            SetLabel(descriptionText, currentDynamicDescription);
         }
 
         public void ShowEnding(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = true;
             isPetitionCard = false;
+            isLlmReactionPresentation = false;
+            currentCardData = cardData;
+            currentSpeaker = speaker;
+            currentDynamicDescription = null;
             ResetCardPosition();
             HidePetitionInput();
 
-            descriptionText.text = cardData != null ? cardData.description : "The run has ended.";
-            leftChoiceText.text = string.Empty;
-            rightChoiceText.text = string.Empty;
+            string description = cardData != null
+                ? cardData.GetDescription(CurrentLanguage)
+                : FallbackStrings.RunEnded(CurrentLanguage);
+            SetLabel(descriptionText, description);
+            SetLabel(leftChoiceText, string.Empty);
+            SetLabel(rightChoiceText, string.Empty);
 
             ApplySpeaker(speaker);
             restartButton.gameObject.SetActive(true);
@@ -235,22 +246,36 @@ namespace Game.Scripts.UI
 
             cardRectTransform.anchoredPosition = homePosition + visualDragOffset;
             cardRectTransform.localRotation = Quaternion.Euler(0f, 0f, progress * -exitRotationDegrees);
-            SetChoiceVisibility(progress);
+
+            leftChoiceCardAnimator?.SetRevealProgress(-progress);
+            rightChoiceCardAnimator?.SetRevealProgress(progress);
         }
 
-        public void ResetCardPosition()
+        public void ResetCardPosition(bool easeChoiceCards = false)
         {
             cardRectTransform.anchoredPosition = homePosition;
             cardRectTransform.localRotation = homeRotation;
             cardRectTransform.localScale = Vector3.one;
             canvasGroup.alpha = 1f;
-            SetChoiceVisibility(0f);
 
-            DecisionCard decisionCard = GetComponent<DecisionCard>();
-            if (decisionCard != null)
+            if (easeChoiceCards)
             {
-                decisionCard.CancelDragVisuals();
+                leftChoiceCardAnimator?.EaseBackToPark();
+                rightChoiceCardAnimator?.EaseBackToPark();
             }
+            else
+            {
+                leftChoiceCardAnimator?.SnapToPark();
+                rightChoiceCardAnimator?.SnapToPark();
+            }
+        }
+
+        public void PlayConfirmAnimation(bool choseRight)
+        {
+            ChoiceCardAnimator chosen = choseRight ? rightChoiceCardAnimator : leftChoiceCardAnimator;
+            ChoiceCardAnimator other = choseRight ? leftChoiceCardAnimator : rightChoiceCardAnimator;
+            chosen?.PlayConfirm();
+            other?.EaseBackToPark();
         }
 
         public bool ContainsScreenPoint(Vector2 screenPoint, Camera eventCamera)
@@ -278,21 +303,6 @@ namespace Game.Scripts.UI
 
                 yield return null;
             }
-        }
-
-        private void ShowPetitionInput()
-        {
-            if (petitionInputField != null)
-            {
-                petitionInputField.text = string.Empty;
-            }
-
-            if (petitionInputRoot != null)
-            {
-                petitionInputRoot.SetActive(true);
-            }
-
-            SetPetitionSubmitting(false);
         }
 
         private void HidePetitionInput()
@@ -376,31 +386,13 @@ namespace Game.Scripts.UI
             if (hasSpeaker)
             {
                 speakerNameText.gameObject.SetActive(true);
-                speakerNameText.text = FormatSpeakerLabel(speaker);
+                SetLabel(speakerNameText, speaker.GetDisplayName(CurrentLanguage), TextFontCategory.SpeakerName);
             }
             else
             {
-                speakerNameText.text = string.Empty;
+                SetLabel(speakerNameText, string.Empty, TextFontCategory.SpeakerName);
                 speakerNameText.gameObject.SetActive(false);
             }
-        }
-
-        private static string FormatSpeakerLabel(SpeakerData speaker)
-        {
-            return speaker != null ? speaker.DisplayName : string.Empty;
-        }
-
-        private void SetChoiceVisibility(float progress)
-        {
-            SetTextAlpha(leftChoiceText, leftChoiceBaseAlpha, Mathf.Clamp01(-progress));
-            SetTextAlpha(rightChoiceText, rightChoiceBaseAlpha, Mathf.Clamp01(progress));
-        }
-
-        private static void SetTextAlpha(TMP_Text text, float baseAlpha, float alpha)
-        {
-            Color color = text.color;
-            color.a = baseAlpha * alpha;
-            text.color = color;
         }
 
         public void ShowPetitionDeliberation(string reactionText)
@@ -415,7 +407,8 @@ namespace Game.Scripts.UI
 
         private void DisplayPetitionResponse(string reactionText, bool showConfirm)
         {
-            descriptionText.text = reactionText ?? string.Empty;
+            currentDynamicDescription = reactionText ?? string.Empty;
+            SetLabel(descriptionText, currentDynamicDescription);
             ShowPetitionInput();
 
             if (petitionConfirmButton != null)
@@ -424,14 +417,12 @@ namespace Game.Scripts.UI
             }
         }
 
-        /// <summary>Filled dots represent turns remaining, not turns used.</summary>
-        public void UpdatePetitionPatience(int turnsUsed, int maxTurns)
+        public void UpdatePetitionDots(int remainingDots)
         {
             if (petitionPatienceDots == null || petitionPatienceDots.Length == 0) return;
 
             SetPatienceDotsActive(true);
-            int remaining = Mathf.Clamp(maxTurns - turnsUsed, 0, petitionPatienceDots.Length);
-
+            int remaining = Mathf.Clamp(remainingDots, 0, petitionPatienceDots.Length);
             for (int i = 0; i < petitionPatienceDots.Length; i++)
             {
                 if (petitionPatienceDots[i] == null) continue;
@@ -439,6 +430,105 @@ namespace Game.Scripts.UI
                 c.a = i < remaining ? 1f : 0.25f;
                 petitionPatienceDots[i].color = c;
             }
+        }
+
+        public void ShowPetitionSubmitFailed(string message)
+        {
+            if (descriptionText != null && !string.IsNullOrEmpty(message))
+            {
+                currentDynamicDescription = message;
+                SetLabel(descriptionText, message);
+            }
+
+            SetPetitionSubmitting(false);
+        }
+
+        private void RefreshLanguage()
+        {
+            if (petitionInputField != null && petitionInputField.textComponent != null)
+            {
+                RtlTextHelper.Apply(petitionInputField.textComponent, CurrentLanguage);
+            }
+
+            ApplySpeaker(currentSpeaker);
+
+            if (isPetitionCard)
+            {
+                if (currentDynamicDescription != null)
+                {
+                    SetLabel(descriptionText, currentDynamicDescription);
+                }
+
+                return;
+            }
+
+            if (isEndingCard)
+            {
+                string description = currentCardData != null
+                    ? currentCardData.GetDescription(CurrentLanguage)
+                    : FallbackStrings.RunEnded(CurrentLanguage);
+                SetLabel(descriptionText, description);
+                SetLabel(leftChoiceText, string.Empty);
+                SetLabel(rightChoiceText, string.Empty);
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(currentDynamicDescription))
+            {
+                SetLabel(descriptionText, currentDynamicDescription);
+            }
+            else if (currentCardData != null && !isLlmReactionPresentation)
+            {
+                SetLabel(descriptionText, currentCardData.GetDescription(CurrentLanguage));
+            }
+
+            ApplyChoiceTexts(currentCardData, useReactionFallbacks: isLlmReactionPresentation);
+        }
+
+        private void ApplyStaticCardText(CardData cardData, bool useReactionFallbacks)
+        {
+            if (cardData != null)
+            {
+                SetLabel(descriptionText, cardData.GetDescription(CurrentLanguage));
+            }
+
+            ApplyChoiceTexts(cardData, useReactionFallbacks);
+        }
+
+        private void ApplyChoiceTexts(CardData cardData, bool useReactionFallbacks)
+        {
+            if (cardData == null)
+            {
+                return;
+            }
+
+            string left = cardData.GetLeftChoice(CurrentLanguage);
+            string right = cardData.GetRightChoice(CurrentLanguage);
+            if (useReactionFallbacks)
+            {
+                if (string.IsNullOrWhiteSpace(left))
+                {
+                    left = FallbackStrings.Dismiss(CurrentLanguage);
+                }
+
+                if (string.IsNullOrWhiteSpace(right))
+                {
+                    right = FallbackStrings.Continue(CurrentLanguage);
+                }
+            }
+
+            SetLabel(leftChoiceText, left, TextFontCategory.Choice);
+            SetLabel(rightChoiceText, right, TextFontCategory.Choice);
+        }
+
+        private void SetLabel(TMP_Text label, string value, TextFontCategory category = TextFontCategory.Default)
+        {
+            if (category == TextFontCategory.Default && label == descriptionText)
+            {
+                category = TextFontCategory.DialogueBody;
+            }
+
+            RtlTextHelper.SetText(label, value ?? string.Empty, CurrentLanguage, category);
         }
     }
 }

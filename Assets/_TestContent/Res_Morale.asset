@@ -13,9 +13,13 @@ MonoBehaviour:
   m_Name: Res_Morale
   m_EditorClassIdentifier: 
   assetName: Res_Morale
-  displayName: Morale
+  displayName: People's Faith
+  displayNameLocalized:
+    english: People's Faith
+    arabic: "\u0625\u064A\u0645\u0627\u0646 \u0627\u0644\u0634\u0639\u0628"
   icon: {fileID: 0}
-  defaultStartingValue: 60
-  warningThresholdPercent: 35
-  warningSpeaker: {fileID: 11400000, guid: d01858f80753e2b44b807140ce48e75e, type: 2}
-  warningCooldownCards: 3
+  defaultStartingValue: 50
+  collapseThreshold: 0
+  warningThresholdPercent: 30
+  warningSpeaker: {fileID: 11400000, guid: e88d1e153d9a35d4bae59abf669e4a93, type: 2}
+  warningCooldownCards: 4

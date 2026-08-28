@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Test_Branch_ChancellorEgo
+  m_EditorClassIdentifier: 
+  assetName: Test_Branch_ChancellorEgo
+  displayName: The Golden Colossus
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 9056cff22f8660e4c88d97f7d7f6548b, type: 2}
+  descriptionLocalized:
+    english: Chancellor Malakor bows low, his smile dripping with silk. 'Sire, the
+      commoners must witness your supreme glory! Let us levy a double harvest tax
+      to build a golden colossus in your likeness.'
+    arabic: "\u064A\u0646\u062D\u0646\u064A \u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631
+      \u0645\u0627\u0644\u0627\u0643\u0648\u0631 \u0628\u0627\u0628\u062A\u0633\u0627\u0645\u0629
+      \u0645\u062A\u0645\u0644\u0642\u0629: '\u0645\u0648\u0644\u0627\u064A \u0627\u0644\u0645\u0639\u0638\u0645\u060C
+      \u064A\u062C\u0628 \u0623\u0646 \u062A\u0631\u0649 \u0627\u0644\u0631\u0639\u064A\u0629
+      \u0645\u062C\u062F\u0643 \u0627\u0644\u0645\u0637\u0644\u0642! \u062F\u0639\u0646\u0627
+      \u0646\u0641\u0631\u0636 \u0636\u0631\u064A\u0628\u0629 \u062D\u0635\u0627\u062F
+      \u0645\u0636\u0627\u0639\u0641\u0629 \u0644\u062A\u0634\u064A\u064A\u062F \u062A\u0645\u062B\u0627\u0644
+      \u0639\u0645\u0644\u0627\u0642 \u0645\u0646 \u0627\u0644\u0630\u0647\u0628
+      \u0627\u0644\u062E\u0627\u0644\u0635 \u064A\u062C\u0633\u062F \u0639\u0638\u0645\u062A\u0643\u0645.'"
+  dayAdvance: 2
+  leftChoiceLocalized:
+    english: Build the Golden Colossus!
+    arabic: "\u0634\u064A\u0651\u062F\u0648\u0627 \u0627\u0644\u062A\u0645\u062B\u0627\u0644
+      \u0627\u0644\u0630\u0647\u0628\u064A \u0641\u0648\u0631\u064B\u0627!"
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 902ab88e3a90700468bdd056abc51b13, type: 2}
+      value: -20
+    - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
+      value: -15
+    - resource: {fileID: 11400000, guid: 9352dbb1ccbf9ea49beb3543a943b5bd, type: 2}
+      value: 10
+  leftNextCard: {fileID: 11400000, guid: 7af200161a5f86242a02b4f64e1dcac9, type: 2}
+  rightChoiceLocalized:
+    english: Refuse and slash his court budget
+    arabic: "\u0627\u0631\u0641\u0636 \u0648\u062E\u0641\u0651\u0636 \u0645\u064A\u0632\u0627\u0646\u064A\u0629
+      \u0628\u0644\u0627\u0637\u0647"
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 902ab88e3a90700468bdd056abc51b13, type: 2}
+      value: 15
+    - resource: {fileID: 11400000, guid: 9352dbb1ccbf9ea49beb3543a943b5bd, type: 2}
+      value: -10
+  rightNextCard: {fileID: 11400000, guid: 2a5fcefde53cec543855a68b0c3c279d, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  continueNextCard: {fileID: 0}

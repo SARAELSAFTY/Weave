@@ -4,7 +4,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 namespace Game.Scripts.Input
 {
@@ -28,22 +27,12 @@ namespace Game.Scripts.Input
 
         private void Awake()
         {
-            if (gameManager == null)
-            {
-                Debug.LogError($"[PlayerChoiceInput] Missing required Inspector reference '{nameof(gameManager)}' on '{gameObject.name}'.", this);
-            }
+            bool missingReference =
+                InspectorValidation.RequireField(gameManager, nameof(gameManager), nameof(PlayerChoiceInput), this) |
+                InspectorValidation.RequireField(cardView, nameof(cardView), nameof(PlayerChoiceInput), this) |
+                InspectorValidation.RequireField(rootCanvas, nameof(rootCanvas), nameof(PlayerChoiceInput), this);
 
-            if (cardView == null)
-            {
-                Debug.LogError($"[PlayerChoiceInput] Missing required Inspector reference '{nameof(cardView)}' on '{gameObject.name}'.", this);
-            }
-
-            if (rootCanvas == null)
-            {
-                Debug.LogError($"[PlayerChoiceInput] Missing required Inspector reference '{nameof(rootCanvas)}' on '{gameObject.name}'.", this);
-            }
-
-            if (gameManager == null || cardView == null || rootCanvas == null)
+            if (missingReference)
             {
                 enabled = false;
                 return;
@@ -133,7 +122,7 @@ namespace Game.Scripts.Input
 
         private void TryBeginDrag(Vector2 screenPosition)
         {
-            if (IsPointerOverBlockingUi())
+            if (IsTypingInInputField())
             {
                 return;
             }
@@ -162,7 +151,7 @@ namespace Game.Scripts.Input
             }
             else
             {
-                cardView.ResetCardPosition();
+                cardView.ResetCardPosition(easeChoiceCards: true);
             }
         }
 
@@ -179,7 +168,7 @@ namespace Game.Scripts.Input
 
             if (resetVisual)
             {
-                cardView.ResetCardPosition();
+                cardView.ResetCardPosition(easeChoiceCards: true);
             }
         }
 
@@ -258,11 +247,6 @@ namespace Game.Scripts.Input
             return false;
         }
 
-        private static bool IsPointerOverBlockingUi()
-        {
-            return IsTypingInInputField();
-        }
-
         private static bool IsTypingInInputField()
         {
             if (EventSystem.current == null)
@@ -271,13 +255,7 @@ namespace Game.Scripts.Input
             }
 
             GameObject selected = EventSystem.current.currentSelectedGameObject;
-            if (selected == null)
-            {
-                return false;
-            }
-
-            return selected.GetComponent<TMP_InputField>() != null ||
-                   selected.GetComponent<InputField>() != null;
+            return selected != null && selected.TryGetComponent<TMP_InputField>(out _);
         }
     }
 }

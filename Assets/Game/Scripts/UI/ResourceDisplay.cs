@@ -1,12 +1,13 @@
 using System;
 using Game.Scripts.Definitions;
+using Game.Scripts.Localization;
 using Game.Scripts.Runtime.Narrative;
 using TMPro;
 using UnityEngine;
 
 namespace Game.Scripts.UI
 {
-    public class ResourceDisplay : MonoBehaviour
+    public class ResourceDisplay : LocalizedDisplay
     {
         [Serializable]
         public struct LabelBinding
@@ -20,9 +21,8 @@ namespace Game.Scripts.UI
 
         private void Awake()
         {
-            if (resourceState == null)
+            if (InspectorValidation.RequireField(resourceState, nameof(resourceState), nameof(ResourceDisplay), this))
             {
-                Debug.LogError($"[ResourceDisplay] Missing required Inspector reference '{nameof(resourceState)}' on '{gameObject.name}'.", this);
                 enabled = false;
                 return;
             }
@@ -31,27 +31,36 @@ namespace Game.Scripts.UI
             {
                 Debug.LogError($"[ResourceDisplay] No label bindings assigned on '{gameObject.name}'.", this);
                 enabled = false;
+                return;
+            }
+
+            foreach (LabelBinding binding in labels)
+            {
+                RtlTextHelper.Configure(binding.label);
             }
         }
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
+
             if (resourceState != null)
             {
                 resourceState.Changed += Refresh;
-                Refresh();
             }
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
             if (resourceState != null)
             {
                 resourceState.Changed -= Refresh;
             }
+
+            base.OnDisable();
         }
 
-        private void Refresh()
+        protected override void RefreshContent(GameLanguage language)
         {
             if (labels == null)
             {
@@ -65,7 +74,10 @@ namespace Game.Scripts.UI
                     continue;
                 }
 
-                binding.label.text = $"{binding.resource.DisplayName}: {resourceState.Get(binding.resource)}";
+                RtlTextHelper.SetText(
+                    binding.label,
+                    $"{binding.resource.GetDisplayName(language)}: {resourceState.Get(binding.resource)}",
+                    language);
             }
         }
     }

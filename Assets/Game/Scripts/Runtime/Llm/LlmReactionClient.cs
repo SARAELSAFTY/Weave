@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Game.Scripts.Localization;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -25,49 +26,50 @@ namespace Game.Scripts.Runtime.Llm
             proxyUrl = proxyUrlToUse;
         }
 
-        public void RequestReaction(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
+        public void RequestReaction(string systemPrompt, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
-            if (settings == null)
+            if (!TryValidateConfig(onFailure))
             {
-                Debug.LogError("[LlmReactionClient] LlmSettings reference is missing!");
-                onFailure?.Invoke(LlmRequestError.NotConfigured);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(proxyUrl))
-            {
-                Debug.LogError("[LlmReactionClient] Proxy URL is missing. Assign a valid Proxy URL in the Inspector.");
-                onFailure?.Invoke(LlmRequestError.NotConfigured);
-                return;
-            }
-
-            StartCoroutine(RequestRoutine(systemPrompt, onSuccess, onFailure, maxTokensOverride));
+            StartCoroutine(RequestRoutine(systemPrompt, language, onSuccess, onFailure, maxTokensOverride));
         }
 
         /// <summary>
         /// Sends a full multi-turn message list (from <see cref="PetitionSession.BuildMessagesForSubmission"/>)
         /// and returns the parsed resolution plus cleaned raw text for <see cref="PetitionSession.RecordReply"/>.
         /// </summary>
-        public void RequestPetitionTurn(List<GroqApiMessage> messages, Action<PetitionResolution, string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
+        public void RequestPetitionTurn(List<GroqApiMessage> messages, GameLanguage language, Action<PetitionResolution, string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
+        {
+            if (!TryValidateConfig(onFailure))
+            {
+                return;
+            }
+
+            StartCoroutine(RequestPetitionRoutine(messages, language, onSuccess, onFailure, maxTokensOverride));
+        }
+
+        private bool TryValidateConfig(Action<LlmRequestError> onFailure)
         {
             if (settings == null)
             {
                 Debug.LogError("[LlmReactionClient] LlmSettings reference is missing!");
                 onFailure?.Invoke(LlmRequestError.NotConfigured);
-                return;
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(proxyUrl))
             {
                 Debug.LogError("[LlmReactionClient] Proxy URL is missing. Assign a valid Proxy URL in the Inspector.");
                 onFailure?.Invoke(LlmRequestError.NotConfigured);
-                return;
+                return false;
             }
 
-            StartCoroutine(RequestPetitionRoutine(messages, onSuccess, onFailure, maxTokensOverride));
+            return true;
         }
 
-        private IEnumerator RequestPetitionRoutine(List<GroqApiMessage> messages, Action<PetitionResolution, string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
+        private IEnumerator RequestPetitionRoutine(List<GroqApiMessage> messages, GameLanguage language, Action<PetitionResolution, string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
             string jsonPayload;
             try
@@ -85,7 +87,7 @@ namespace Game.Scripts.Runtime.Llm
                 jsonPayload,
                 responseText =>
                 {
-                    PetitionResolution result = ParsePetitionResponse(responseText, out string rawContent);
+                    PetitionResolution result = ParsePetitionResponse(responseText, language, out string rawContent);
                     if (result != null)
                     {
                         onSuccess?.Invoke(result, rawContent);
@@ -99,7 +101,7 @@ namespace Game.Scripts.Runtime.Llm
                 onFailure);
         }
 
-        private IEnumerator RequestRoutine(string systemPrompt, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
+        private IEnumerator RequestRoutine(string systemPrompt, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
             string jsonPayload;
             try
@@ -117,7 +119,7 @@ namespace Game.Scripts.Runtime.Llm
                 jsonPayload,
                 responseText =>
                 {
-                    string result = ParseResponse(responseText);
+                    string result = ParseResponse(responseText, language);
                     if (!string.IsNullOrEmpty(result))
                     {
                         onSuccess?.Invoke(result);
@@ -198,7 +200,29 @@ namespace Game.Scripts.Runtime.Llm
             return System.Text.RegularExpressions.Regex.Replace(text, @"<think>[\s\S]*?</think>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
         }
 
-        private string ParseResponse(string json)
+        private static string StripLeakedPetitionJson(string content)
+        {
+            string trimmed = content.Trim();
+            if (trimmed.StartsWith("{") && trimmed.Contains("\"reaction\""))
+            {
+                try { var leaked = JsonUtility.FromJson<PetitionResolution>(trimmed); if (leaked != null && !string.IsNullOrWhiteSpace(leaked.reaction)) return leaked.reaction; } catch { }
+            }
+            return content;
+        }
+
+        private static string StripStageDirections(string content)
+        {
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"\([^)]*\)", "").Trim();
+            return System.Text.RegularExpressions.Regex.Replace(content, @"\*[^*]*\*", "").Trim();
+        }
+
+        private static string NormalizeWhitespaceAndQuotes(string content)
+        {
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"\s+", " ");
+            return content.Trim('"', '\'', ' ');
+        }
+
+        private static string ParseResponse(string json, GameLanguage language)
         {
             try
             {
@@ -211,12 +235,14 @@ namespace Game.Scripts.Runtime.Llm
                     // Defense in depth if reasoning_effort is misconfigured away from "none".
                     content = StripThoughtBlocks(content);
 
-                    // Strip stage directions the model sometimes wraps in () or * *.
-                    content = System.Text.RegularExpressions.Regex.Replace(content, @"\([^)]*\)", "").Trim();
-                    content = System.Text.RegularExpressions.Regex.Replace(content, @"\*[^*]*\*", "").Trim();
+                    content = StripLeakedPetitionJson(content);
+                    content = StripStageDirections(content);
+                    content = NormalizeWhitespaceAndQuotes(content);
 
-                    content = System.Text.RegularExpressions.Regex.Replace(content, @"\s+", " ");
-                    content = content.Trim('"', '\'', ' ');
+                    if (language == GameLanguage.Arabic)
+                    {
+                        content = LlmTextSanitizer.StripNonArabic(content);
+                    }
 
                     return content;
                 }
@@ -229,7 +255,7 @@ namespace Game.Scripts.Runtime.Llm
             return null;
         }
 
-        private PetitionResolution ParsePetitionResponse(string json, out string rawContent)
+        private static PetitionResolution ParsePetitionResponse(string json, GameLanguage language, out string rawContent)
         {
             rawContent = null;
             try
@@ -264,6 +290,16 @@ namespace Game.Scripts.Runtime.Llm
                     PetitionResolution resolution = JsonUtility.FromJson<PetitionResolution>(content);
                     if (resolution != null && !string.IsNullOrWhiteSpace(resolution.reaction))
                     {
+                        if (language == GameLanguage.Arabic)
+                        {
+                            resolution.reaction = LlmTextSanitizer.StripNonArabic(resolution.reaction);
+                        }
+
+                        if (string.IsNullOrWhiteSpace(resolution.reaction))
+                        {
+                            return null;
+                        }
+
                         rawContent = content;
                         return resolution;
                     }

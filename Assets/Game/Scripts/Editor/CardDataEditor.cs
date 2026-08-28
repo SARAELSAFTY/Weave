@@ -7,23 +7,19 @@ namespace Game.Scripts.Editor
     [CustomEditor(typeof(CardData))]
     public class CardDataEditor : UnityEditor.Editor
     {
-        private CardData card;
-
-        private void OnEnable()
-        {
-            card = (CardData)target;
-        }
-
         public override void OnInspectorGUI()
         {
+            CardData card = (CardData)target;
             if (card == null) return;
 
             serializedObject.Update();
 
-            SerializedProperty descriptionProp = serializedObject.FindProperty("description");
+            SerializedProperty descriptionLocalizedProp = serializedObject.FindProperty("descriptionLocalized");
             SerializedProperty dayAdvanceProp = serializedObject.FindProperty("dayAdvance");
-            SerializedProperty leftChoiceTextProp = serializedObject.FindProperty("leftChoiceText");
-            SerializedProperty rightChoiceTextProp = serializedObject.FindProperty("rightChoiceText");
+            SerializedProperty leftChoiceLocalizedProp = serializedObject.FindProperty("leftChoiceLocalized");
+            SerializedProperty rightChoiceLocalizedProp = serializedObject.FindProperty("rightChoiceLocalized");
+            SerializedProperty isLlmProp = serializedObject.FindProperty("isLlmReactionCard");
+            SerializedProperty isPetitionProp = serializedObject.FindProperty("isPetitionCard");
 
             SerializedProperty assetNameProp = serializedObject.FindProperty("assetName");
             EditorGUILayout.PropertyField(assetNameProp, new GUIContent(
@@ -47,46 +43,46 @@ namespace Game.Scripts.Editor
                 EditorGUILayout.HelpBox("Every card must have a speaker assigned; the run will fail to start without one.", MessageType.Warning);
             }
 
-            if (!card.isLlmReactionCard && !card.isPetitionCard)
+            if (!isLlmProp.boolValue && !isPetitionProp.boolValue)
             {
-                EditorGUILayout.LabelField("Card Description (Story Text)", EditorStyles.boldLabel);
-                descriptionProp.stringValue = EditorGUILayout.TextArea(descriptionProp.stringValue, GUILayout.MinHeight(50));
+                LocalizedTextGui.DrawTextAreas(descriptionLocalizedProp, "Card Description (Story Text)");
             }
 
             dayAdvanceProp.intValue = Mathf.Max(0, EditorGUILayout.IntField("Day Advance", dayAdvanceProp.intValue));
 
             EditorGUILayout.Space(8);
 
+            EditorGUI.BeginChangeCheck();
             bool newIsLlm = EditorGUILayout.Toggle(
                 new GUIContent("Is LLM Reaction Card", "Generates description text dynamically at runtime via LLM."),
-                card.isLlmReactionCard);
-
-            if (newIsLlm != card.isLlmReactionCard)
+                isLlmProp.boolValue);
+            if (EditorGUI.EndChangeCheck())
             {
-                card.isLlmReactionCard = newIsLlm;
+                isLlmProp.boolValue = newIsLlm;
                 if (newIsLlm)
                 {
-                    card.isPetitionCard = false;
+                    isPetitionProp.boolValue = false;
+                    LocalizedTextGui.Clear(descriptionLocalizedProp);
                 }
             }
 
+            EditorGUI.BeginChangeCheck();
             bool newIsPetition = EditorGUILayout.Toggle(
                 new GUIContent("Is Petition Card", "Prompts player for free-form command input resolved dynamically by LLM."),
-                card.isPetitionCard);
-
-            if (newIsPetition != card.isPetitionCard)
+                isPetitionProp.boolValue);
+            if (EditorGUI.EndChangeCheck())
             {
-                card.isPetitionCard = newIsPetition;
+                isPetitionProp.boolValue = newIsPetition;
                 if (newIsPetition)
                 {
-                    card.isLlmReactionCard = false;
-                    descriptionProp.stringValue = string.Empty;
+                    isLlmProp.boolValue = false;
+                    LocalizedTextGui.Clear(descriptionLocalizedProp);
                 }
             }
 
-            if (card.isLlmReactionCard)
+            if (isLlmProp.boolValue)
             {
-                descriptionProp.stringValue = string.Empty;
+                LocalizedTextGui.Clear(descriptionLocalizedProp);
 
                 SerializedProperty reactionSeedOverrideProp = serializedObject.FindProperty("reactionSeedOverride");
                 EditorGUILayout.PropertyField(reactionSeedOverrideProp, new GUIContent(
@@ -100,16 +96,17 @@ namespace Game.Scripts.Editor
                         : "This card uses the global reaction seed from LlmPromptTemplates.defaultReactionSeedPrompt.",
                     MessageType.Info);
 
-                if (card.speaker != null && string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
+                SpeakerData speaker = speakerProp.objectReferenceValue as SpeakerData;
+                if (speaker != null && string.IsNullOrWhiteSpace(speaker.llmPersonaPrompt))
                 {
-                    EditorGUILayout.HelpBox($"Speaker '{card.speaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
+                    EditorGUILayout.HelpBox($"Speaker '{speaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
                 }
 
                 EditorGUILayout.Space(6);
                 SerializedProperty continueNextCardProp = serializedObject.FindProperty("continueNextCard");
                 EditorGUILayout.PropertyField(continueNextCardProp, new GUIContent("Continue Next Card"));
             }
-            else if (card.isPetitionCard)
+            else if (isPetitionProp.boolValue)
             {
                 SerializedProperty petitionSeedOverrideProp = serializedObject.FindProperty("petitionSeedOverride");
                 EditorGUILayout.PropertyField(petitionSeedOverrideProp, new GUIContent(
@@ -121,12 +118,13 @@ namespace Game.Scripts.Editor
                     (usingOverride
                         ? "This card uses its own Petition Seed Override above"
                         : "This card uses the global petition seed from LlmPromptTemplates.defaultPetitionSeedPrompt")
-                    + " for both the opening announcement and every turn. If the request fails or no LLM client is configured, the run silently advances to the next card.",
+                    + " for both the opening announcement and every turn. If a turn request fails, the player can retry.",
                     MessageType.Info);
 
-                if (card.speaker != null && string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
+                SpeakerData speaker = speakerProp.objectReferenceValue as SpeakerData;
+                if (speaker != null && string.IsNullOrWhiteSpace(speaker.llmPersonaPrompt))
                 {
-                    EditorGUILayout.HelpBox($"Speaker '{card.speaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
+                    EditorGUILayout.HelpBox($"Speaker '{speaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
                 }
 
                 EditorGUILayout.Space(6);
@@ -140,8 +138,7 @@ namespace Game.Scripts.Editor
             else
             {
                 EditorGUILayout.Space(6);
-                EditorGUILayout.LabelField("Left Choice", EditorStyles.boldLabel);
-                leftChoiceTextProp.stringValue = EditorGUILayout.TextField("Left Choice Text", leftChoiceTextProp.stringValue);
+                LocalizedTextGui.Draw(leftChoiceLocalizedProp, "Left Choice");
 
                 SerializedProperty leftChangeProp = serializedObject.FindProperty("leftResourceChange");
                 if (leftChangeProp != null)
@@ -153,8 +150,7 @@ namespace Game.Scripts.Editor
                 EditorGUILayout.PropertyField(leftNextCardProp, new GUIContent("Left Next Card"));
 
                 EditorGUILayout.Space(6);
-                EditorGUILayout.LabelField("Right Choice", EditorStyles.boldLabel);
-                rightChoiceTextProp.stringValue = EditorGUILayout.TextField("Right Choice Text", rightChoiceTextProp.stringValue);
+                LocalizedTextGui.Draw(rightChoiceLocalizedProp, "Right Choice");
 
                 SerializedProperty rightChangeProp = serializedObject.FindProperty("rightResourceChange");
                 if (rightChangeProp != null)

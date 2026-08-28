@@ -25,6 +25,5 @@ namespace Game.Scripts.Definitions
 
         [Min(0), Tooltip("Minimum story cards that must pass after a warning before this resource can warn again.")]
         public int warningCooldownCards = 5;
-
     }
 }

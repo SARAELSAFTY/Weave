@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Game.Scripts.Definitions;
+using Game.Scripts.Localization;
 
 namespace Game.Scripts.Runtime.Narrative
 {
@@ -19,13 +20,6 @@ namespace Game.Scripts.Runtime.Narrative
             this.resourceState = resourceState;
             this.narrativeRunner = narrativeRunner;
             this.catalog = catalog;
-        }
-
-        public void Reset()
-        {
-            fullChoiceHistory.Clear();
-            narrativeHistoryEntries.Clear();
-            completedPetitionTranscripts.Clear();
         }
 
         public void RecordChoice(string choiceText)
@@ -51,6 +45,16 @@ namespace Game.Scripts.Runtime.Narrative
             narrativeHistoryEntries.Add($"Petition Outcome: {trimmedTag}");
         }
 
+        public void RecordPetitionTranscript(IReadOnlyList<string> transcript)
+        {
+            if (transcript == null || transcript.Count == 0)
+            {
+                return;
+            }
+
+            RecordPetitionTranscript(string.Join("\n", transcript));
+        }
+
         public void RecordPetitionTranscript(string transcript)
         {
             if (string.IsNullOrWhiteSpace(transcript))
@@ -61,7 +65,7 @@ namespace Game.Scripts.Runtime.Narrative
             completedPetitionTranscripts.Add(transcript.Trim());
         }
 
-        public string GetResourceSummary()
+        public string GetResourceSummary(GameLanguage language = GameLanguage.English)
         {
             StringBuilder resourceSummary = new StringBuilder();
             if (catalog != null && resourceState != null)
@@ -71,7 +75,7 @@ namespace Game.Scripts.Runtime.Narrative
                     ResourceData resourceDefinition = catalog.resources[i];
                     if (resourceDefinition == null) continue;
 
-                    resourceSummary.Append($"{resourceDefinition.DisplayName}: {resourceState.Get(resourceDefinition)}");
+                    resourceSummary.Append($"{resourceDefinition.GetDisplayName(language)}: {resourceState.Get(resourceDefinition)}");
                     if (i < catalog.resources.Count - 1)
                     {
                         resourceSummary.Append(", ");
@@ -84,10 +88,10 @@ namespace Game.Scripts.Runtime.Narrative
         public string GetFullHistorySummary() =>
             fullChoiceHistory.Count > 0 ? string.Join("; ", fullChoiceHistory) : "No decisions were recorded.";
 
-        public string GetSnapshot(int narrativeHistoryEntryCount, int petitionTranscriptCount)
+        public string GetSnapshot(int narrativeHistoryEntryCount, int petitionTranscriptCount, GameLanguage language = GameLanguage.English)
         {
             int day = narrativeRunner != null ? narrativeRunner.Day : 1;
-            string resourceSummary = GetResourceSummary();
+            string resourceSummary = GetResourceSummary(language);
 
             return $"Current Day: {day}\n" +
                    $"Kingdom Resources -> {resourceSummary}\n" +

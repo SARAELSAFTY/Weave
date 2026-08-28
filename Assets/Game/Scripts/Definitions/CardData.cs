@@ -1,3 +1,4 @@
+using Game.Scripts.Localization;
 using Game.Scripts.Runtime.Llm;
 using UnityEngine;
 
@@ -11,15 +12,15 @@ namespace Game.Scripts.Definitions
         public SpeakerData speaker;
 
         [Header("Card Content")]
-        [TextArea(3, 6), Tooltip("Main story text shown on card.")]
-        public string description;
+        [Tooltip("Main story text shown on card.")]
+        public LocalizedText descriptionLocalized;
 
         [Min(0), Tooltip("Days time advances when played.")]
         public int dayAdvance = 1;
 
         [Header("Left Choice")]
         [Tooltip("Text shown when swiping left.")]
-        public string leftChoiceText;
+        public LocalizedText leftChoiceLocalized;
 
         [Tooltip("Resource changes when choosing left.")]
         public ResourceChange leftResourceChange;
@@ -29,7 +30,7 @@ namespace Game.Scripts.Definitions
 
         [Header("Right Choice")]
         [Tooltip("Text shown when swiping right.")]
-        public string rightChoiceText;
+        public LocalizedText rightChoiceLocalized;
 
         [Tooltip("Resource changes when choosing right.")]
         public ResourceChange rightResourceChange;
@@ -59,35 +60,30 @@ namespace Game.Scripts.Definitions
         /// <summary>True when routing uses <see cref="continueNextCard"/> instead of left/right branches.</summary>
         public bool UsesContinueExit => isLlmReactionCard || isPetitionCard;
 
-        public CardData ResolveLeftNextCard()
-        {
-            return UsesContinueExit ? continueNextCard : leftNextCard;
-        }
-
-        public CardData ResolveRightNextCard()
-        {
-            return UsesContinueExit ? continueNextCard : rightNextCard;
-        }
-
         /// <summary>True when there is no valid outgoing link (terminal card).</summary>
         public bool IsEnding => UsesContinueExit
             ? continueNextCard == null
             : leftNextCard == null && rightNextCard == null;
 
+        public string GetDescription(GameLanguage language) => descriptionLocalized.Get(language);
+
+        public string GetLeftChoice(GameLanguage language) => leftChoiceLocalized.Get(language);
+
+        public string GetRightChoice(GameLanguage language) => rightChoiceLocalized.Get(language);
+
         /// <summary>This card's reaction seed: its own override if set, else the global default.</summary>
         public string EffectiveReactionSeed(LlmPromptTemplates templates)
         {
-            return !string.IsNullOrWhiteSpace(reactionSeedOverride)
-                ? reactionSeedOverride
-                : (templates != null ? templates.defaultReactionSeedPrompt : string.Empty);
+            return ResolveSeed(reactionSeedOverride, templates != null ? templates.defaultReactionSeedPrompt : string.Empty);
         }
 
         /// <summary>This card's petition seed: its own override if set, else the global default.</summary>
         public string EffectivePetitionSeed(LlmPromptTemplates templates)
         {
-            return !string.IsNullOrWhiteSpace(petitionSeedOverride)
-                ? petitionSeedOverride
-                : (templates != null ? templates.defaultPetitionSeedPrompt : string.Empty);
+            return ResolveSeed(petitionSeedOverride, templates != null ? templates.defaultPetitionSeedPrompt : string.Empty);
         }
+
+        private static string ResolveSeed(string overrideValue, string templateDefault) =>
+            !string.IsNullOrWhiteSpace(overrideValue) ? overrideValue : templateDefault;
     }
 }

@@ -18,6 +18,7 @@ namespace Game.Scripts.Editor
 
             SerializedProperty assetNameProp = serializedObject.FindProperty("assetName");
             SerializedProperty displayNameProp = serializedObject.FindProperty("displayName");
+            SerializedProperty displayNameLocalizedProp = serializedObject.FindProperty("displayNameLocalized");
             SerializedProperty iconProp = serializedObject.FindProperty("icon");
             SerializedProperty startingValProp = serializedObject.FindProperty("defaultStartingValue");
 
@@ -32,10 +33,12 @@ namespace Game.Scripts.Editor
                 "Player-facing label shown in the HUD and resource bars. " +
                 "Leave empty to fall back to the Asset Name."));
 
+            LocalizedTextGui.Draw(displayNameLocalizedProp, "Display Name Localized");
+
             if (string.IsNullOrWhiteSpace(displayNameProp.stringValue))
             {
                 EditorGUILayout.HelpBox(
-                    "Display Name is empty - HUD will show the Asset Name (\"" + resource.AssetName + "\") instead.",
+                    "Display Name is empty - HUD will show the Asset Name (\"" + resource.AssetName + "\") instead unless a localized name is set.",
                     MessageType.None);
             }
 

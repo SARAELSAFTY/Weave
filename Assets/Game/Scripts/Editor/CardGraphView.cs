@@ -28,9 +28,7 @@ namespace Game.Scripts.Editor
         private readonly Dictionary<SpeakerData, Vector2> positionsBySpeaker = new Dictionary<SpeakerData, Vector2>();
         private readonly Dictionary<ResourceData, Vector2> positionsByResource = new Dictionary<ResourceData, Vector2>();
 
-        private CardData pendingNewCard;
-        private SpeakerData pendingNewSpeaker;
-        private ResourceData pendingNewResource;
+        private UnityEngine.Object pendingNewAsset;
 
         private static bool TrySavePosition<TAsset, TEntry>(
             List<TEntry> list, Dictionary<TAsset, Vector2> cache, TAsset asset, Vector2 position,
@@ -63,17 +61,17 @@ namespace Game.Scripts.Editor
 
         public void SetPendingNewCard(CardData card)
         {
-            pendingNewCard = card;
+            pendingNewAsset = card;
         }
 
         public void SetPendingNewSpeaker(SpeakerData speaker)
         {
-            pendingNewSpeaker = speaker;
+            pendingNewAsset = speaker;
         }
 
         public void SetPendingNewResource(ResourceData resource)
         {
-            pendingNewResource = resource;
+            pendingNewAsset = resource;
         }
 
         public CardGraphView(CardGraphWindow window)
@@ -208,24 +206,10 @@ namespace Game.Scripts.Editor
 
         private Vector2 ResolveNodePosition(CardData card, int indexInList)
         {
-            if (pendingNewCard != null && card == pendingNewCard)
-            {
-                pendingNewCard = null;
-                Vector2 centerPos = ViewportCenterInContentSpace();
-                SavePositionToDatabase(card, centerPos);
-                return centerPos;
-            }
-
-            if (positionsByCard.TryGetValue(card, out Vector2 savedPos))
-            {
-                return savedPos;
-            }
-
-            int col = indexInList % GridColumns;
+            int column = indexInList % GridColumns;
             int row = indexInList / GridColumns;
-            Vector2 gridPos = new Vector2(col * GridSpacingX + 60, row * GridSpacingY + 60);
-            SavePositionToDatabase(card, gridPos);
-            return gridPos;
+            Vector2 gridPosition = new Vector2(column * GridSpacingX + 60, row * GridSpacingY + 60);
+            return ResolveNewOrSavedPosition(card, positionsByCard, SavePositionToDatabase, gridPosition);
         }
 
         private Vector2 ViewportCenterInContentSpace()
@@ -234,6 +218,34 @@ namespace Game.Scripts.Editor
             Vector2 viewCenter = viewSize * 0.5f;
             Vector2 contentPos = contentViewContainer.WorldToLocal(this.LocalToWorld(viewCenter));
             return contentPos - DefaultNodeSize * 0.5f;
+        }
+
+        /// <summary>
+        /// Shared "new node lands at viewport center, otherwise reuse saved or fall back" resolution
+        /// used by card, speaker, and resource nodes.
+        /// </summary>
+        private Vector2 ResolveNewOrSavedPosition<TAsset>(
+            TAsset asset,
+            Dictionary<TAsset, Vector2> savedPositions,
+            Action<TAsset, Vector2> savePosition,
+            Vector2 fallbackPosition)
+            where TAsset : UnityEngine.Object
+        {
+            if (asset != null && pendingNewAsset == asset)
+            {
+                pendingNewAsset = null;
+                Vector2 centerPosition = ViewportCenterInContentSpace();
+                savePosition(asset, centerPosition);
+                return centerPosition;
+            }
+
+            if (savedPositions.TryGetValue(asset, out Vector2 savedPosition))
+            {
+                return savedPosition;
+            }
+
+            savePosition(asset, fallbackPosition);
+            return fallbackPosition;
         }
 
         private void DrawEdges(List<CardNode> nodeList, Dictionary<CardData, CardNode> nodesByCard)
@@ -284,7 +296,7 @@ namespace Game.Scripts.Editor
             {
                 if (speaker == null) continue;
 
-                SpeakerNode speakerNode = new SpeakerNode(speaker, this);
+                SpeakerNode speakerNode = new SpeakerNode(speaker);
                 Vector2 pos = ResolveSpeakerNodePosition(speaker, i);
                 speakerNode.SetPosition(new Rect(pos, DefaultSpeakerNodeSize));
                 AddElement(speakerNode);
@@ -294,22 +306,8 @@ namespace Game.Scripts.Editor
 
         private Vector2 ResolveSpeakerNodePosition(SpeakerData speaker, int indexInList)
         {
-            if (pendingNewSpeaker != null && speaker == pendingNewSpeaker)
-            {
-                pendingNewSpeaker = null;
-                Vector2 centerPos = ViewportCenterInContentSpace();
-                SaveSpeakerPositionToDatabase(speaker, centerPos);
-                return centerPos;
-            }
-
-            if (positionsBySpeaker.TryGetValue(speaker, out Vector2 savedPos))
-            {
-                return savedPos;
-            }
-
-            Vector2 defaultPos = new Vector2(-260, indexInList * 210 + 60);
-            SaveSpeakerPositionToDatabase(speaker, defaultPos);
-            return defaultPos;
+            Vector2 defaultPosition = new Vector2(-260, indexInList * 210 + 60);
+            return ResolveNewOrSavedPosition(speaker, positionsBySpeaker, SaveSpeakerPositionToDatabase, defaultPosition);
         }
 
         private static readonly Vector2 DefaultResourceNodeSize = new Vector2(200, 150);
@@ -353,22 +351,8 @@ namespace Game.Scripts.Editor
 
         private Vector2 ResolveResourceNodePosition(ResourceData resource, int indexInList)
         {
-            if (pendingNewResource != null && resource == pendingNewResource)
-            {
-                pendingNewResource = null;
-                Vector2 centerPos = ViewportCenterInContentSpace();
-                SaveResourcePositionToDatabase(resource, centerPos);
-                return centerPos;
-            }
-
-            if (positionsByResource.TryGetValue(resource, out Vector2 savedPos))
-            {
-                return savedPos;
-            }
-
-            Vector2 defaultPos = new Vector2(-520, indexInList * 190 + 60);
-            SaveResourcePositionToDatabase(resource, defaultPos);
-            return defaultPos;
+            Vector2 defaultPosition = new Vector2(-520, indexInList * 190 + 60);
+            return ResolveNewOrSavedPosition(resource, positionsByResource, SaveResourcePositionToDatabase, defaultPosition);
         }
 
         private void SaveMovedNodePositions(List<GraphElement> movedElements)

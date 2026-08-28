@@ -350,7 +350,7 @@ namespace Game.Scripts.Editor
             EditorGUIUtility.PingObject(catalog);
         }
 
-        public void OnCreateNewDatabaseClicked()
+        private void OnCreateNewDatabaseClicked()
         {
             string databaseFolder = "Assets/Game/Data";
             string databaseName = FindNextUnusedDatabaseName(databaseFolder);
@@ -377,7 +377,7 @@ namespace Game.Scripts.Editor
                 name => File.Exists(Path.Combine(folder, name + ".asset")), startIndex: 1, digitFormat: "D3");
         }
 
-        public void OnCreateNewCatalogClicked()
+        private void OnCreateNewCatalogClicked()
         {
             if (currentDatabase == null) return;
 

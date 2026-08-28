@@ -10,15 +10,17 @@ namespace Game.Scripts.Runtime.Narrative
         public readonly CardData endingCard;
         public readonly string error;
         public readonly bool isCollapseEnding;
+        public readonly ResourceData collapsedResource;
 
         public bool HasError => !string.IsNullOrEmpty(error);
         public bool HasEnded => endingCard != null;
 
-        public NarrativeStepResult(CardData endingCard, string error, bool isCollapseEnding = false)
+        public NarrativeStepResult(CardData endingCard, string error, bool isCollapseEnding = false, ResourceData collapsedResource = null)
         {
             this.endingCard = endingCard;
             this.error = error;
             this.isCollapseEnding = isCollapseEnding;
+            this.collapsedResource = collapsedResource;
         }
     }
 
@@ -28,22 +30,17 @@ namespace Game.Scripts.Runtime.Narrative
         private readonly NarrativeDatabase database;
         private readonly ResourceState resourceState;
         private readonly ResourceCatalog resourceCatalog;
-        private readonly NarrativeState state = new NarrativeState();
 
         public CardData CurrentCard { get; private set; }
-        public int Day => state.Day;
+        public int Day { get; private set; } = 1;
 
-        public event Action DayChanged
-        {
-            add => state.DayChanged += value;
-            remove => state.DayChanged -= value;
-        }
+        public event Action DayChanged;
 
-        public NarrativeRunner(NarrativeDatabase database, ResourceState resourceState, ResourceCatalog resourceCatalog = null)
+        public NarrativeRunner(NarrativeDatabase database, ResourceState resourceState)
         {
             this.database = database;
             this.resourceState = resourceState;
-            this.resourceCatalog = resourceCatalog ?? (database != null ? database.resourceCatalog : null);
+            resourceCatalog = database != null ? database.resourceCatalog : null;
         }
 
         public bool StartRun(out string error)
@@ -70,7 +67,7 @@ namespace Game.Scripts.Runtime.Narrative
             return true;
         }
 
-        public NarrativeStepResult Choose(bool choseRight, bool ignoreContinueExit = false)
+        public NarrativeStepResult Choose(bool choseRight)
         {
             if (CurrentCard == null)
             {
@@ -82,11 +79,11 @@ namespace Game.Scripts.Runtime.Narrative
                 return new NarrativeStepResult(CurrentCard, null);
             }
 
-            bool usesContinueExit = CurrentCard.UsesContinueExit && !ignoreContinueExit;
+            bool usesContinueExit = CurrentCard.UsesContinueExit;
 
-            CardData nextCard = choseRight
-                ? (usesContinueExit ? CurrentCard.continueNextCard : CurrentCard.rightNextCard)
-                : (usesContinueExit ? CurrentCard.continueNextCard : CurrentCard.leftNextCard);
+            CardData nextCard = usesContinueExit
+                ? CurrentCard.continueNextCard
+                : (choseRight ? CurrentCard.rightNextCard : CurrentCard.leftNextCard);
 
             if (!usesContinueExit)
             {
@@ -94,13 +91,13 @@ namespace Game.Scripts.Runtime.Narrative
                 resourceState.Apply(change);
             }
 
-            if (TryGetCollapsedResourceEnding(out CardData collapseCard))
+            if (TryGetCollapsedResourceEnding(out CardData collapseCard, out ResourceData collapsedResource))
             {
-                state.Advance(CurrentCard.dayAdvance);
-                return new NarrativeStepResult(collapseCard, null, isCollapseEnding: true);
+                AdvanceDay(CurrentCard.dayAdvance);
+                return new NarrativeStepResult(collapseCard, null, isCollapseEnding: true, collapsedResource);
             }
 
-            state.Advance(CurrentCard.dayAdvance);
+            AdvanceDay(CurrentCard.dayAdvance);
 
             if (nextCard == null)
             {
@@ -116,9 +113,10 @@ namespace Game.Scripts.Runtime.Narrative
             return new NarrativeStepResult(null, null);
         }
 
-        private bool TryGetCollapsedResourceEnding(out CardData collapseCard)
+        private bool TryGetCollapsedResourceEnding(out CardData collapseCard, out ResourceData collapsedResource)
         {
             collapseCard = null;
+            collapsedResource = null;
             if (resourceCatalog?.resources == null)
             {
                 return false;
@@ -128,6 +126,7 @@ namespace Game.Scripts.Runtime.Narrative
             {
                 if (resource != null && resourceState.Get(resource) <= resource.collapseThreshold)
                 {
+                    collapsedResource = resource;
                     collapseCard = resourceCatalog.GetCollapseEndingCard(resource);
                     if (collapseCard == null)
                     {
@@ -138,6 +137,17 @@ namespace Game.Scripts.Runtime.Narrative
             }
 
             return false;
+        }
+
+        private void AdvanceDay(int dayAdvance)
+        {
+            if (dayAdvance <= 0)
+            {
+                return;
+            }
+
+            Day += dayAdvance;
+            DayChanged?.Invoke();
         }
 
         private bool ValidateSpeakers(out string error)

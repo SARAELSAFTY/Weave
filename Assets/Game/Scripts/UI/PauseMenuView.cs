@@ -1,57 +1,42 @@
 using System;
+using Game.Scripts.Localization;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.Scripts.UI
 {
-    public class PauseMenuView : MonoBehaviour
+    public class PauseMenuView : SingleLocalizedButtonView
     {
         [SerializeField, Tooltip("Button that resumes the run.")] private Button resumeButton;
-        [SerializeField, Tooltip("Button that quits the game.")] private Button quitButton;
+        [SerializeField, Tooltip("Resume button label. Auto-fetched from the button if left empty.")]
+        private TMP_Text resumeButtonText;
+        [SerializeField, Tooltip("Localized Resume button label.")]
+        private LocalizedText resumeButtonLocalized = new LocalizedText
+        {
+            english = "Resume",
+            arabic = "متابعة"
+        };
 
         public event Action ResumeRequested;
-        public event Action QuitRequested;
 
-        private void Awake()
+        protected override Button ViewButton => resumeButton;
+
+        protected override TMP_Text ViewLabel
         {
-            if (resumeButton == null)
-            {
-                Debug.LogError($"[PauseMenuView] Missing required Inspector reference '{nameof(resumeButton)}' on '{gameObject.name}'.", this);
-                enabled = false;
-                return;
-            }
-
-            if (quitButton == null)
-            {
-                Debug.LogError($"[PauseMenuView] Missing required Inspector reference '{nameof(quitButton)}' on '{gameObject.name}'.", this);
-                enabled = false;
-                return;
-            }
-
-            resumeButton.onClick.AddListener(RequestResume);
-            quitButton.onClick.AddListener(RequestQuit);
-
-            gameObject.SetActive(false);
+            get => resumeButtonText;
+            set => resumeButtonText = value;
         }
 
-        public void Show()
-        {
-            gameObject.SetActive(true);
-        }
+        protected override LocalizedText DefaultLabelText => resumeButtonLocalized;
+        protected override string ComponentTag => nameof(PauseMenuView);
+        protected override string ButtonFieldName => nameof(resumeButton);
 
-        public void Hide()
+        protected override void HandleButtonClicked() => ResumeRequested?.Invoke();
+
+        protected override void OnAwakeCompleted()
         {
             gameObject.SetActive(false);
-        }
-
-        private void RequestResume()
-        {
-            ResumeRequested?.Invoke();
-        }
-
-        private void RequestQuit()
-        {
-            QuitRequested?.Invoke();
         }
     }
 }

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Test_Reaction_ChancellorGrimace
+  m_EditorClassIdentifier: 
+  assetName: Test_Reaction_ChancellorGrimace
+  displayName: Silken Displeasure
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 9056cff22f8660e4c88d97f7d7f6548b, type: 2}
+  descriptionLocalized:
+    english: 
+    arabic: 
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: 
+    arabic: 
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 0}
+  rightChoiceLocalized:
+    english: 
+    arabic: 
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 0}
+  isLlmReactionCard: 1
+  reactionSeedOverride: Conceal your secret frustration behind a veneer of obsequious
+    court praise. Flatter the king's unexpected frugality while subtly plotting your
+    next move.
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  continueNextCard: {fileID: 11400000, guid: 9461369e1a7df9743a430378fecc321c, type: 2}

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a3714b3e4c4278ac399d60c86fa534, type: 3}
+  m_Name: Res_Treasury
+  m_EditorClassIdentifier: 
+  assetName: Res_Treasury
+  displayName: Treasury
+  displayNameLocalized:
+    english: Treasury
+    arabic: "\u0627\u0644\u062E\u0632\u0627\u0646\u0629"
+  icon: {fileID: 0}
+  defaultStartingValue: 50
+  collapseThreshold: 0
+  warningThresholdPercent: 30
+  warningSpeaker: {fileID: 11400000, guid: 86ddb2ff8d2793a4491b486d218c24cf, type: 2}
+  warningCooldownCards: 4

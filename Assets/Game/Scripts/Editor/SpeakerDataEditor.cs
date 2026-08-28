@@ -18,6 +18,7 @@ namespace Game.Scripts.Editor
 
             SerializedProperty assetNameProp = serializedObject.FindProperty("assetName");
             SerializedProperty displayNameProp = serializedObject.FindProperty("displayName");
+            SerializedProperty displayNameLocalizedProp = serializedObject.FindProperty("displayNameLocalized");
             SerializedProperty portraitProp = serializedObject.FindProperty("portrait");
             SerializedProperty llmPersonaPromptProp = serializedObject.FindProperty("llmPersonaPrompt");
 
@@ -32,10 +33,12 @@ namespace Game.Scripts.Editor
                 "Player-facing name shown in the in-game UI. " +
                 "Leave empty to fall back to the Asset Name."));
 
+            LocalizedTextGui.Draw(displayNameLocalizedProp, "Display Name Localized");
+
             if (string.IsNullOrWhiteSpace(displayNameProp.stringValue))
             {
                 EditorGUILayout.HelpBox(
-                    "Display Name is empty - in-game UI will show the Asset Name (\"" + speaker.AssetName + "\") instead.",
+                    "Display Name is empty - in-game UI will show the Asset Name (\"" + speaker.AssetName + "\") instead unless a localized name is set.",
                     MessageType.None);
             }
 

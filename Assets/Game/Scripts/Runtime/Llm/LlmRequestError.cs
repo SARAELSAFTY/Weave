@@ -5,7 +5,6 @@ namespace Game.Scripts.Runtime.Llm
         NotConfigured,
         RateLimited,
         NetworkError,
-        EmptyResponse,
-        Cancelled
+        EmptyResponse
     }
 }
