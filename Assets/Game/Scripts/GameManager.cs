@@ -33,6 +33,8 @@ namespace Game.Scripts
         private CardData warningCardInstance;
         private CardData generatedCollapseEndingCard;
         private PetitionSession currentPetitionSession;
+        private SpeakerData currentPetitionSpeaker;
+        private bool currentPetitionSpeakerIsTemp;
 
         // NarrativeDatabase.promptTemplates is the single source of truth for prompt text - see LlmPromptTemplates.
         private LlmPromptTemplates Templates => narrativeDatabase != null ? narrativeDatabase.promptTemplates : null;
@@ -115,6 +117,8 @@ namespace Game.Scripts
                 Destroy(generatedCollapseEndingCard);
                 generatedCollapseEndingCard = null;
             }
+
+            CleanupPetitionSpeaker();
         }
 
         private void Update()
@@ -303,30 +307,22 @@ namespace Game.Scripts
             string finalResourceSummary = historyTracker.GetResourceSummary(CurrentLanguage);
             string fullChoiceHistory = historyTracker.GetFullHistorySummary();
 
-            string epilogueInstructions = templates != null ? templates.epilogueSystemInstructions : string.Empty;
             string epiloguePrompt = SpeakerPromptBuilder.BuildEpiloguePrompt(
-                narrativeRunner.Day, collapsedResourceName, finalResourceSummary, fullChoiceHistory, epilogueInstructions, CurrentLanguage);
+                narrativeRunner.Day, collapsedResourceName, finalResourceSummary, fullChoiceHistory, templates, CurrentLanguage);
 
             int? epilogueMaxTokens = llmSettings != null ? llmSettings.epilogueMaxTokens : 80;
 
             llmReactionClient.RequestReaction(
                 epiloguePrompt,
+                templates != null ? templates.singleTurnUserMessage : string.Empty,
                 CurrentLanguage,
                 line =>
                 {
                     if (!string.IsNullOrWhiteSpace(line))
                     {
-                        LocalizedText localized = generatedCard.descriptionLocalized;
-                        if (CurrentLanguage == GameLanguage.Arabic)
-                        {
-                            localized.arabic = line;
-                        }
-                        else
-                        {
-                            localized.english = line;
-                        }
-
-                        generatedCard.descriptionLocalized = localized;
+                        // Fill both languages: a language toggle mid-generation would otherwise
+                        // leave the other language frozen on the "generating" placeholder.
+                        generatedCard.descriptionLocalized = new LocalizedText { english = line, arabic = line };
                         cardView.ShowEnding(generatedCard, speaker);
                         return;
                     }
@@ -452,7 +448,8 @@ namespace Game.Scripts
             SpeakerData speaker = card.speaker;
             if (card.isPetitionCard)
             {
-                ShowPetitionCard(card, speaker);
+                currentPetitionSpeaker = ResolvePetitioner(card);
+                ShowPetitionCard(card, currentPetitionSpeaker);
                 return;
             }
 
@@ -490,6 +487,38 @@ namespace Game.Scripts
 
             cardView.Show(card, speaker);
             inputEnabled = !card.IsEnding;
+        }
+
+        private SpeakerData ResolvePetitioner(CardData card)
+        {
+            if (card.petitionerSource == PetitionerSource.DefinedSpeaker && card.speaker != null)
+            {
+                currentPetitionSpeakerIsTemp = false;
+                return card.speaker;
+            }
+
+            currentPetitionSpeakerIsTemp = true;
+            return BuildCommonerSpeaker();
+        }
+
+        private SpeakerData BuildCommonerSpeaker()
+        {
+            SpeakerData commoner = ScriptableObject.CreateInstance<SpeakerData>();
+            commoner.displayName = "A Common Subject";
+            commoner.displayNameLocalized = new LocalizedText { english = "A Common Subject", arabic = "أحد رعايا التاج" };
+            commoner.llmPersonaPrompt = Templates != null ? Templates.defaultCommonerPersona : string.Empty;
+            return commoner;
+        }
+
+        private void CleanupPetitionSpeaker()
+        {
+            if (currentPetitionSpeakerIsTemp && currentPetitionSpeaker != null)
+            {
+                Destroy(currentPetitionSpeaker);
+            }
+
+            currentPetitionSpeaker = null;
+            currentPetitionSpeakerIsTemp = false;
         }
 
         private void ShowPetitionCard(CardData card, SpeakerData speaker)
@@ -541,7 +570,7 @@ namespace Game.Scripts
 
             cardView.SetPetitionSubmitting(true);
 
-            SpeakerData speaker = card.speaker;
+            SpeakerData speaker = currentPetitionSpeaker != null ? currentPetitionSpeaker : card.speaker;
             string snapshot = GetPetitionSnapshotOrDefault();
 
             LlmPromptTemplates templates = Templates;
@@ -552,7 +581,6 @@ namespace Game.Scripts
                 : null;
 
             int clamp = llmSettings != null ? llmSettings.petitionResourceClampMagnitude : 20;
-            string systemInstructions = templates != null ? templates.petitionSystemInstructions : string.Empty;
 
             if (llmReactionClient == null)
             {
@@ -562,7 +590,7 @@ namespace Game.Scripts
             }
 
             List<GroqApiMessage> messages = currentPetitionSession.BuildMessagesForSubmission(
-                playerInput, speaker, snapshot, seed, validResources, clamp, systemInstructions, CurrentLanguage);
+                playerInput, speaker, snapshot, seed, validResources, clamp, templates, CurrentLanguage);
 
             llmReactionClient.RequestPetitionTurn(
                 messages,
@@ -585,7 +613,7 @@ namespace Game.Scripts
             if (currentPetitionSession != null && currentPetitionSession.DotsExhausted)
             {
                 CardData currentCard = narrativeRunner.CurrentCard;
-                SpeakerData speaker = currentCard != null ? currentCard.speaker : null;
+                SpeakerData speaker = currentPetitionSpeaker != null ? currentPetitionSpeaker : (currentCard != null ? currentCard.speaker : null);
                 HandlePetitionDotsExhausted(currentCard, speaker);
                 return;
             }
@@ -619,6 +647,7 @@ namespace Game.Scripts
         {
             historyTracker?.RecordPetitionTranscript(currentPetitionSession?.GetTranscript());
             currentPetitionSession = null;
+            CleanupPetitionSpeaker();
             cardView.SetPetitionSubmitting(false);
             cardView.ConvertPetitionToNormalChoices(card, closingLine);
             inputEnabled = true;
@@ -651,6 +680,7 @@ namespace Game.Scripts
             }
 
             currentPetitionSession = null;
+            CleanupPetitionSpeaker();
             cardView.SetPetitionSubmitting(true);
             StartCoroutine(ConfirmPetitionAdvanceRoutine());
         }
@@ -752,11 +782,11 @@ namespace Game.Scripts
                 ? narrativeDatabase.resourceCatalog.resources
                 : null;
 
-            string personaInstructions = Templates != null ? Templates.personaSystemInstructions : string.Empty;
+            LlmPromptTemplates templates = Templates;
             string fullSystemPrompt = SpeakerPromptBuilder.BuildPersonaPrompt(
-                speaker, gameStateSnapshot, seed, personaInstructions, CurrentLanguage, resources);
+                speaker, gameStateSnapshot, seed, templates, CurrentLanguage, resources);
 
-            llmReactionClient.RequestReaction(fullSystemPrompt, CurrentLanguage, onSuccess, onFailure, maxTokensOverride);
+            llmReactionClient.RequestReaction(fullSystemPrompt, templates != null ? templates.singleTurnUserMessage : string.Empty, CurrentLanguage, onSuccess, onFailure, maxTokensOverride);
         }
 
         private void HandleDayChanged()

@@ -52,7 +52,7 @@ namespace Game.Scripts.Runtime.Narrative
                 return false;
             }
 
-            if (!ValidateSpeakers(out error))
+            if (!ValidateCards(out error))
             {
                 return false;
             }
@@ -150,7 +150,7 @@ namespace Game.Scripts.Runtime.Narrative
             DayChanged?.Invoke();
         }
 
-        private bool ValidateSpeakers(out string error)
+        private bool ValidateCards(out string error)
         {
             error = null;
             if (database.cards == null)
@@ -159,18 +159,35 @@ namespace Game.Scripts.Runtime.Narrative
             }
 
             List<string> missingSpeakerCards = new List<string>();
+            List<string> brokenBranchCards = new List<string>();
 
             foreach (CardData card in database.cards)
             {
-                if (card != null && card.speaker == null)
+                if (card == null)
+                {
+                    continue;
+                }
+
+                if (card.RequiresSpeaker && card.speaker == null)
                 {
                     missingSpeakerCards.Add(card.AssetName);
+                }
+
+                if (card.HasBrokenBranch)
+                {
+                    brokenBranchCards.Add(card.AssetName);
                 }
             }
 
             if (missingSpeakerCards.Count > 0)
             {
-                error = $"Every card must have a speaker. Missing on: {string.Join(", ", missingSpeakerCards)}.";
+                error = $"Every card needs a speaker (except Generated Commoner petitions). Missing on: {string.Join(", ", missingSpeakerCards)}.";
+                return false;
+            }
+
+            if (brokenBranchCards.Count > 0)
+            {
+                error = $"Choice cards must link both branches or end the card. Broken on: {string.Join(", ", brokenBranchCards)}.";
                 return false;
             }
 

@@ -5,9 +5,9 @@ using Game.Scripts.Localization;
 namespace Game.Scripts.Runtime.Llm
 {
     /// <summary>
-    /// Builds every system prompt sent to the LLM. This is the one place prompt sections get assembled -
-    /// see LlmPromptTemplates for the editable text that feeds into these, CardData for per-card seed
-    /// overrides, and GameManager for which call site uses which method below.
+    /// Builds every system prompt sent to the LLM. All static text comes from LlmPromptTemplates -
+    /// this class only selects the right template fields and assembles sections. See CardData for
+    /// per-card seed overrides and GameManager for which call site uses which method below.
     /// </summary>
     public static class SpeakerPromptBuilder
     {
@@ -19,13 +19,13 @@ namespace Game.Scripts.Runtime.Llm
             SpeakerData speaker,
             string gameStateSnapshot,
             string situationalPrompt,
-            string systemInstructionsTemplate,
+            LlmPromptTemplates templates,
             GameLanguage language = GameLanguage.English,
             IReadOnlyList<ResourceData> resources = null)
         {
             return new PromptComposer()
-                .AddRaw(systemInstructionsTemplate)
-                .AddSection("Language Requirement", BuildPlainTextLanguageInstruction(language))
+                .AddRaw(templates != null ? templates.personaSystemInstructions : null)
+                .AddSection("Language Requirement", GetPlainTextLanguageInstruction(templates, language))
                 .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
                 .AddSection("Situation", situationalPrompt)
                 .AddSection("State", gameStateSnapshot)
@@ -43,21 +43,25 @@ namespace Game.Scripts.Runtime.Llm
             string situationalPrompt,
             IReadOnlyList<ResourceData> validResources,
             int clampMagnitude,
-            string systemInstructionsTemplate,
+            LlmPromptTemplates templates,
             GameLanguage language = GameLanguage.English)
         {
-            string outputLimits = $"Each delta must be a whole number between -{clampMagnitude} and +{clampMagnitude}.";
-
             return new PromptComposer()
-                .AddRaw(systemInstructionsTemplate)
-                .AddSection("Language Requirement", BuildJsonLanguageInstruction(language))
+                .AddRaw(templates != null ? templates.petitionSystemInstructions : null)
+                .AddSection("Language Requirement", GetJsonLanguageInstruction(templates, language))
                 .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
                 .AddSection("Situation", situationalPrompt)
                 .AddSection("State", gameStateSnapshot)
-                .AddSection("Valid Resources", BuildValidResourceList(validResources))
-                .AddSection("Output Limits", outputLimits)
-                .AddSection("Terminology", BuildTerminologySection(validResources, language))
+                .AddSection("Resources", BuildResourcesSection(validResources, clampMagnitude, language))
                 .ToString();
+        }
+
+        private static string BuildResourcesSection(IReadOnlyList<ResourceData> resources, int clampMagnitude, GameLanguage language)
+        {
+            string section = $"Valid resources: {BuildValidResourceList(resources)}. " +
+                             $"Deltas are whole numbers between -{clampMagnitude} and +{clampMagnitude}.";
+            string terminology = BuildTerminologySection(resources, language);
+            return terminology != null ? section + "\n" + terminology : section;
         }
 
         /// <summary>End-of-run epilogue summary prompt (collapse endings only).</summary>
@@ -66,7 +70,7 @@ namespace Game.Scripts.Runtime.Llm
             string collapsedResourceName,
             string finalResourceSummary,
             string fullChoiceHistory,
-            string systemInstructionsTemplate,
+            LlmPromptTemplates templates,
             GameLanguage language = GameLanguage.English)
         {
             string reignRecord =
@@ -76,40 +80,34 @@ namespace Game.Scripts.Runtime.Llm
                 $"Full Decision History (in order): {fullChoiceHistory}";
 
             return new PromptComposer()
-                .AddRaw(systemInstructionsTemplate)
-                .AddSection("Language Requirement", BuildPlainTextLanguageInstruction(language))
+                .AddRaw(templates != null ? templates.epilogueSystemInstructions : null)
+                .AddSection("Language Requirement", GetPlainTextLanguageInstruction(templates, language))
                 .AddSection("REIGN RECORD", reignRecord)
                 .ToString();
         }
 
-        private static string BuildPlainTextLanguageInstruction(GameLanguage language)
+        private static string GetPlainTextLanguageInstruction(LlmPromptTemplates templates, GameLanguage language)
         {
-            if (language == GameLanguage.Arabic)
+            if (templates == null)
             {
-                return
-                    "Respond with a single plain-text spoken line entirely in natural Modern Standard Arabic (الفصحى). " +
-                    "Use ONLY Arabic script characters (Unicode range U+0600–U+06FF) and standard punctuation - " +
-                    "no Thai, Latin, Cyrillic, or any other script under any circumstances. " +
-                    "Address the ruler with formal court honorifics. " +
-                    "Do not use brackets or field names.";
+                return null;
             }
 
-            return "Respond with a single plain-text spoken line entirely in natural English.";
+            return language == GameLanguage.Arabic
+                ? templates.plainTextArabicInstruction
+                : templates.plainTextEnglishInstruction;
         }
 
-        private static string BuildJsonLanguageInstruction(GameLanguage language)
+        private static string GetJsonLanguageInstruction(LlmPromptTemplates templates, GameLanguage language)
         {
-            if (language == GameLanguage.Arabic)
+            if (templates == null)
             {
-                return
-                    "Respond with valid JSON as specified. JSON structure, field names, and resource asset names " +
-                    "must stay in English. The value of the \"reaction\" field must be written entirely in " +
-                    "natural Modern Standard Arabic (الفصحى), using formal court honorifics. " +
-                    "Use ONLY Arabic script characters (Unicode range U+0600–U+06FF) in the reaction field - " +
-                    "no Thai, Latin, Cyrillic, or any other script under any circumstances.";
+                return null;
             }
 
-            return "Respond entirely in natural English. Output valid JSON as specified.";
+            return language == GameLanguage.Arabic
+                ? templates.jsonArabicInstruction
+                : templates.jsonEnglishInstruction;
         }
 
         private static string BuildTerminologySection(IReadOnlyList<ResourceData> resources, GameLanguage language)

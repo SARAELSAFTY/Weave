@@ -4,6 +4,13 @@ using UnityEngine;
 
 namespace Game.Scripts.Definitions
 {
+    /// <summary>How a petition card chooses who brings the matter to the throne.</summary>
+    public enum PetitionerSource
+    {
+        GeneratedCommoner = 0,
+        DefinedSpeaker = 1
+    }
+
     [CreateAssetMenu(fileName = "Scene_Speaker_Slug", menuName = "Weave/Card Data", order = 0)]
     public class CardData : NamedGameAsset
     {
@@ -54,16 +61,30 @@ namespace Game.Scripts.Definitions
             "opening announcement and every turn). Leave empty to use LlmPromptTemplates.defaultPetitionSeedPrompt.")]
         public string petitionSeedOverride;
 
+        [Tooltip("Who brings this petition. Generated Commoner (default) creates a temporary common subject with a " +
+            "new name, trade, and problem each audience and discards it afterwards. Defined Speaker uses the Speaker " +
+            "above and lets the AI craft a problem suited to that character.")]
+        public PetitionerSource petitionerSource = PetitionerSource.GeneratedCommoner;
+
         [Tooltip("Card to advance to upon swipe/resolution (used when isLlmReactionCard or isPetitionCard is true).")]
         public CardData continueNextCard;
 
         /// <summary>True when routing uses <see cref="continueNextCard"/> instead of left/right branches.</summary>
         public bool UsesContinueExit => isLlmReactionCard || isPetitionCard;
 
+        /// <summary>
+        /// False only for petitions whose petitioner is generated on the fly; every other card must
+        /// have a speaker for the run to execute.
+        /// </summary>
+        public bool RequiresSpeaker => !(isPetitionCard && petitionerSource == PetitionerSource.GeneratedCommoner);
+
         /// <summary>True when there is no valid outgoing link (terminal card).</summary>
         public bool IsEnding => UsesContinueExit
             ? continueNextCard == null
             : leftNextCard == null && rightNextCard == null;
+
+        /// <summary>True when a choice card is missing exactly one branch - that swipe dead-ends the run.</summary>
+        public bool HasBrokenBranch => !UsesContinueExit && !IsEnding && (leftNextCard == null || rightNextCard == null);
 
         public string GetDescription(GameLanguage language) => descriptionLocalized.Get(language);
 

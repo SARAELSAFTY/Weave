@@ -62,14 +62,6 @@ namespace Game.Scripts.UI
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
             }
 
-            // The legacy clip-driven Animator rewrites root position/rotation every frame
-            // and would fight the code-driven tween.
-            Animator legacyAnimator = GetComponent<Animator>();
-            if (legacyAnimator != null)
-            {
-                Destroy(legacyAnimator);
-            }
-
             parkPosition = cardTransform.anchoredPosition;
             motion = parkPosition.x <= 0f ? LeftMotion : RightMotion;
             ApplyReveal(0f);

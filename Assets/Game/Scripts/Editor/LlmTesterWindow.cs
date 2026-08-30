@@ -168,6 +168,13 @@ namespace Game.Scripts.Editor
                 {
                     EditorGUILayout.ObjectField("Speaker (from card)", cachedSelectedCard.speaker, typeof(SpeakerData), false);
                 }
+
+                bool commonerVoiced = cachedSelectedCard.isPetitionCard &&
+                    !(cachedSelectedCard.petitionerSource == PetitionerSource.DefinedSpeaker && cachedSelectedCard.speaker != null);
+                if (commonerVoiced)
+                {
+                    EditorGUILayout.LabelField("Voiced by a generated commoner - persona comes from LlmPromptTemplates.defaultCommonerPersona.", EditorStyles.miniLabel);
+                }
             }
         }
 
@@ -297,7 +304,35 @@ namespace Game.Scripts.Editor
             }
 
             CardData card = GetSelectedCard(matching);
-            return card != null ? card.speaker : manualSpeaker;
+            if (card == null)
+            {
+                return manualSpeaker;
+            }
+
+            // Mirrors GameManager.ResolvePetitioner: petitions without a defined speaker
+            // are voiced by a generated commoner, not by an empty persona.
+            bool hasDefinedSpeaker = card.petitionerSource == PetitionerSource.DefinedSpeaker && card.speaker != null;
+            if (card.isPetitionCard && !hasDefinedSpeaker)
+            {
+                return GetCommonerPreviewSpeaker();
+            }
+
+            return card.speaker;
+        }
+
+        private SpeakerData commonerPreviewSpeaker;
+
+        private SpeakerData GetCommonerPreviewSpeaker()
+        {
+            if (commonerPreviewSpeaker == null)
+            {
+                commonerPreviewSpeaker = ScriptableObject.CreateInstance<SpeakerData>();
+                commonerPreviewSpeaker.hideFlags = HideFlags.HideAndDontSave;
+                commonerPreviewSpeaker.displayName = "A Common Subject (preview)";
+            }
+
+            commonerPreviewSpeaker.llmPersonaPrompt = Templates != null ? Templates.defaultCommonerPersona : string.Empty;
+            return commonerPreviewSpeaker;
         }
 
         private ResourceData GetSelectedResource()
@@ -329,15 +364,13 @@ namespace Game.Scripts.Editor
                 case TestMode.Reaction:
                 {
                     string seed = card != null ? card.EffectiveReactionSeed(templates) : manualSeed;
-                    string instructions = templates != null ? templates.personaSystemInstructions : string.Empty;
-                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions, TesterLanguage, CatalogResources);
+                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, templates, TesterLanguage, CatalogResources);
                 }
 
                 case TestMode.PetitionOpening:
                 {
                     string seed = card != null ? card.EffectivePetitionSeed(templates) : manualSeed;
-                    string instructions = templates != null ? templates.personaSystemInstructions : string.Empty;
-                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions, TesterLanguage, CatalogResources);
+                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, templates, TesterLanguage, CatalogResources);
                 }
 
                 case TestMode.ResourceWarning:
@@ -346,29 +379,26 @@ namespace Game.Scripts.Editor
                     string seed = PromptTemplateUtility.Fill(
                         templates != null ? templates.defaultWarningSeedPrompt : string.Empty,
                         "resourceName", resource != null ? resource.GetDisplayName(TesterLanguage) : "(resource)");
-                    string instructions = templates != null ? templates.personaSystemInstructions : string.Empty;
-                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, instructions, TesterLanguage, CatalogResources);
+                    return SpeakerPromptBuilder.BuildPersonaPrompt(speaker, sampleSnapshot, seed, templates, TesterLanguage, CatalogResources);
                 }
 
                 case TestMode.PetitionTurn:
                 {
                     EnsurePetitionSession();
                     string seed = card != null ? card.EffectivePetitionSeed(templates) : manualSeed;
-                    string instructions = templates != null ? templates.petitionSystemInstructions : string.Empty;
                     IReadOnlyList<ResourceData> validResources = CatalogResources;
                     int clamp = settings != null ? settings.petitionResourceClampMagnitude : 20;
                     return SpeakerPromptBuilder.BuildPetitionTurnPrompt(
-                        speaker, sampleSnapshot, seed, validResources, clamp, instructions, TesterLanguage)
+                        speaker, sampleSnapshot, seed, validResources, clamp, templates, TesterLanguage)
                         + "\n\n[Spam dots remaining: " + activePetitionSession.DotsRemaining + " of " + activePetitionSession.DotBudget + " - see Results below for transcript]";
                 }
 
                 case TestMode.Epilogue:
                 {
                     ResourceData resource = GetSelectedResource();
-                    string instructions = templates != null ? templates.epilogueSystemInstructions : string.Empty;
                     return SpeakerPromptBuilder.BuildEpiloguePrompt(
                         sampleDay, resource != null ? resource.GetDisplayName(TesterLanguage) : "(resource)",
-                        BuildFallbackResourceSummary(), sampleFullHistory, instructions, TesterLanguage);
+                        BuildFallbackResourceSummary(), sampleFullHistory, templates, TesterLanguage);
                 }
             }
 
@@ -509,8 +539,9 @@ namespace Game.Scripts.Editor
 
             EnsureRunnerClient();
             int? maxTokens = mode == TestMode.Epilogue && settings != null ? settings.epilogueMaxTokens : (int?)null;
+            LlmPromptTemplates templates = Templates;
 
-            runnerClient.RequestReaction(prompt, TesterLanguage,
+            runnerClient.RequestReaction(prompt, templates != null ? templates.singleTurnUserMessage : string.Empty, TesterLanguage,
                 line =>
                 {
                     parsedResult = string.IsNullOrWhiteSpace(line) ? "(empty content)" : line;
@@ -537,12 +568,11 @@ namespace Game.Scripts.Editor
             CardData card = GetSelectedCard(matching);
             SpeakerData speaker = ResolveSpeaker(matching);
             string seed = card != null ? card.EffectivePetitionSeed(templates) : manualSeed;
-            string instructions = templates != null ? templates.petitionSystemInstructions : string.Empty;
             IReadOnlyList<ResourceData> validResources = database.resourceCatalog != null ? database.resourceCatalog.resources : null;
             int clamp = settings != null ? settings.petitionResourceClampMagnitude : 20;
 
             List<GroqApiMessage> messages = activePetitionSession.BuildMessagesForSubmission(
-                petitionPlayerInput, speaker, sampleSnapshot, seed, validResources, clamp, instructions, TesterLanguage);
+                petitionPlayerInput, speaker, sampleSnapshot, seed, validResources, clamp, templates, TesterLanguage);
 
             rawResponse = string.Empty;
             parsedResult = string.Empty;

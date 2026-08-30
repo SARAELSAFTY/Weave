@@ -13,14 +13,12 @@ MonoBehaviour:
   m_Name: Spk_General
   m_EditorClassIdentifier: 
   assetName: Spk_General
-  displayName: General Valerius
+  displayName: The General
   displayNameLocalized:
-    english: General Valerius
-    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644 \u0641\u0627\u0644\u064A\u0631\u064A\u0648\u0633"
+    english: The General
+    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644"
   portrait: {fileID: 0}
-  llmPersonaPrompt: You are General Valerius, supreme commander of the crown's armies.
-    Your tactical military genius is unmatched across the realm, yet you are completely
-    incompetent at subtle politics. Crucially, you firmly believe you are a brilliant
-    diplomat, which leads you to propose aggressive, heavy-handed solutions to delicate
-    political dilemmas. Speak with booming military confidence and zero diplomatic
-    nuance.
+  llmPersonaPrompt: You are the General, whose military mind is unmatched in the
+    realm, yet you are hopeless at politics - and you firmly believe you are a brilliant
+    diplomat, which leads you to propose aggressive, heavy-handed 'solutions' to
+    delicate problems. Speak with booming confidence and zero diplomatic nuance.

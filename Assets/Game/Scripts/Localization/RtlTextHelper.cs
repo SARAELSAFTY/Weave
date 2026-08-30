@@ -88,5 +88,63 @@ namespace Game.Scripts.Localization
                 text.text = Shape(value, language);
             }
         }
+
+        /// <summary>
+        /// Typed Arabic only gets contextual shaping on an RTLTextMeshPro component; a plain TMP text
+        /// shows disconnected letters. Swaps the input field's text component for an RTLTextMeshPro at
+        /// runtime. Never runs in edit mode - destroying the component there would edit the scene.
+        /// </summary>
+        public static void EnsureRtlInputText(TMP_InputField inputField)
+        {
+            if (inputField == null)
+            {
+                return;
+            }
+
+            TMP_Text current = inputField.textComponent;
+            if (current == null)
+            {
+                return;
+            }
+
+            if (current is RTLTextMeshPro rtl)
+            {
+                Configure(rtl);
+                return;
+            }
+
+            if (!Application.isPlaying)
+            {
+                Configure(current);
+                return;
+            }
+
+            TMP_FontAsset font = current.font;
+            float fontSize = current.fontSize;
+            Color color = current.color;
+            TextAlignmentOptions alignment = current.alignment;
+            FontStyles fontStyle = current.fontStyle;
+            float characterSpacing = current.characterSpacing;
+            float lineSpacing = current.lineSpacing;
+            float wordSpacing = current.wordSpacing;
+            Vector2 margin = current.margin;
+            bool wordWrapping = current.textWrappingMode == TextWrappingModes.Normal;
+            GameObject host = current.gameObject;
+
+            Object.DestroyImmediate(current);
+            RTLTextMeshPro shaped = host.AddComponent<RTLTextMeshPro>();
+            shaped.font = font;
+            shaped.fontSize = fontSize;
+            shaped.color = color;
+            shaped.alignment = alignment;
+            shaped.fontStyle = fontStyle;
+            shaped.characterSpacing = characterSpacing;
+            shaped.lineSpacing = lineSpacing;
+            shaped.wordSpacing = wordSpacing;
+            shaped.margin = margin;
+            shaped.textWrappingMode = wordWrapping ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+            inputField.textComponent = shaped;
+            Configure(shaped);
+        }
     }
 }

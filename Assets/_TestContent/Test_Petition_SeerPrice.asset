@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Test_Petition_SeerProphecy
+  m_Name: Test_Petition_SeerPrice
   m_EditorClassIdentifier: 
-  assetName: Test_Petition_SeerProphecy
-  displayName: The Seer's Demand
+  assetName: Test_Petition_SeerPrice
+  displayName: The Seer's Price
   displayNameLocalized:
     english: 
     arabic: 
@@ -37,7 +37,6 @@ MonoBehaviour:
   isLlmReactionCard: 0
   reactionSeedOverride: 
   isPetitionCard: 1
-  petitionSeedOverride: You have entered the royal throne room uninvited. You demand
-    gold or royal privileges before unveiling a dire prophecy about the crown's fate.
-    Challenge the ruler to state your price or face an unseen disaster.
-  continueNextCard: {fileID: 11400000, guid: 4c9068a747240e445bce6df33726022f, type: 2}
+  petitionSeedOverride: 
+  petitionerSource: 1
+  continueNextCard: {fileID: 11400000, guid: 2fbcc30433c5bc44c83f5b2492094b69, type: 2}

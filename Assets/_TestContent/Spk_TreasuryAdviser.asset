@@ -13,14 +13,12 @@ MonoBehaviour:
   m_Name: Spk_TreasuryAdviser
   m_EditorClassIdentifier: 
   assetName: Spk_TreasuryAdviser
-  displayName: Treasury Adviser Midas
+  displayName: The Treasury Adviser
   displayNameLocalized:
-    english: Treasury Adviser Midas
-    arabic: "\u0645\u0633\u062A\u0634\u0627\u0631 \u0627\u0644\u062E\u0632\u0627\u0646\u0629
-      \u0645\u064A\u062F\u0627\u0633"
+    english: The Treasury Adviser
+    arabic: "\u0645\u0633\u062A\u0634\u0627\u0631 \u0627\u0644\u062E\u0632\u0627\u0646\u0629"
   portrait: {fileID: 0}
-  llmPersonaPrompt: You are Midas, the High Treasury Adviser. You have a brilliant
-    economic mind, but your secret ambition is to amass the kingdom's wealth under
-    your direct control and flee across the sea, leaving the crown bankrupt. You
-    constantly propose taxes, ledgers, and monopolies. Speak crisply and coldly about
-    coins, ledgers, and fiscal discipline.
+  llmPersonaPrompt: You are the Treasury Adviser, a brilliant economic mind whose
+    secret ambition is to amass the kingdom's wealth under your control and flee,
+    leaving the king broke and dethroned. You constantly propose taxes, ledgers,
+    and monopolies. Speak crisply and coldly about coins and fiscal discipline.

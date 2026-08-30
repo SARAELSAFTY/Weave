@@ -10,9 +10,12 @@ using UnityEngine;
 namespace Game.Scripts.Editor
 {
     /// <summary>
-    /// Generates the complete "Wicked King & The Royal Court" test narrative database under Assets/_TestContent.
-    /// Exercises all gameplay systems: branching choices, LLM reactions, free-form petitions, resource warnings,
-    /// and resource collapses with full English and Arabic localization.
+    /// Generates the complete "The Wicked King" test narrative database under Assets/_TestContent.
+    /// The player is the spoiled, arrogant Wicked King, haunted by his Spirit Mother into becoming a better
+    /// ruler while self-interested courtiers steer him. Every gameplay mechanic is carried by the story:
+    /// branching choices (each advisor's nature), LLM reactions (the court weighing your rulings), free-form
+    /// petitions (a common subject's grievance and the Seer's price), resource warnings and collapses (each
+    /// voiced by the character who cares about that resource), and moral endings. Full English/Arabic localization.
     /// </summary>
     public static class TestContentGenerator
     {
@@ -23,18 +26,15 @@ namespace Game.Scripts.Editor
         {
             EnsureFolder();
 
-            // ==========================================
-            // 1. CHARACTERS / SPEAKERS
-            // ==========================================
             SpeakerData spiritMother = ScriptableObject.CreateInstance<SpeakerData>();
             spiritMother.assetName = "Spk_SpiritMother";
             spiritMother.displayName = "The Spirit Mother";
             spiritMother.displayNameLocalized = Loc("The Spirit Mother", "روح الأم");
             spiritMother.llmPersonaPrompt =
-                "You are the Spirit Mother, the deceased queen and loving mother of the Wicked King (the player). " +
-                "You realized in the afterlife that your excessive doting caused your son to become a spoiled, arrogant brat. " +
-                "You have returned as a ghost to haunt him into becoming a wise, selfless sovereign. Address him with maternal firmness, " +
-                "haunting sorrow, and relentless expectation. Challenge his vanity and push him to shoulder the true weight of the realm.";
+                "You are the Spirit Mother, the deceased queen and mother of the Wicked King (the player). In the afterlife you understood that your own " +
+                "doting made him a spoiled, arrogant brat, and you have returned as a ghost to haunt him into becoming a wise, selfless ruler. Address him " +
+                "with maternal firmness and haunting sorrow; challenge his vanity and push him to shoulder the weight of the realm. Speak plainly and " +
+                "concretely, never in vague riddles.";
             SaveAsset(spiritMother, "Spk_SpiritMother");
 
             SpeakerData jester = ScriptableObject.CreateInstance<SpeakerData>();
@@ -42,54 +42,51 @@ namespace Game.Scripts.Editor
             jester.displayName = "The Jester";
             jester.displayNameLocalized = Loc("The Jester", "المهرج");
             jester.llmPersonaPrompt =
-                "You are the Jester, secretly the Wicked King's long-lost bastard half-brother. You hold zero desire for the throne, " +
-                "but you love your half-brother and want to help him survive. Your advice sounds chaotic, ridiculous, or foolish in the short run, " +
-                "but yields far better strategic consequences in the end. Speak in playful riddles, irreverent humor, and veiled court wisdom.";
+                "You are the Jester, secretly the Wicked King's long-lost bastard half-brother. You want no throne; you love your half-brother and want him " +
+                "to survive. Your advice sounds foolish or chaotic in the short run but yields far better consequences in the end. Speak in playful, " +
+                "irreverent humor that hides genuine court wisdom; keep every point concrete.";
             SaveAsset(jester, "Spk_Jester");
 
             SpeakerData chancellor = ScriptableObject.CreateInstance<SpeakerData>();
             chancellor.assetName = "Spk_Chancellor";
-            chancellor.displayName = "Chancellor Malakor";
-            chancellor.displayNameLocalized = Loc("Chancellor Malakor", "المستشار مالاكور");
+            chancellor.displayName = "The Chancellor";
+            chancellor.displayNameLocalized = Loc("The Chancellor", "المستشار");
             chancellor.llmPersonaPrompt =
-                "You are Chancellor Malakor, a treacherous courtier scheming to usurp the throne by steering the Wicked King toward ruin. " +
-                "Your advice sounds flattering, gratifying, and effortless at first, but carries devastating consequences down the line. " +
-                "Speak with silky court etiquette, honeyed flattery, and insidious false devotion.";
+                "You are the Chancellor, a treacherous courtier scheming to usurp the throne by steering the Wicked King toward ruin. Your advice sounds like " +
+                "the right, flattering, effortless choice now but carries horrible consequences later. Speak with silky etiquette, honeyed flattery, and " +
+                "insidious false devotion.";
             SaveAsset(chancellor, "Spk_Chancellor");
 
             SpeakerData general = ScriptableObject.CreateInstance<SpeakerData>();
             general.assetName = "Spk_General";
-            general.displayName = "General Valerius";
-            general.displayNameLocalized = Loc("General Valerius", "الجنرال فاليريوس");
+            general.displayName = "The General";
+            general.displayNameLocalized = Loc("The General", "الجنرال");
             general.llmPersonaPrompt =
-                "You are General Valerius, supreme commander of the crown's armies. Your tactical military genius is unmatched across the realm, " +
-                "yet you are completely incompetent at subtle politics. Crucially, you firmly believe you are a brilliant diplomat, which leads you to " +
-                "propose aggressive, heavy-handed solutions to delicate political dilemmas. Speak with booming military confidence and zero diplomatic nuance.";
+                "You are the General, whose military mind is unmatched in the realm, yet you are hopeless at politics - and you firmly believe you are a " +
+                "brilliant diplomat, which leads you to propose aggressive, heavy-handed 'solutions' to delicate problems. Speak with booming confidence and " +
+                "zero diplomatic nuance.";
             SaveAsset(general, "Spk_General");
 
             SpeakerData treasuryAdviser = ScriptableObject.CreateInstance<SpeakerData>();
             treasuryAdviser.assetName = "Spk_TreasuryAdviser";
-            treasuryAdviser.displayName = "Treasury Adviser Midas";
-            treasuryAdviser.displayNameLocalized = Loc("Treasury Adviser Midas", "مستشار الخزانة ميداس");
+            treasuryAdviser.displayName = "The Treasury Adviser";
+            treasuryAdviser.displayNameLocalized = Loc("The Treasury Adviser", "مستشار الخزانة");
             treasuryAdviser.llmPersonaPrompt =
-                "You are Midas, the High Treasury Adviser. You have a brilliant economic mind, but your secret ambition is to amass the kingdom's wealth " +
-                "under your direct control and flee across the sea, leaving the crown bankrupt. You constantly propose taxes, ledgers, and monopolies. " +
-                "Speak crisply and coldly about coins, ledgers, and fiscal discipline.";
+                "You are the Treasury Adviser, a brilliant economic mind whose secret ambition is to amass the kingdom's wealth under your control and flee, " +
+                "leaving the king broke and dethroned. You constantly propose taxes, ledgers, and monopolies. Speak crisply and coldly about coins and fiscal " +
+                "discipline.";
             SaveAsset(treasuryAdviser, "Spk_TreasuryAdviser");
 
             SpeakerData seer = ScriptableObject.CreateInstance<SpeakerData>();
             seer.assetName = "Spk_Seer";
-            seer.displayName = "The Seer Cassandra";
-            seer.displayNameLocalized = Loc("The Seer Cassandra", "العرافة كاساندرا");
+            seer.displayName = "The Seer";
+            seer.displayNameLocalized = Loc("The Seer", "العرافة");
             seer.llmPersonaPrompt =
-                "You are Cassandra the Seer, an authentic prophet whose visions are unerringly accurate. You have zero loyalty to king or realm and care " +
-                "exclusively for gold and personal luxury. You only grant clarity to those who pay your steep price. Speak in enigmatic, chillingly accurate prophecies " +
-                "wrapped in mercantile demands.";
+                "You are the Seer, a truly gifted prophet whose visions are rarely wrong. You have no allegiance and care only for your own pockets; you sell " +
+                "clarity at a steep price. You have come to sell the king a true vision of a specific disaster for the crown. State plainly what you saw, your " +
+                "exact price in gold, and what happens if he refuses. Every vision and demand names specific people, places, and prices; never vague riddles.";
             SaveAsset(seer, "Spk_Seer");
 
-            // ==========================================
-            // 2. KINGDOM RESOURCES
-            // ==========================================
             ResourceData resTreasury = ScriptableObject.CreateInstance<ResourceData>();
             resTreasury.assetName = "Res_Treasury";
             resTreasury.displayName = "Treasury";
@@ -134,16 +131,13 @@ namespace Game.Scripts.Editor
             catalog.resources = new List<ResourceData> { resTreasury, resMilitary, resAuthority, resMorale };
             SaveAsset(catalog, "ResourceCatalog_Test");
 
-            // ==========================================
-            // 3. COLLAPSE ENDING CARDS (LEAF LEVEL)
-            // ==========================================
             CardData treasuryCollapseEnding = ScriptableObject.CreateInstance<CardData>();
             treasuryCollapseEnding.assetName = "Test_Ending_TreasuryCollapse";
             treasuryCollapseEnding.displayName = "The Empty Vaults";
             treasuryCollapseEnding.speaker = treasuryAdviser;
             treasuryCollapseEnding.descriptionLocalized = Loc(
-                "The royal vaults stand open and empty. Adviser Midas has fled across the sea with every sovereign coin, leaving the broke King to face the wrath of unpaid mercenary legions.",
-                "أبواب الخزائن الملكية مفتوحة على مصراعيها وخاوية تمامًا. هرب المستشار ميداس عبر البحر بكل ذهب المملكة، تاركًا الملك المفلس ليواجه بطش جحافل المرتزقة الغاضبين.");
+                "The vaults stand open and empty. The Treasury Adviser has sailed across the sea with every sovereign coin, leaving a broke king to face unpaid, angry mercenaries.",
+                "تقف الخزائن مفتوحة وخاوية. أبحر مستشار الخزانة عبر البحر بكل قطعة ذهب، تاركًا ملكًا مفلسًا ليواجه مرتزقة غاضبين لم يُدفع لهم.");
             treasuryCollapseEnding.dayAdvance = 1;
             SaveAsset(treasuryCollapseEnding, "Test_Ending_TreasuryCollapse");
 
@@ -152,8 +146,8 @@ namespace Game.Scripts.Editor
             militaryCollapseEnding.displayName = "The Iron Mutiny";
             militaryCollapseEnding.speaker = general;
             militaryCollapseEnding.descriptionLocalized = Loc(
-                "General Valerius's reckless campaigns broke the army's morale. The frontier fortresses have fallen, and the mutinous Crown Guard storms the palace to arrest the King.",
-                "أدت حملات الجنرال فاليريوس المتهورة إلى تحطيم معنويات الجيش. سقطت حصون الحدود، وحراس التاج المتمردون يقتحمون القصر لاعتقال الملك.");
+                "The army's morale is broken. The frontier fortresses fall, and the mutinous Crown Guard storms the palace to arrest the king they no longer obey.",
+                "انكسرت معنويات الجيش. سقطت حصون الحدود، وحراس التاج المتمردون يقتحمون القصر لاعتقال ملك لم يعودوا يطيعونه.");
             militaryCollapseEnding.dayAdvance = 1;
             SaveAsset(militaryCollapseEnding, "Test_Ending_MilitaryCollapse");
 
@@ -162,8 +156,8 @@ namespace Game.Scripts.Editor
             authorityCollapseEnding.displayName = "The Usurper's Coup";
             authorityCollapseEnding.speaker = chancellor;
             authorityCollapseEnding.descriptionLocalized = Loc(
-                "Chancellor Malakor drops his mask of flattery. Flanked by bribed lords and the palace guard, he strips the crown from your head and proclaims himself the new Sovereign.",
-                "نزع المستشار مالاكور قناع التملق أخيرًا. وبمساندة النبلاء المرتشين وحرس البلاط، ينتزع التاج من رأسك ويعلن نفسه الحاكم الجديد للبلاد.");
+                "The Chancellor drops his mask of flattery. Flanked by bribed lords and the palace guard, he lifts the crown from your head and proclaims himself the new sovereign.",
+                "ينزع المستشار قناع التملق. وبمساندة النبلاء المرتشين وحرس البلاط، يرفع التاج عن رأسك ويعلن نفسه الحاكم الجديد.");
             authorityCollapseEnding.dayAdvance = 1;
             SaveAsset(authorityCollapseEnding, "Test_Ending_AuthorityCollapse");
 
@@ -172,8 +166,8 @@ namespace Game.Scripts.Editor
             moraleCollapseEnding.displayName = "The Peasant Wrath";
             moraleCollapseEnding.speaker = spiritMother;
             moraleCollapseEnding.descriptionLocalized = Loc(
-                "The oppressed populace can endure no more. Torches illuminate the palace gates as a tidal wave of furious citizens breaks through the courtyard, tearing down the throne of the Wicked King.",
-                "لم تعد الرعية قادرة على تحمل المزيد من الظلم. المشاعل تضيء بوابات القصر بينما يقتحم طوفان المواطنين الغاضبين الباحة الملكية، محطمين عرش الملك الشرير.");
+                "The oppressed populace endures no more. Torches light the palace gates as a tide of furious citizens breaks through, tearing down the Wicked King's throne.",
+                "لم تعد الرعية المظلومة تحتمل. المشاعل تضيء بوابات القصر بينما يقتحم طوفان المواطنين الغاضبين الباحة، محطمين عرش الملك الشرير.");
             moraleCollapseEnding.dayAdvance = 1;
             SaveAsset(moraleCollapseEnding, "Test_Ending_MoraleCollapse");
 
@@ -187,42 +181,36 @@ namespace Game.Scripts.Editor
             // Assigned after CreateAsset saved the catalog; without SetDirty the endings never persist.
             EditorUtility.SetDirty(catalog);
 
-            // ==========================================
-            // 4. STORYLINE ENDING CARDS
-            // ==========================================
-            CardData endingVictory = ScriptableObject.CreateInstance<CardData>();
-            endingVictory.assetName = "Test_Ending_EnlightenedMonarch";
-            endingVictory.displayName = "An Enlightened Monarch";
-            endingVictory.speaker = spiritMother;
-            endingVictory.descriptionLocalized = Loc(
-                "The Spirit Mother smiles with tears of ethereal joy. The Wicked King humbled himself, chose his people over his ego, and laid the foundations of a just and enduring dynasty.",
-                "تبتسم روح الأم بدموع الفرح الطيفي. تواضع الملك الشرير، واختار شعبه على أنانيته، واضعًا أسس سلالة ملكية عادلة ومجيدة تدوم عبر الأجيال.");
-            endingVictory.dayAdvance = 1;
-            SaveAsset(endingVictory, "Test_Ending_EnlightenedMonarch");
+            CardData endingGood = ScriptableObject.CreateInstance<CardData>();
+            endingGood.assetName = "Test_Ending_EnlightenedMonarch";
+            endingGood.displayName = "An Enlightened Monarch";
+            endingGood.speaker = spiritMother;
+            endingGood.descriptionLocalized = Loc(
+                "The Spirit Mother smiles through tears of light. The Wicked King humbled himself, chose his people over his pride, and laid the foundations of a just and lasting dynasty.",
+                "تبتسم روح الأم بدموع من نور. تواضع الملك الشرير، واختار شعبه على كبريائه، فوضع أسس سلالة عادلة باقية.");
+            endingGood.dayAdvance = 1;
+            SaveAsset(endingGood, "Test_Ending_EnlightenedMonarch");
 
             CardData endingTyrant = ScriptableObject.CreateInstance<CardData>();
             endingTyrant.assetName = "Test_Ending_TyrantFall";
             endingTyrant.displayName = "A Tyrant's Solitude";
             endingTyrant.speaker = spiritMother;
             endingTyrant.descriptionLocalized = Loc(
-                "Clinging to arrogance to the bitter end, the King sits alone upon an empty throne in a ruined court, abandoned by his family, his advisors, and his kingdom.",
-                "متمسكًا بغروره حتى النهاية المريرة، يجلس الملك وحيدًا على عرش خاوٍ في بلاط متهالك، بعد أن تخلى عنه أهله ومستشاروه ومملكته بأسرها.");
+                "Clinging to pride to the bitter end, the king sits alone on an empty throne in a ruined court, abandoned by family, advisors, and kingdom alike.",
+                "متمسكًا بكبريائه حتى النهاية المريرة، يجلس الملك وحيدًا على عرش خاوٍ في بلاط خرب، وقد تخلت عنه الأسرة والمستشارون والمملكة سواء.");
             endingTyrant.dayAdvance = 1;
             SaveAsset(endingTyrant, "Test_Ending_TyrantFall");
 
-            // ==========================================
-            // 5. CLIMAX & POST-PETITION SCENES (LEAF-TO-ROOT)
-            // ==========================================
-            CardData climaxTrial = ScriptableObject.CreateInstance<CardData>();
-            climaxTrial.assetName = "Test_Scene_ClimaxCrownTrial";
-            climaxTrial.displayName = "The Spectral Judgment";
-            climaxTrial.speaker = spiritMother;
-            climaxTrial.descriptionLocalized = Loc(
-                "The Spirit Mother materializes amidst thunderous spectral light. 'The hour has come, my son. The realm stands upon the precipice. Will you sacrifice your selfish pride for the people, or burn this kingdom to feed your vanity?'",
-                "تتجسد روح الأم وسط ضياء طيفي مدوٍّ: 'لقد حانت اللحظة يا ولدي. المملكة تقف على حافة الهاوية. هل تضحي بكبريائك الأناني من أجل شعبك، أم تحرق المملكة لتغذي غرورك؟'");
-            climaxTrial.dayAdvance = 2;
-            climaxTrial.leftChoiceLocalized = Loc("The realm comes before the King!", "المملكة تأتي قبل الملك!");
-            climaxTrial.leftResourceChange = new ResourceChange
+            CardData climax = ScriptableObject.CreateInstance<CardData>();
+            climax.assetName = "Test_Scene_ClimaxJudgment";
+            climax.displayName = "The Spectral Judgment";
+            climax.speaker = spiritMother;
+            climax.descriptionLocalized = Loc(
+                "The Spirit Mother blazes in spectral light. 'The hour is here, my son. The realm stands on a knife's edge. Will you give yourself to the people, or burn the kingdom to feed your pride?'",
+                "تتوهج روح الأم بضياء طيفي: «لقد حانت الساعة يا ولدي. المملكة على حد السكين. فإما أن تبذل نفسك للشعب، أو تحرق المملكة لتغذي كبرياءك؟»");
+            climax.dayAdvance = 2;
+            climax.leftChoiceLocalized = Loc("The realm before the king", "المملكة قبل الملك");
+            climax.leftResourceChange = new ResourceChange
             {
                 values = new[]
                 {
@@ -232,9 +220,9 @@ namespace Game.Scripts.Editor
                     new ResourceValue { resource = resTreasury, value = -15 }
                 }
             };
-            climaxTrial.leftNextCard = endingVictory;
-            climaxTrial.rightChoiceLocalized = Loc("I am Sovereign! All must bow!", "أنا الملك الأوحد! والجميع سينحني!");
-            climaxTrial.rightResourceChange = new ResourceChange
+            climax.leftNextCard = endingGood;
+            climax.rightChoiceLocalized = Loc("I am sovereign; all must bow", "أنا الملك؛ والجميع سينحني");
+            climax.rightResourceChange = new ResourceChange
             {
                 values = new[]
                 {
@@ -244,44 +232,47 @@ namespace Game.Scripts.Editor
                     new ResourceValue { resource = resTreasury, value = 10 }
                 }
             };
-            climaxTrial.rightNextCard = endingTyrant;
-            SaveAsset(climaxTrial, "Test_Scene_ClimaxCrownTrial");
+            climax.rightNextCard = endingTyrant;
+            SaveAsset(climax, "Test_Scene_ClimaxJudgment");
 
-            // Post-Petition LLM Reaction Card
-            CardData postPetitionJester = ScriptableObject.CreateInstance<CardData>();
-            postPetitionJester.assetName = "Test_Reaction_JesterReflection";
-            postPetitionJester.displayName = "A Brother's Warning";
-            postPetitionJester.speaker = jester;
-            postPetitionJester.isLlmReactionCard = true;
-            postPetitionJester.reactionSeedOverride =
-                "React playfully to the ruler's recent decision regarding the Seer's prophecy. Remind your half-brother in a clever, brotherly riddle that gold cannot buy a soul, but wisdom might save a crown.";
-            postPetitionJester.continueNextCard = climaxTrial;
-            SaveAsset(postPetitionJester, "Test_Reaction_JesterReflection");
-
-            // Interactive Petition Card
+            // The Seer's petition: she sells a concrete vision at a price.
             CardData seerPetition = ScriptableObject.CreateInstance<CardData>();
-            seerPetition.assetName = "Test_Petition_SeerProphecy";
-            seerPetition.displayName = "The Seer's Demand";
+            seerPetition.assetName = "Test_Petition_SeerPrice";
+            seerPetition.displayName = "The Seer's Price";
             seerPetition.speaker = seer;
             seerPetition.isPetitionCard = true;
-            seerPetition.petitionSeedOverride =
-                "You have entered the royal throne room uninvited. You demand gold or royal privileges before unveiling a dire prophecy about the crown's fate. Challenge the ruler to state your price or face an unseen disaster.";
-            seerPetition.continueNextCard = postPetitionJester;
-            SaveAsset(seerPetition, "Test_Petition_SeerProphecy");
+            seerPetition.petitionerSource = PetitionerSource.DefinedSpeaker;
+            seerPetition.continueNextCard = climax;
+            SaveAsset(seerPetition, "Test_Petition_SeerPrice");
 
-            // ==========================================
-            // 6. MID-GAME SCENES (TREASURY & MILITARY)
-            // ==========================================
-            CardData treasuryAudit = ScriptableObject.CreateInstance<CardData>();
-            treasuryAudit.assetName = "Test_Scene_TreasuryAudit";
-            treasuryAudit.displayName = "The Golden Ledger";
-            treasuryAudit.speaker = treasuryAdviser;
-            treasuryAudit.descriptionLocalized = Loc(
-                "Treasury Adviser Midas taps his ledger with a sharp quill. 'Sire, the vaults are leaking coin. Grant me unilateral authority over trade tolls and merchant taxes, and I shall make the crown wealthier than the gods.'",
-                "ينقر مستشار الخزانة ميداس على سجله بريشة حادة: 'يا مولاي، الخزائن تنزف ذهبًا. امنحني السيطرة الكاملة على مكوس التجارة وضرائب التجار، وسأجعل التاج أغنى من الآلهة.'");
-            treasuryAudit.dayAdvance = 2;
-            treasuryAudit.leftChoiceLocalized = Loc("Grant Midas total ledger control", "امنح ميداس السيطرة المطلقة على السجلات");
-            treasuryAudit.leftResourceChange = new ResourceChange
+            // Reaction: the Chancellor weighs how you ruled the commoner.
+            CardData rulingComment = ScriptableObject.CreateInstance<CardData>();
+            rulingComment.assetName = "Test_Reaction_RulingComment";
+            rulingComment.displayName = "The Court Weighs the Ruling";
+            rulingComment.speaker = chancellor;
+            rulingComment.isLlmReactionCard = true;
+            rulingComment.continueNextCard = seerPetition;
+            SaveAsset(rulingComment, "Test_Reaction_RulingComment");
+
+            // A common subject's grievance (the people's problem).
+            CardData citizenPetition = ScriptableObject.CreateInstance<CardData>();
+            citizenPetition.assetName = "Test_Petition_MillersGrievance";
+            citizenPetition.displayName = "A Subject's Grievance";
+            citizenPetition.isPetitionCard = true;
+            citizenPetition.petitionerSource = PetitionerSource.GeneratedCommoner;
+            citizenPetition.continueNextCard = rulingComment;
+            SaveAsset(citizenPetition, "Test_Petition_MillersGrievance");
+
+            CardData treasuryScene = ScriptableObject.CreateInstance<CardData>();
+            treasuryScene.assetName = "Test_Scene_VaultKeys";
+            treasuryScene.displayName = "The Keys to the Vaults";
+            treasuryScene.speaker = treasuryAdviser;
+            treasuryScene.descriptionLocalized = Loc(
+                "The Treasury Adviser presents a neat ledger. 'Sire, hand me sole control of the vaults and I shall double your wealth. Trust me entirely - what is a king's purse without a faithful keeper?'",
+                "يقدم مستشار الخزانة دفترًا مرتبًا: «مولاي، سلمني وحدي مفاتيح الخزائن وسأضاعف ثروتك. ثق بي ثقة كاملة - فما كيس الملك بلا أمين وفي؟»");
+            treasuryScene.dayAdvance = 2;
+            treasuryScene.leftChoiceLocalized = Loc("Give him sole control of the vaults", "سلّمه وحده مفاتيح الخزائن");
+            treasuryScene.leftResourceChange = new ResourceChange
             {
                 values = new[]
                 {
@@ -290,9 +281,9 @@ namespace Game.Scripts.Editor
                     new ResourceValue { resource = resMorale, value = -10 }
                 }
             };
-            treasuryAudit.leftNextCard = seerPetition;
-            treasuryAudit.rightChoiceLocalized = Loc("Subject vaults to open inspection", "اخضع الخزائن لتفتيش علني صارم");
-            treasuryAudit.rightResourceChange = new ResourceChange
+            treasuryScene.leftNextCard = citizenPetition;
+            treasuryScene.rightChoiceLocalized = Loc("Limit his power with oversight", "قيّد سلطته برقابة صارمة");
+            treasuryScene.rightResourceChange = new ResourceChange
             {
                 values = new[]
                 {
@@ -301,19 +292,19 @@ namespace Game.Scripts.Editor
                     new ResourceValue { resource = resMorale, value = 10 }
                 }
             };
-            treasuryAudit.rightNextCard = seerPetition;
-            SaveAsset(treasuryAudit, "Test_Scene_TreasuryAudit");
+            treasuryScene.rightNextCard = citizenPetition;
+            SaveAsset(treasuryScene, "Test_Scene_VaultKeys");
 
-            CardData warCouncil = ScriptableObject.CreateInstance<CardData>();
-            warCouncil.assetName = "Test_Scene_GeneralWarCouncil";
-            warCouncil.displayName = "The General's Diplomacy";
-            warCouncil.speaker = general;
-            warCouncil.descriptionLocalized = Loc(
-                "General Valerius storms into council, slamming his iron gauntlet on the map. 'Raiders test our borders! My strategy is a brilliant diplomatic masterstroke: send the entire cavalry in a crushing charge!'",
-                "يقتحم الجنرال فاليريوس القاعة ضاربًا قفازه الحربي على الخريطة: 'الغزاة يختبرون حدودنا! خطتي هي تحفة دبلوماسية بارعة: أرسل سلاح الفرسان بأكمله في هجوم ساحق!'");
-            warCouncil.dayAdvance = 2;
-            warCouncil.leftChoiceLocalized = Loc("Full cavalry charge!", "هجوم كاسح بالفرسان!");
-            warCouncil.leftResourceChange = new ResourceChange
+            CardData generalScene = ScriptableObject.CreateInstance<CardData>();
+            generalScene.assetName = "Test_Scene_GeneralDiplomacy";
+            generalScene.displayName = "The General's Diplomacy";
+            generalScene.speaker = general;
+            generalScene.descriptionLocalized = Loc(
+                "The General slams his gauntlet on the map. 'Raiders test the border! My diplomatic masterstroke: send the entire cavalry in a crushing charge. Nothing says peace like a perfect victory.'",
+                "يضرب الجنرال قفازه على الخريطة: «الغزاة يختبرون الحدود! وخطتي الدبلوماسية العبقرية: أرسل الفرسان كلهم في هجوم ساحق. فلا شيء يقول السلام كانتصار تام».");
+            generalScene.dayAdvance = 2;
+            generalScene.leftChoiceLocalized = Loc("Send the cavalry charge", "أرسل هجوم الفرسان الساحق");
+            generalScene.leftResourceChange = new ResourceChange
             {
                 values = new[]
                 {
@@ -322,9 +313,9 @@ namespace Game.Scripts.Editor
                     new ResourceValue { resource = resMorale, value = -5 }
                 }
             };
-            warCouncil.leftNextCard = treasuryAudit;
-            warCouncil.rightChoiceLocalized = Loc("Fortify garrisons & negotiate", "حصّن الحاميات وابدأ التفاوض");
-            warCouncil.rightResourceChange = new ResourceChange
+            generalScene.leftNextCard = treasuryScene;
+            generalScene.rightChoiceLocalized = Loc("Negotiate a real truce", "تفاوض على هدنة حقيقية");
+            generalScene.rightResourceChange = new ResourceChange
             {
                 values = new[]
                 {
@@ -333,96 +324,45 @@ namespace Game.Scripts.Editor
                     new ResourceValue { resource = resMorale, value = 10 }
                 }
             };
-            warCouncil.rightNextCard = treasuryAudit;
-            SaveAsset(warCouncil, "Test_Scene_GeneralWarCouncil");
+            generalScene.rightNextCard = treasuryScene;
+            SaveAsset(generalScene, "Test_Scene_GeneralDiplomacy");
 
-            // ==========================================
-            // 7. LLM REACTION CARDS (EARLY COURT REACTIONS)
-            // ==========================================
-            CardData motherScornReaction = ScriptableObject.CreateInstance<CardData>();
-            motherScornReaction.assetName = "Test_Reaction_MotherScorn";
-            motherScornReaction.displayName = "A Mother's Scorn";
-            motherScornReaction.speaker = spiritMother;
-            motherScornReaction.isLlmReactionCard = true;
-            motherScornReaction.reactionSeedOverride =
-                "Admonish your spoiled royal son for his reckless, self-indulgent choice. Remind him with haunting sorrow that kings who indulge their vanity build their own gallows.";
-            motherScornReaction.continueNextCard = warCouncil;
-            SaveAsset(motherScornReaction, "Test_Reaction_MotherScorn");
+            CardData reactionMother = ScriptableObject.CreateInstance<CardData>();
+            reactionMother.assetName = "Test_Reaction_MotherWeighing";
+            reactionMother.displayName = "A Mother's Weighing";
+            reactionMother.speaker = spiritMother;
+            reactionMother.isLlmReactionCard = true;
+            reactionMother.continueNextCard = generalScene;
+            SaveAsset(reactionMother, "Test_Reaction_MotherWeighing");
 
-            CardData chancellorGrimaceReaction = ScriptableObject.CreateInstance<CardData>();
-            chancellorGrimaceReaction.assetName = "Test_Reaction_ChancellorGrimace";
-            chancellorGrimaceReaction.displayName = "Silken Displeasure";
-            chancellorGrimaceReaction.speaker = chancellor;
-            chancellorGrimaceReaction.isLlmReactionCard = true;
-            chancellorGrimaceReaction.reactionSeedOverride =
-                "Conceal your secret frustration behind a veneer of obsequious court praise. Flatter the king's unexpected frugality while subtly plotting your next move.";
-            chancellorGrimaceReaction.continueNextCard = warCouncil;
-            SaveAsset(chancellorGrimaceReaction, "Test_Reaction_ChancellorGrimace");
-
-            CardData generalBaffledReaction = ScriptableObject.CreateInstance<CardData>();
-            generalBaffledReaction.assetName = "Test_Reaction_GeneralBaffled";
-            generalBaffledReaction.displayName = "A General's Confusion";
-            generalBaffledReaction.speaker = general;
-            generalBaffledReaction.isLlmReactionCard = true;
-            generalBaffledReaction.reactionSeedOverride =
-                "Express booming confusion at the king's bizarre decision, comparing it to an unorthodox flank maneuver that defies all battlefield doctrine.";
-            generalBaffledReaction.continueNextCard = warCouncil;
-            SaveAsset(generalBaffledReaction, "Test_Reaction_GeneralBaffled");
-
-            // ==========================================
-            // 8. EARLY BRANCHING SCENES
-            // ==========================================
-            CardData branchChancellor = ScriptableObject.CreateInstance<CardData>();
-            branchChancellor.assetName = "Test_Branch_ChancellorEgo";
-            branchChancellor.displayName = "The Golden Colossus";
-            branchChancellor.speaker = chancellor;
-            branchChancellor.descriptionLocalized = Loc(
-                "Chancellor Malakor bows low, his smile dripping with silk. 'Sire, the commoners must witness your supreme glory! Let us levy a double harvest tax to build a golden colossus in your likeness.'",
-                "ينحني المستشار مالاكور بابتسامة متملقة: 'مولاي المعظم، يجب أن ترى الرعية مجدك المطلق! دعنا نفرض ضريبة حصاد مضاعفة لتشييد تمثال عملاق من الذهب الخالص يجسد عظمتكم.'");
-            branchChancellor.dayAdvance = 2;
-            branchChancellor.leftChoiceLocalized = Loc("Build the Golden Colossus!", "شيّدوا التمثال الذهبي فورًا!");
-            branchChancellor.leftResourceChange = new ResourceChange
-            {
-                values = new[]
-                {
-                    new ResourceValue { resource = resTreasury, value = -20 },
-                    new ResourceValue { resource = resMorale, value = -15 },
-                    new ResourceValue { resource = resAuthority, value = 10 }
-                }
-            };
-            branchChancellor.leftNextCard = motherScornReaction;
-            branchChancellor.rightChoiceLocalized = Loc("Refuse and slash his court budget", "ارفض وخفّض ميزانية بلاطه");
-            branchChancellor.rightResourceChange = new ResourceChange
-            {
-                values = new[]
-                {
-                    new ResourceValue { resource = resTreasury, value = 15 },
-                    new ResourceValue { resource = resAuthority, value = -10 }
-                }
-            };
-            branchChancellor.rightNextCard = chancellorGrimaceReaction;
-            SaveAsset(branchChancellor, "Test_Branch_ChancellorEgo");
+            CardData reactionJester = ScriptableObject.CreateInstance<CardData>();
+            reactionJester.assetName = "Test_Reaction_FoolWarning";
+            reactionJester.displayName = "The Fool's Warning";
+            reactionJester.speaker = jester;
+            reactionJester.isLlmReactionCard = true;
+            reactionJester.continueNextCard = generalScene;
+            SaveAsset(reactionJester, "Test_Reaction_FoolWarning");
 
             CardData branchJester = ScriptableObject.CreateInstance<CardData>();
-            branchJester.assetName = "Test_Branch_JesterRiddle";
-            branchJester.displayName = "The Fool's Feast";
+            branchJester.assetName = "Test_Branch_FoolsBargain";
+            branchJester.displayName = "The Fool's Bargain";
             branchJester.speaker = jester;
             branchJester.descriptionLocalized = Loc(
-                "The Jester cartwheels into the throne room, jingling bells in your face. 'Brother King! The thieves scheme to loot the granaries! Why not throw the gates open and feed every beggar before they steal a crumb?'",
-                "يتشقلب المهرج داخل قاعة العرش رانًا أجراسه في وجهك: 'أخي الملك! اللصوص يخططون لنهب مخازن الحبوب! لمَ لا نفتح الأبواب ونطعم كل متسول قبل أن يسرقوا كسرة واحدة؟'");
+                "The Jester cartwheels in, bells jingling. 'Brother-king! The granary rats are fat and the people are thin - so feed the people from your own stores! A king who eats his pride never starves his realm.'",
+                "يتشقلب المهرج داخلًا وأجراسه ترن: «أخي الملك! جرذان المخازن سمينة والشعب هزيل - فأطعم الشعب من مخازنك! فالملك الذي يأكل كبرياءه لا يُجيع مملكته».");
             branchJester.dayAdvance = 2;
-            branchJester.leftChoiceLocalized = Loc("Host the grand Fool's Feast!", "أقم وليمة المهرج الكبرى!");
+            branchJester.leftChoiceLocalized = Loc("Feed the people from the royal stores", "أطعم الشعب من المخازن الملكية");
             branchJester.leftResourceChange = new ResourceChange
             {
                 values = new[]
                 {
                     new ResourceValue { resource = resTreasury, value = -10 },
-                    new ResourceValue { resource = resMorale, value = 20 },
+                    new ResourceValue { resource = resMorale, value = 15 },
                     new ResourceValue { resource = resAuthority, value = -5 }
                 }
             };
-            branchJester.leftNextCard = generalBaffledReaction;
-            branchJester.rightChoiceLocalized = Loc("Have him tossed into the moat", "ألقه في خندق القلعة المائي");
+            branchJester.leftNextCard = reactionMother;
+            branchJester.rightChoiceLocalized = Loc("Have the fool dragged out", "اطردوا هذا الأحمق خارجًا");
             branchJester.rightResourceChange = new ResourceChange
             {
                 values = new[]
@@ -432,32 +372,51 @@ namespace Game.Scripts.Editor
                     new ResourceValue { resource = resAuthority, value = 5 }
                 }
             };
-            branchJester.rightNextCard = motherScornReaction;
-            SaveAsset(branchJester, "Test_Branch_JesterRiddle");
+            branchJester.rightNextCard = reactionMother;
+            SaveAsset(branchJester, "Test_Branch_FoolsBargain");
 
-            // ==========================================
-            // 9. INTRO START CARD
-            // ==========================================
-            CardData start = ScriptableObject.CreateInstance<CardData>();
-            start.assetName = "Test_Intro_SpiritMother";
-            start.displayName = "The Spectral Awakening";
-            start.speaker = spiritMother;
-            start.descriptionLocalized = Loc(
-                "A cold mist gathers above the royal dais. The ghostly figure of your late mother appears, looking down at you with stern sorrow. 'My spoiled son... your arrogance will drown this realm unless you learn to rule.'",
-                "يتصاعد ضباب بارد فوق العرش الملكي. يظهر طيف والدتك الراحلة ناظرًا إليك بحزن وحزم: 'يا ولدي المدلل... إن غرورك سيغرق هذه المملكة إن لم تتعلم كيف تحكم حقًا.'");
-            start.dayAdvance = 1;
-            start.leftChoiceLocalized = Loc("Dismiss as a fever dream", "تجاهل الطيف كأنه كابوس");
-            start.leftResourceChange = new ResourceChange
+            CardData branchChancellor = ScriptableObject.CreateInstance<CardData>();
+            branchChancellor.assetName = "Test_Branch_GoldenMonument";
+            branchChancellor.displayName = "The Golden Monument";
+            branchChancellor.speaker = chancellor;
+            branchChancellor.descriptionLocalized = Loc(
+                "The Chancellor bows low, smile dripping silk. 'Sire, let the commoners see your glory. A double harvest tax to raise a golden monument in your likeness - what could possibly go wrong?'",
+                "ينحني المستشار بابتسامة تقطر حريرًا: «مولاي، دع الرعية ترى مجدك. ضريبة حصاد مضاعفة لتشييد نصب ذهبي يجسد عظمتك - فما الذي قد يسوء؟»");
+            branchChancellor.dayAdvance = 2;
+            branchChancellor.leftChoiceLocalized = Loc("Raise the golden monument", "شيّد النصب الذهبي");
+            branchChancellor.leftResourceChange = new ResourceChange
             {
                 values = new[]
                 {
-                    new ResourceValue { resource = resMorale, value = -10 },
-                    new ResourceValue { resource = resAuthority, value = 5 }
+                    new ResourceValue { resource = resTreasury, value = 20 },
+                    new ResourceValue { resource = resAuthority, value = 10 },
+                    new ResourceValue { resource = resMorale, value = -15 }
                 }
             };
-            start.leftNextCard = branchChancellor;
-            start.rightChoiceLocalized = Loc("Bow and hear her counsel", "انحنِ واستمع لنصيحتها");
-            start.rightResourceChange = new ResourceChange
+            branchChancellor.leftNextCard = reactionJester;
+            branchChancellor.rightChoiceLocalized = Loc("Refuse and cut his budget", "ارفض وقلّص ميزانيته");
+            branchChancellor.rightResourceChange = new ResourceChange
+            {
+                values = new[]
+                {
+                    new ResourceValue { resource = resTreasury, value = -10 },
+                    new ResourceValue { resource = resAuthority, value = -10 },
+                    new ResourceValue { resource = resMorale, value = 10 }
+                }
+            };
+            branchChancellor.rightNextCard = reactionJester;
+            SaveAsset(branchChancellor, "Test_Branch_GoldenMonument");
+
+            CardData start = ScriptableObject.CreateInstance<CardData>();
+            start.assetName = "Test_Intro_SpectralAwakening";
+            start.displayName = "The Spectral Awakening";
+            start.speaker = spiritMother;
+            start.descriptionLocalized = Loc(
+                "Cold mist gathers over the dais and the ghost of your late mother takes shape, looking at you with stern sorrow. 'My spoiled son. Your arrogance will drown this realm unless you learn to rule. Will you hear me, or must I haunt you?'",
+                "يتصاعد ضباب بارد فوق المنصة ويتجسد طيف والدتك الراحلة ناظرًا إليك بحزن وحزم: «يا ولدي المدلل. غرورك سيغرق هذه المملكة إن لم تتعلم الحكم. فهل تسمعني، أم يجب أن أطاردك؟»");
+            start.dayAdvance = 1;
+            start.leftChoiceLocalized = Loc("Bow and hear her counsel", "انحنِ واستمع لنصيحتها");
+            start.leftResourceChange = new ResourceChange
             {
                 values = new[]
                 {
@@ -465,12 +424,19 @@ namespace Game.Scripts.Editor
                     new ResourceValue { resource = resAuthority, value = -5 }
                 }
             };
-            start.rightNextCard = branchJester;
-            SaveAsset(start, "Test_Intro_SpiritMother");
+            start.leftNextCard = branchJester;
+            start.rightChoiceLocalized = Loc("Dismiss her as a dream", "اطردها كحلم عابر");
+            start.rightResourceChange = new ResourceChange
+            {
+                values = new[]
+                {
+                    new ResourceValue { resource = resMorale, value = -10 },
+                    new ResourceValue { resource = resAuthority, value = 5 }
+                }
+            };
+            start.rightNextCard = branchChancellor;
+            SaveAsset(start, "Test_Intro_SpectralAwakening");
 
-            // ==========================================
-            // 10. PROMPT TEMPLATES & DATABASE
-            // ==========================================
             LlmPromptTemplates templates = ScriptableObject.CreateInstance<LlmPromptTemplates>();
             SaveAsset(templates, "LlmPromptTemplates_Test");
 
@@ -480,10 +446,11 @@ namespace Game.Scripts.Editor
             database.promptTemplates = templates;
             database.cards = new List<CardData>
             {
-                start, branchChancellor, branchJester,
-                motherScornReaction, chancellorGrimaceReaction, generalBaffledReaction,
-                warCouncil, treasuryAudit, seerPetition, postPetitionJester, climaxTrial,
-                endingVictory, endingTyrant,
+                start, branchJester, branchChancellor,
+                reactionMother, reactionJester,
+                generalScene, treasuryScene,
+                citizenPetition, rulingComment, seerPetition, climax,
+                endingGood, endingTyrant,
                 treasuryCollapseEnding, militaryCollapseEnding, authorityCollapseEnding, moraleCollapseEnding
             };
             database.speakers = new List<SpeakerData>
@@ -491,22 +458,21 @@ namespace Game.Scripts.Editor
                 spiritMother, jester, chancellor, general, treasuryAdviser, seer
             };
 
-            // Pre-calculate visual graph node positions for Card Graph Editor
             database.editorGraphPositions = new List<NarrativeDatabase.CardGraphPosition>
             {
                 new NarrativeDatabase.CardGraphPosition { card = start, position = new Vector2(100, 300) },
-                new NarrativeDatabase.CardGraphPosition { card = branchChancellor, position = new Vector2(450, 150) },
-                new NarrativeDatabase.CardGraphPosition { card = branchJester, position = new Vector2(450, 450) },
-                new NarrativeDatabase.CardGraphPosition { card = motherScornReaction, position = new Vector2(800, 150) },
-                new NarrativeDatabase.CardGraphPosition { card = chancellorGrimaceReaction, position = new Vector2(800, 300) },
-                new NarrativeDatabase.CardGraphPosition { card = generalBaffledReaction, position = new Vector2(800, 450) },
-                new NarrativeDatabase.CardGraphPosition { card = warCouncil, position = new Vector2(1150, 300) },
-                new NarrativeDatabase.CardGraphPosition { card = treasuryAudit, position = new Vector2(1500, 300) },
-                new NarrativeDatabase.CardGraphPosition { card = seerPetition, position = new Vector2(1850, 300) },
-                new NarrativeDatabase.CardGraphPosition { card = postPetitionJester, position = new Vector2(2200, 300) },
-                new NarrativeDatabase.CardGraphPosition { card = climaxTrial, position = new Vector2(2550, 300) },
-                new NarrativeDatabase.CardGraphPosition { card = endingVictory, position = new Vector2(2900, 150) },
-                new NarrativeDatabase.CardGraphPosition { card = endingTyrant, position = new Vector2(2900, 450) },
+                new NarrativeDatabase.CardGraphPosition { card = branchJester, position = new Vector2(450, 150) },
+                new NarrativeDatabase.CardGraphPosition { card = branchChancellor, position = new Vector2(450, 450) },
+                new NarrativeDatabase.CardGraphPosition { card = reactionMother, position = new Vector2(800, 150) },
+                new NarrativeDatabase.CardGraphPosition { card = reactionJester, position = new Vector2(800, 450) },
+                new NarrativeDatabase.CardGraphPosition { card = generalScene, position = new Vector2(1150, 300) },
+                new NarrativeDatabase.CardGraphPosition { card = treasuryScene, position = new Vector2(1500, 300) },
+                new NarrativeDatabase.CardGraphPosition { card = citizenPetition, position = new Vector2(1850, 300) },
+                new NarrativeDatabase.CardGraphPosition { card = rulingComment, position = new Vector2(2200, 300) },
+                new NarrativeDatabase.CardGraphPosition { card = seerPetition, position = new Vector2(2550, 300) },
+                new NarrativeDatabase.CardGraphPosition { card = climax, position = new Vector2(2900, 300) },
+                new NarrativeDatabase.CardGraphPosition { card = endingGood, position = new Vector2(3250, 150) },
+                new NarrativeDatabase.CardGraphPosition { card = endingTyrant, position = new Vector2(3250, 450) },
                 new NarrativeDatabase.CardGraphPosition { card = treasuryCollapseEnding, position = new Vector2(100, 700) },
                 new NarrativeDatabase.CardGraphPosition { card = militaryCollapseEnding, position = new Vector2(450, 700) },
                 new NarrativeDatabase.CardGraphPosition { card = authorityCollapseEnding, position = new Vector2(800, 700) },
@@ -525,10 +491,10 @@ namespace Game.Scripts.Editor
 
             database.editorResourcePositions = new List<NarrativeDatabase.ResourceGraphPosition>
             {
-                new NarrativeDatabase.ResourceGraphPosition { resource = resTreasury, position = new Vector2(1650, -200) },
-                new NarrativeDatabase.ResourceGraphPosition { resource = resMilitary, position = new Vector2(1900, -200) },
-                new NarrativeDatabase.ResourceGraphPosition { resource = resAuthority, position = new Vector2(2150, -200) },
-                new NarrativeDatabase.ResourceGraphPosition { resource = resMorale, position = new Vector2(2400, -200) }
+                new NarrativeDatabase.ResourceGraphPosition { resource = resTreasury, position = new Vector2(1900, -200) },
+                new NarrativeDatabase.ResourceGraphPosition { resource = resMilitary, position = new Vector2(2150, -200) },
+                new NarrativeDatabase.ResourceGraphPosition { resource = resAuthority, position = new Vector2(2400, -200) },
+                new NarrativeDatabase.ResourceGraphPosition { resource = resMorale, position = new Vector2(2650, -200) }
             };
 
             SaveAsset(database, "NarrativeDatabase_Test");
@@ -536,9 +502,9 @@ namespace Game.Scripts.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"[TestContentGenerator] Successfully generated full 'Wicked King' test narrative in '{OutputFolder}'.\n" +
+            Debug.Log($"[TestContentGenerator] Successfully generated 'The Wicked King' test narrative in '{OutputFolder}'.\n" +
                       $"Includes 6 Characters, 4 Resources with Warning/Collapse Endings, dynamic branching, " +
-                      $"LLM Reactions, Free-Form Petition, and full English/Arabic localization.");
+                      $"2 Free-Form Petitions (citizen + Seer), LLM Reactions, and full English/Arabic localization.");
         }
 
         private static LocalizedText Loc(string english, string arabic) =>

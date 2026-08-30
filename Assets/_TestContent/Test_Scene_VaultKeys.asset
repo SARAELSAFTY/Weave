@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Test_Scene_VaultKeys
+  m_EditorClassIdentifier: 
+  assetName: Test_Scene_VaultKeys
+  displayName: The Keys to the Vaults
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 86ddb2ff8d2793a4491b486d218c24cf, type: 2}
+  descriptionLocalized:
+    english: The Treasury Adviser presents a neat ledger. 'Sire, hand me sole control
+      of the vaults and I shall double your wealth. Trust me entirely - what is a
+      king's purse without a faithful keeper?'
+    arabic: "\u064A\u0642\u062F\u0645 \u0645\u0633\u062A\u0634\u0627\u0631 \u0627\u0644\u062E\u0632\u0627\u0646\u0629
+      \u062F\u0641\u062A\u0631\u064B\u0627 \u0645\u0631\u062A\u0628\u064B\u0627:
+      \xAB\u0645\u0648\u0644\u0627\u064A\u060C \u0633\u0644\u0645\u0646\u064A \u0648\u062D\u062F\u064A
+      \u0645\u0641\u0627\u062A\u064A\u062D \u0627\u0644\u062E\u0632\u0627\u0626\u0646
+      \u0648\u0633\u0623\u0636\u0627\u0639\u0641 \u062B\u0631\u0648\u062A\u0643.
+      \u062B\u0642 \u0628\u064A \u062B\u0642\u0629 \u0643\u0627\u0645\u0644\u0629
+      - \u0641\u0645\u0627 \u0643\u064A\u0633 \u0627\u0644\u0645\u0644\u0643 \u0628\u0644\u0627
+      \u0623\u0645\u064A\u0646 \u0648\u0641\u064A\u061F\xBB"
+  dayAdvance: 2
+  leftChoiceLocalized:
+    english: Give him sole control of the vaults
+    arabic: "\u0633\u0644\u0651\u0645\u0647 \u0648\u062D\u062F\u0647 \u0645\u0641\u0627\u062A\u064A\u062D
+      \u0627\u0644\u062E\u0632\u0627\u0626\u0646"
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 902ab88e3a90700468bdd056abc51b13, type: 2}
+      value: 25
+    - resource: {fileID: 11400000, guid: 9352dbb1ccbf9ea49beb3543a943b5bd, type: 2}
+      value: -15
+    - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
+      value: -10
+  leftNextCard: {fileID: 11400000, guid: 9380fa0571946554589f1aa222449c37, type: 2}
+  rightChoiceLocalized:
+    english: Limit his power with oversight
+    arabic: "\u0642\u064A\u0651\u062F \u0633\u0644\u0637\u062A\u0647 \u0628\u0631\u0642\u0627\u0628\u0629
+      \u0635\u0627\u0631\u0645\u0629"
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 902ab88e3a90700468bdd056abc51b13, type: 2}
+      value: -10
+    - resource: {fileID: 11400000, guid: 9352dbb1ccbf9ea49beb3543a943b5bd, type: 2}
+      value: 15
+    - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
+      value: 10
+  rightNextCard: {fileID: 11400000, guid: 9380fa0571946554589f1aa222449c37, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  continueNextCard: {fileID: 0}

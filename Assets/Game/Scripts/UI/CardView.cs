@@ -86,7 +86,7 @@ namespace Game.Scripts.UI
             RtlTextHelper.Configure(speakerNameText);
             if (petitionInputField.textComponent != null)
             {
-                RtlTextHelper.Configure(petitionInputField.textComponent);
+                RtlTextHelper.EnsureRtlInputText(petitionInputField);
             }
 
             restartButton.gameObject.SetActive(false);
@@ -95,6 +95,7 @@ namespace Game.Scripts.UI
             petitionInputRoot.SetActive(false);
             petitionSubmitButton.onClick.AddListener(RequestPetitionSubmit);
             petitionInputField.onValueChanged.AddListener(OnPetitionInputChanged);
+            petitionInputField.onSubmit.AddListener(_ => RequestPetitionSubmit());
 
             if (petitionConfirmButton == null)
             {

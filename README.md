@@ -77,7 +77,7 @@ PlayerChoiceInput ──► GameManager ──► NarrativeRunner (card progress
 | `SpeakerData` | Portrait, localized display name, and the LLM persona prompt |
 | `ResourceData` | Starting value, warning threshold/speaker/cooldown, collapse threshold, localized name |
 | `ResourceCatalog` | Resource list + authored fallback ending card per collapse condition |
-| `LlmPromptTemplates` | All shared system instructions and default seed prompts (single source of truth) |
+| `LlmPromptTemplates` | All shared system instructions, language requirements, seed prompts, and the single-turn user message (single source of truth, fully Inspector-editable) |
 | `LlmSettings` | Model, temperature, token limits, history depths, petition budgets, timeouts |
 
 All content assets share `NamedGameAsset` identity: an author-facing **Asset Name (ID)** and a player-facing **Display Name**, plus a localized display name. Editing the Asset Name auto-renames the `.asset` file.
@@ -103,7 +103,7 @@ All requests flow through `LlmReactionClient` → the Cloudflare Worker proxy in
 
 - **Secret isolation** — the client (desktop or WebGL) never holds the Groq API key; the proxy attaches `GROQ_API_KEY` server-side.
 - **Abuse protection** — the proxy enforces `POST`-only, body-size limits, and CORS.
-- **Prompt pipeline** — `SpeakerPromptBuilder` composes every system prompt from `LlmPromptTemplates` blocks: system instructions → language requirement → persona → situation (seed) → kingdom state snapshot → valid resources/terminology. Per-card seed overrides take priority over the defaults.
+- **Prompt pipeline** — every static prompt fragment (system instructions, language requirements, the single-turn user message) lives Inspector-editable in `LlmPromptTemplates`; `SpeakerPromptBuilder` composes each system prompt from those blocks: system instructions → language requirement → persona → situation (seed) → kingdom state snapshot → resources (valid names, delta range, Arabic terminology). Per-card seed overrides take priority over the defaults. Prompts only say what to *say* — mechanical enforcement (delta clamping, resource-name matching, fail-closed phases, Arabic-script cleanup) lives in code.
 - **JSON contract** — petition turns run in Groq JSON mode and must return `{ phase, reaction, resourceChanges, historyTag, isSpam }` matching `PetitionResolution`. The field names in `LlmPromptTemplates.petitionSystemInstructions` and the C# class must stay in sync.
 - **Response hygiene** — responses are stripped of `<think>` blocks, leaked JSON, and stage directions; Arabic responses pass `LlmTextSanitizer` so only Arabic script survives.
 - **Graceful degradation** — every LLM surface (reactions, warnings, petition openings/turns, epilogues) has a localized fallback for missing clients, network errors, rate limits (HTTP 429 → retry cooldown), and empty responses.
@@ -160,7 +160,6 @@ Open **Weave → Card Graph**, then select or create a `NarrativeDatabase`:
 │   ├── _TestContent/               Generated sample story (regenerate freely)
 │   └── Gentleland/                 Steampunk UI asset pack (third-party)
 ├── proxy/                          Cloudflare Worker LLM proxy (Wrangler)
-├── WEAVE_AUDIT_REPORT.md           Codebase audit findings and cleanup log
 └── README.md
 ```
 

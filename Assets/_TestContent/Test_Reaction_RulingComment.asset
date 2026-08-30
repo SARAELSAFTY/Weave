@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Test_Reaction_JesterReflection
+  m_Name: Test_Reaction_RulingComment
   m_EditorClassIdentifier: 
-  assetName: Test_Reaction_JesterReflection
-  displayName: A Brother's Warning
+  assetName: Test_Reaction_RulingComment
+  displayName: The Court Weighs the Ruling
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 11400000, guid: 8ae3b499470a8134a8246588163389f3, type: 2}
+  speaker: {fileID: 11400000, guid: 9056cff22f8660e4c88d97f7d7f6548b, type: 2}
   descriptionLocalized:
     english: 
     arabic: 
@@ -35,9 +35,7 @@ MonoBehaviour:
     values: []
   rightNextCard: {fileID: 0}
   isLlmReactionCard: 1
-  reactionSeedOverride: React playfully to the ruler's recent decision regarding
-    the Seer's prophecy. Remind your half-brother in a clever, brotherly riddle that
-    gold cannot buy a soul, but wisdom might save a crown.
+  reactionSeedOverride: 
   isPetitionCard: 0
   petitionSeedOverride: 
-  continueNextCard: {fileID: 11400000, guid: da181440820f4f4418590b721b171642, type: 2}
+  continueNextCard: {fileID: 11400000, guid: 61fbf0b323f666346aa4a680fed2b91e, type: 2}

@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Test_Reaction_GeneralBaffled
+  m_Name: Test_Reaction_FoolWarning
   m_EditorClassIdentifier: 
-  assetName: Test_Reaction_GeneralBaffled
-  displayName: A General's Confusion
+  assetName: Test_Reaction_FoolWarning
+  displayName: The Fool's Warning
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 11400000, guid: da796e51b6a4e4b40852385f9741f737, type: 2}
+  speaker: {fileID: 11400000, guid: 8ae3b499470a8134a8246588163389f3, type: 2}
   descriptionLocalized:
     english: 
     arabic: 
@@ -35,8 +35,7 @@ MonoBehaviour:
     values: []
   rightNextCard: {fileID: 0}
   isLlmReactionCard: 1
-  reactionSeedOverride: Express booming confusion at the king's bizarre decision,
-    comparing it to an unorthodox flank maneuver that defies all battlefield doctrine.
+  reactionSeedOverride: 
   isPetitionCard: 0
   petitionSeedOverride: 
-  continueNextCard: {fileID: 11400000, guid: 9461369e1a7df9743a430378fecc321c, type: 2}
+  continueNextCard: {fileID: 11400000, guid: d96db6e9e709ea54bbfe6cccce085704, type: 2}

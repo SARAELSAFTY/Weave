@@ -36,11 +36,18 @@ namespace Game.Scripts.Editor
             EditorGUILayout.Space(8);
 
             SerializedProperty speakerProp = serializedObject.FindProperty("speaker");
-            EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker", "Character speaking this card. Required for narrative run execution."));
+            SerializedProperty petitionerSourceProp = serializedObject.FindProperty("petitionerSource");
+            bool usesGeneratedCommoner = isPetitionProp.boolValue && petitionerSourceProp != null &&
+                                         petitionerSourceProp.enumValueIndex == (int)PetitionerSource.GeneratedCommoner;
 
-            if (speakerProp.objectReferenceValue == null)
+            // Show Speaker at the top for non-petition cards only.
+            if (!isPetitionProp.boolValue)
             {
-                EditorGUILayout.HelpBox("Every card must have a speaker assigned; the run will fail to start without one.", MessageType.Warning);
+                EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker", "Character speaking this card. Required for narrative run execution."));
+                if (speakerProp.objectReferenceValue == null)
+                {
+                    EditorGUILayout.HelpBox("Every card must have a speaker assigned; the run will fail to start without one.", MessageType.Warning);
+                }
             }
 
             if (!isLlmProp.boolValue && !isPetitionProp.boolValue)
@@ -108,6 +115,31 @@ namespace Game.Scripts.Editor
             }
             else if (isPetitionProp.boolValue)
             {
+                EditorGUILayout.PropertyField(petitionerSourceProp, new GUIContent(
+                    "Petitioner Source",
+                    "Generated Commoner invents a temporary common subject (new name, trade, problem) each audience " +
+                    "and discards it afterwards. Defined Speaker uses the speaker assigned below and lets the AI " +
+                    "craft a problem suited to that character."));
+
+                if (usesGeneratedCommoner)
+                {
+                    EditorGUILayout.HelpBox("A temporary common subject will be generated for each audience; no speaker asset is needed.", MessageType.Info);
+                }
+                else
+                {
+                    // Defined Speaker — show the Speaker field here, in context.
+                    EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker", "The noble or character bringing this petition."));
+                    SpeakerData definedSpeaker = speakerProp.objectReferenceValue as SpeakerData;
+                    if (definedSpeaker == null)
+                    {
+                        EditorGUILayout.HelpBox("Assign a speaker asset for Defined Speaker mode.", MessageType.Warning);
+                    }
+                    else if (string.IsNullOrWhiteSpace(definedSpeaker.llmPersonaPrompt))
+                    {
+                        EditorGUILayout.HelpBox($"Speaker '{definedSpeaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
+                    }
+                }
+
                 SerializedProperty petitionSeedOverrideProp = serializedObject.FindProperty("petitionSeedOverride");
                 EditorGUILayout.PropertyField(petitionSeedOverrideProp, new GUIContent(
                     "Petition Seed Override",
@@ -120,12 +152,6 @@ namespace Game.Scripts.Editor
                         : "This card uses the global petition seed from LlmPromptTemplates.defaultPetitionSeedPrompt")
                     + " for both the opening announcement and every turn. If a turn request fails, the player can retry.",
                     MessageType.Info);
-
-                SpeakerData speaker = speakerProp.objectReferenceValue as SpeakerData;
-                if (speaker != null && string.IsNullOrWhiteSpace(speaker.llmPersonaPrompt))
-                {
-                    EditorGUILayout.HelpBox($"Speaker '{speaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
-                }
 
                 EditorGUILayout.Space(6);
                 SerializedProperty continueNextCardProp = serializedObject.FindProperty("continueNextCard");
@@ -160,6 +186,14 @@ namespace Game.Scripts.Editor
 
                 SerializedProperty rightNextCardProp = serializedObject.FindProperty("rightNextCard");
                 EditorGUILayout.PropertyField(rightNextCardProp, new GUIContent("Right Next Card"));
+
+                if (card.HasBrokenBranch)
+                {
+                    EditorGUILayout.HelpBox(
+                        "One branch has no next card. The run fails the moment the player swipes that way - " +
+                        "link a card or leave both sides empty to make this an ending.",
+                        MessageType.Error);
+                }
             }
 
             if (GUI.changed)

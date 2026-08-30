@@ -26,14 +26,14 @@ namespace Game.Scripts.Runtime.Llm
             proxyUrl = proxyUrlToUse;
         }
 
-        public void RequestReaction(string systemPrompt, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
+        public void RequestReaction(string systemPrompt, string singleTurnUserMessage, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
             if (!TryValidateConfig(onFailure))
             {
                 return;
             }
 
-            StartCoroutine(RequestRoutine(systemPrompt, language, onSuccess, onFailure, maxTokensOverride));
+            StartCoroutine(RequestRoutine(systemPrompt, singleTurnUserMessage, language, onSuccess, onFailure, maxTokensOverride));
         }
 
         /// <summary>
@@ -101,12 +101,12 @@ namespace Game.Scripts.Runtime.Llm
                 onFailure);
         }
 
-        private IEnumerator RequestRoutine(string systemPrompt, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
+        private IEnumerator RequestRoutine(string systemPrompt, string singleTurnUserMessage, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
             string jsonPayload;
             try
             {
-                jsonPayload = BuildJsonPayload(systemPrompt, maxTokensOverride);
+                jsonPayload = BuildJsonPayload(systemPrompt, singleTurnUserMessage, maxTokensOverride);
             }
             catch (Exception exception)
             {
@@ -162,7 +162,7 @@ namespace Game.Scripts.Runtime.Llm
             }
         }
 
-        private string BuildJsonPayload(string systemPrompt, int? maxTokensOverride = null)
+        private string BuildJsonPayload(string systemPrompt, string singleTurnUserMessage, int? maxTokensOverride = null)
         {
             int tokens = maxTokensOverride.HasValue ? maxTokensOverride.Value : settings.maxTokensPerResponse;
             GroqApiRequest request = new GroqApiRequest
@@ -174,7 +174,10 @@ namespace Game.Scripts.Runtime.Llm
             };
 
             request.messages.Add(new GroqApiMessage { role = "system", content = systemPrompt });
-            request.messages.Add(new GroqApiMessage { role = "user", content = "Respond to the situation above." });
+            if (!string.IsNullOrWhiteSpace(singleTurnUserMessage))
+            {
+                request.messages.Add(new GroqApiMessage { role = "user", content = singleTurnUserMessage });
+            }
 
             return JsonUtility.ToJson(request);
         }

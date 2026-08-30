@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Test_Branch_FoolsBargain
+  m_EditorClassIdentifier: 
+  assetName: Test_Branch_FoolsBargain
+  displayName: The Fool's Bargain
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 8ae3b499470a8134a8246588163389f3, type: 2}
+  descriptionLocalized:
+    english: The Jester cartwheels in, bells jingling. 'Brother-king! The granary
+      rats are fat and the people are thin - so feed the people from your own stores!
+      A king who eats his pride never starves his realm.'
+    arabic: "\u064A\u062A\u0634\u0642\u0644\u0628 \u0627\u0644\u0645\u0647\u0631\u062C
+      \u062F\u0627\u062E\u0644\u064B\u0627 \u0648\u0623\u062C\u0631\u0627\u0633\u0647
+      \u062A\u0631\u0646: \xAB\u0623\u062E\u064A \u0627\u0644\u0645\u0644\u0643!
+      \u062C\u0631\u0630\u0627\u0646 \u0627\u0644\u0645\u062E\u0627\u0632\u0646 \u0633\u0645\u064A\u0646\u0629
+      \u0648\u0627\u0644\u0634\u0639\u0628 \u0647\u0632\u064A\u0644 - \u0641\u0623\u0637\u0639\u0645
+      \u0627\u0644\u0634\u0639\u0628 \u0645\u0646 \u0645\u062E\u0627\u0632\u0646\u0643!
+      \u0641\u0627\u0644\u0645\u0644\u0643 \u0627\u0644\u0630\u064A \u064A\u0623\u0643\u0644
+      \u0643\u0628\u0631\u064A\u0627\u0621\u0647 \u0644\u0627 \u064A\u064F\u062C\u064A\u0639
+      \u0645\u0645\u0644\u0643\u062A\u0647\xBB."
+  dayAdvance: 2
+  leftChoiceLocalized:
+    english: Feed the people from the royal stores
+    arabic: "\u0623\u0637\u0639\u0645 \u0627\u0644\u0634\u0639\u0628 \u0645\u0646
+      \u0627\u0644\u0645\u062E\u0627\u0632\u0646 \u0627\u0644\u0645\u0644\u0643\u064A\u0629"
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 902ab88e3a90700468bdd056abc51b13, type: 2}
+      value: -10
+    - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
+      value: 15
+    - resource: {fileID: 11400000, guid: 9352dbb1ccbf9ea49beb3543a943b5bd, type: 2}
+      value: -5
+  leftNextCard: {fileID: 11400000, guid: 339e8c83c4cdc184b9e5ddfd81f4a1a9, type: 2}
+  rightChoiceLocalized:
+    english: Have the fool dragged out
+    arabic: "\u0627\u0637\u0631\u062F\u0648\u0627 \u0647\u0630\u0627 \u0627\u0644\u0623\u062D\u0645\u0642
+      \u062E\u0627\u0631\u062C\u064B\u0627"
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 902ab88e3a90700468bdd056abc51b13, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: f8a9c6a34e598c74fb08c0211c6bdbe1, type: 2}
+      value: -10
+    - resource: {fileID: 11400000, guid: 9352dbb1ccbf9ea49beb3543a943b5bd, type: 2}
+      value: 5
+  rightNextCard: {fileID: 11400000, guid: 339e8c83c4cdc184b9e5ddfd81f4a1a9, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  continueNextCard: {fileID: 0}

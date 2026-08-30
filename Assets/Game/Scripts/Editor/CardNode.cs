@@ -107,7 +107,13 @@ namespace Game.Scripts.Editor
                     "Petition card - player types free-form commands resolved by AI."));
             }
 
-            if (card.speaker == null)
+            if (card.isPetitionCard && card.petitionerSource == PetitionerSource.GeneratedCommoner)
+            {
+                badges.Add(MakeBadge("COMMONER",
+                    new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f),
+                    "Petitioner is generated fresh each audience - no speaker asset needed."));
+            }
+            else if (card.RequiresSpeaker && card.speaker == null)
             {
                 badges.Add(MakeBadge("No Speaker",
                     new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
@@ -118,6 +124,13 @@ namespace Game.Scripts.Editor
                 badges.Add(MakeBadge("No Speaker Persona",
                     new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
                     $"Speaker '{card.speaker.DisplayName}' has no Persona Prompt authored, so this reaction will have no persona."));
+            }
+
+            if (card.HasBrokenBranch)
+            {
+                badges.Add(MakeBadge("DEAD END",
+                    new Color(1.0f, 0.45f, 0.45f), new Color(0.45f, 0.10f, 0.10f),
+                    "One branch has no next card - swiping that way will fail the run. Link it or remove the choice."));
             }
 
             if (card.IsEnding)

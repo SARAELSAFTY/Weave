@@ -47,7 +47,17 @@ namespace Game.Scripts.Localization
         {
             if (Instance != null && Instance != this)
             {
-                Destroy(gameObject);
+                // A manager already exists (auto-created before scene load). Hand over any authored
+                // FontSettings so the Inspector assignment is honoured, then remove only THIS component.
+                // Never Destroy(gameObject) here - this component may sit on an essential object
+                // (e.g. GameManager) and destroying the host would break the game.
+                if (fontSettings != null)
+                {
+                    Instance.fontSettings = fontSettings;
+                    Instance.fontSettings.EnsureFallbackRegistered();
+                }
+
+                Destroy(this);
                 return;
             }
 
@@ -62,7 +72,6 @@ namespace Game.Scripts.Localization
             {
                 fontSettings.EnsureFallbackRegistered();
             }
-
         }
 
         private void OnDestroy()

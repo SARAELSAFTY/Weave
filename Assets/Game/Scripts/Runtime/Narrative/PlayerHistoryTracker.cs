@@ -67,22 +67,19 @@ namespace Game.Scripts.Runtime.Narrative
 
         public string GetResourceSummary(GameLanguage language = GameLanguage.English)
         {
-            StringBuilder resourceSummary = new StringBuilder();
-            if (catalog != null && resourceState != null)
+            if (catalog == null || resourceState == null)
             {
-                for (int i = 0; i < catalog.resources.Count; i++)
-                {
-                    ResourceData resourceDefinition = catalog.resources[i];
-                    if (resourceDefinition == null) continue;
-
-                    resourceSummary.Append($"{resourceDefinition.GetDisplayName(language)}: {resourceState.Get(resourceDefinition)}");
-                    if (i < catalog.resources.Count - 1)
-                    {
-                        resourceSummary.Append(", ");
-                    }
-                }
+                return string.Empty;
             }
-            return resourceSummary.ToString();
+
+            List<string> entries = new List<string>();
+            foreach (ResourceData resourceDefinition in catalog.resources)
+            {
+                if (resourceDefinition == null) continue;
+                entries.Add($"{resourceDefinition.GetDisplayName(language)}: {resourceState.Get(resourceDefinition)}");
+            }
+
+            return string.Join(", ", entries);
         }
 
         public string GetFullHistorySummary() =>
@@ -93,17 +90,29 @@ namespace Game.Scripts.Runtime.Narrative
             int day = narrativeRunner != null ? narrativeRunner.Day : 1;
             string resourceSummary = GetResourceSummary(language);
 
-            return $"Current Day: {day}\n" +
-                   $"Kingdom Resources -> {resourceSummary}\n" +
-                   $"Recent Narrative History: {GetRecentEntries(narrativeHistoryEntries, narrativeHistoryEntryCount)}\n" +
-                   $"Completed Petition Conversations: {GetRecentEntries(completedPetitionTranscripts, petitionTranscriptCount)}";
+            StringBuilder snapshot = new StringBuilder();
+            snapshot.Append($"Current Day: {day}\nKingdom Resources -> {resourceSummary}");
+
+            string recentHistory = GetRecentEntries(narrativeHistoryEntries, narrativeHistoryEntryCount);
+            if (recentHistory != null)
+            {
+                snapshot.Append($"\nRecent Narrative History: {recentHistory}");
+            }
+
+            string petitions = GetRecentEntries(completedPetitionTranscripts, petitionTranscriptCount);
+            if (petitions != null)
+            {
+                snapshot.Append($"\nCompleted Petition Conversations: {petitions}");
+            }
+
+            return snapshot.ToString();
         }
 
         private static string GetRecentEntries(List<string> entries, int count)
         {
             if (count <= 0 || entries.Count == 0)
             {
-                return "None";
+                return null;
             }
 
             int firstIndex = System.Math.Max(0, entries.Count - count);

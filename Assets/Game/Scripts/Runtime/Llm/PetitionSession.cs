@@ -41,7 +41,7 @@ namespace Game.Scripts.Runtime.Llm
             string situationalPrompt,
             IReadOnlyList<ResourceData> validResources,
             int clampMagnitude,
-            string systemInstructionsTemplate,
+            LlmPromptTemplates templates,
             GameLanguage language = GameLanguage.English)
         {
             LastProposal = null;
@@ -49,7 +49,7 @@ namespace Game.Scripts.Runtime.Llm
 
             string systemPrompt = SpeakerPromptBuilder.BuildPetitionTurnPrompt(
                 speaker, gameStateSnapshot, situationalPrompt, validResources,
-                clampMagnitude, systemInstructionsTemplate, language);
+                clampMagnitude, templates, language);
 
             List<GroqApiMessage> messages = new List<GroqApiMessage>(history.Count + 2)
             {

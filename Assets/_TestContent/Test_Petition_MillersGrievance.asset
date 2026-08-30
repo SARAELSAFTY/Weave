@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
-  m_Name: Test_Reaction_MotherScorn
+  m_Name: Test_Petition_MillersGrievance
   m_EditorClassIdentifier: 
-  assetName: Test_Reaction_MotherScorn
-  displayName: A Mother's Scorn
+  assetName: Test_Petition_MillersGrievance
+  displayName: A Subject's Grievance
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 11400000, guid: e88d1e153d9a35d4bae59abf669e4a93, type: 2}
+  speaker: {fileID: 11400000, guid: da796e51b6a4e4b40852385f9741f737, type: 2}
   descriptionLocalized:
     english: 
     arabic: 
@@ -34,10 +34,9 @@ MonoBehaviour:
   rightResourceChange:
     values: []
   rightNextCard: {fileID: 0}
-  isLlmReactionCard: 1
-  reactionSeedOverride: Admonish your spoiled royal son for his reckless, self-indulgent
-    choice. Remind him with haunting sorrow that kings who indulge their vanity build
-    their own gallows.
-  isPetitionCard: 0
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 1
   petitionSeedOverride: 
-  continueNextCard: {fileID: 11400000, guid: 9461369e1a7df9743a430378fecc321c, type: 2}
+  petitionerSource: 0
+  continueNextCard: {fileID: 11400000, guid: faf7b05b5e472e844877c25bceaf8d14, type: 2}
