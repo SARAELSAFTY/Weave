@@ -17,13 +17,17 @@ namespace Game.Scripts.UI
         [SerializeField, Min(0.05f), Tooltip("Seconds for the join-in / ease-out tween.")]
         private float joinDuration = 0.25f;
 
-        [SerializeField, Min(0.05f), Tooltip("Seconds for the confirm toss.")]
-        private float confirmDuration = 0.5f;
+        [SerializeField, Min(0.05f), Tooltip("Seconds for the confirm toss (dip, then fly off).")]
+        private float confirmDuration = 0.8f;
+
+        [SerializeField, Range(0.1f, 0.9f), Tooltip("Share of the confirm toss spent dipping before the upward flight.")]
+        private float confirmDipFraction = 0.45f;
 
         private struct SideMotion
         {
             public Vector2 joinOffset;
             public float joinTilt;
+            public Vector2 dipOffset;
             public Vector2 dismissOffset;
             public float dismissTilt;
         }
@@ -32,6 +36,7 @@ namespace Game.Scripts.UI
         {
             joinOffset = new Vector2(482f, -125f),
             joinTilt = -30f,
+            dipOffset = new Vector2(-20f, -71f),
             dismissOffset = new Vector2(1534f, 1650f),
             dismissTilt = -42f
         };
@@ -40,6 +45,7 @@ namespace Game.Scripts.UI
         {
             joinOffset = new Vector2(-483f, -116f),
             joinTilt = 30f,
+            dipOffset = new Vector2(22f, -49f),
             dismissOffset = new Vector2(-809f, 1333f),
             dismissTilt = 31f
         };
@@ -52,6 +58,9 @@ namespace Game.Scripts.UI
         private float target;
         private bool dismissing;
         private Coroutine dismissRoutine;
+
+        /// <summary>True while the confirm toss is playing.</summary>
+        public bool IsDismissing => dismissing;
 
         private void Awake()
         {
@@ -134,19 +143,36 @@ namespace Game.Scripts.UI
         private IEnumerator ConfirmDismissRoutine()
         {
             Vector2 joined = parkPosition + motion.joinOffset;
+            Vector2 dip = joined + motion.dipOffset;
+            Vector2 end = joined + motion.dismissOffset;
             float elapsed = 0f;
+            float dipTime = confirmDuration * confirmDipFraction;
 
             while (elapsed < confirmDuration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / confirmDuration);
-                float eased = t * t;
-                cardTransform.anchoredPosition = Vector2.Lerp(joined, joined + motion.dismissOffset, eased);
-                cardTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(motion.joinTilt, motion.dismissTilt, eased));
+                Vector2 position;
+                if (elapsed < dipTime)
+                {
+                    float t = Mathf.Clamp01(elapsed / dipTime);
+                    float eased = 1f - (1f - t) * (1f - t);
+                    position = Vector2.Lerp(joined, dip, eased);
+                }
+                else
+                {
+                    float t = Mathf.Clamp01((elapsed - dipTime) / (confirmDuration - dipTime));
+                    float eased = t * t;
+                    position = Vector2.Lerp(dip, end, eased);
+                }
+
+                cardTransform.anchoredPosition = position;
+                cardTransform.localRotation = Quaternion.Euler(0f, 0f,
+                    Mathf.Lerp(motion.joinTilt, motion.dismissTilt, Mathf.Clamp01(elapsed / confirmDuration)));
                 yield return null;
             }
 
             canvasGroup.alpha = 0f;
+            dismissing = false;
             dismissRoutine = null;
         }
 

@@ -43,12 +43,21 @@ namespace Game.Scripts.Editor
             // Show Speaker at the top for non-petition cards only.
             if (!isPetitionProp.boolValue)
             {
-                EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker", "Character speaking this card. Required for narrative run execution."));
-                if (speakerProp.objectReferenceValue == null)
-                {
-                    EditorGUILayout.HelpBox("Every card must have a speaker assigned; the run will fail to start without one.", MessageType.Warning);
-                }
+                EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker", "Character speaking this card. Optional - leave empty for narrator/event cards."));
             }
+
+            EditorGUILayout.Space(6);
+            EditorGUILayout.LabelField("Card Visuals", EditorStyles.boldLabel);
+            SerializedProperty artModeProp = serializedObject.FindProperty("artMode");
+            EditorGUILayout.PropertyField(artModeProp, new GUIContent(
+                "Art Mode", "What art this card presents: the speaker's portrait, the Event Image, or nothing."));
+            if (artModeProp.enumValueIndex == (int)CardArtMode.EventImage)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("cardImage"), new GUIContent(
+                    "Event Image", "Illustration shown above the portrait area and card background."));
+            }
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("visualTemplate"), new GUIContent(
+                "Visual Template", "Complete card look (background + border). Leave empty to use the scene default."));
 
             if (!isLlmProp.boolValue && !isPetitionProp.boolValue)
             {

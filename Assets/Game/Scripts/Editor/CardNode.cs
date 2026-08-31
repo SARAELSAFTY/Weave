@@ -31,6 +31,8 @@ namespace Game.Scripts.Editor
 
         private readonly CardGraphView parentGraphView;
         private bool isStartCardCached;
+        private VisualElement metaRow;
+        private Label summaryLabel;
 
         protected override Object TargetAsset => Card;
         protected override string TargetId => Card != null ? Card.DisplayName : "Null Card";
@@ -113,17 +115,19 @@ namespace Game.Scripts.Editor
                     new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f),
                     "Petitioner is generated fresh each audience - no speaker asset needed."));
             }
-            else if (card.RequiresSpeaker && card.speaker == null)
-            {
-                badges.Add(MakeBadge("No Speaker",
-                    new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
-                    "Every card must have a speaker assigned - the run will fail to start without one."));
-            }
-            else if ((card.isLlmReactionCard || card.isPetitionCard) && string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
+            else if ((card.isLlmReactionCard || card.isPetitionCard) && card.speaker != null &&
+                     string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
             {
                 badges.Add(MakeBadge("No Speaker Persona",
                     new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
                     $"Speaker '{card.speaker.DisplayName}' has no Persona Prompt authored, so this reaction will have no persona."));
+            }
+
+            if (!card.isPetitionCard && card.speaker == null)
+            {
+                badges.Add(MakeBadge("NARRATOR",
+                    new Color(0.7f, 0.8f, 1f), new Color(0.15f, 0.25f, 0.45f),
+                    "No speaker assigned - presented as a narrator/event card."));
             }
 
             if (card.HasBrokenBranch)
@@ -157,7 +161,16 @@ namespace Game.Scripts.Editor
                 }
             };
 
-            body.Add(BuildMetaRow(card));
+            VisualElement meta = BuildMetaRow(card);
+            meta.style.display = DisplayStyle.None;
+            body.Add(meta);
+
+            summaryLabel = new Label(BuildSummary(card));
+            summaryLabel.style.fontSize = 10;
+            summaryLabel.style.color = new StyleColor(new Color(0.62f, 0.66f, 0.74f));
+            summaryLabel.style.whiteSpace = WhiteSpace.Normal;
+            summaryLabel.style.marginBottom = 4;
+            body.Add(summaryLabel);
 
             string previewText = card.isLlmReactionCard
                 ? BuildSeedPreview(card.reactionSeedOverride, "reaction")
@@ -180,32 +193,15 @@ namespace Game.Scripts.Editor
             {
                 style =
                 {
-                    flexDirection = FlexDirection.Row,
-                    justifyContent = Justify.SpaceBetween,
-                    alignItems = Align.Center,
+                    flexDirection = FlexDirection.Column,
                     marginBottom = 4
                 }
             };
 
-            VisualElement speakerContainer = new VisualElement
-            {
-                style =
-                {
-                    flexDirection = FlexDirection.Row,
-                    alignItems = Align.Center
-                }
-            };
-
-            Label speakerLabel = new Label("Speaker:");
-            speakerLabel.style.fontSize = 10;
-            speakerLabel.style.color = new StyleColor(new Color(0.7f, 0.75f, 0.9f));
-            speakerLabel.style.marginRight = 4;
-            speakerContainer.Add(speakerLabel);
-
             NarrativeDatabase db = parentGraphView?.Database;
             List<SpeakerData> speakerList = db?.speakers ?? new List<SpeakerData>();
 
-            List<string> choices = new List<string> { "(None)" };
+            List<string> choices = new List<string> { "(No Speaker)" };
             List<SpeakerData> choiceSpeakers = new List<SpeakerData> { null };
             int selectedIndex = 0;
             foreach (SpeakerData s in speakerList)
@@ -222,7 +218,6 @@ namespace Game.Scripts.Editor
             PopupField<string> speakerPopup = new PopupField<string>(choices, selectedIndex);
             speakerPopup.style.fontSize = 10;
             speakerPopup.style.height = 18;
-            speakerPopup.style.maxWidth = 110;
             speakerPopup.RegisterValueChangedCallback(evt =>
             {
                 int newIdx = choices.IndexOf(evt.newValue);
@@ -235,9 +230,66 @@ namespace Game.Scripts.Editor
                     parentGraphView?.Populate(parentGraphView.Database);
                 }
             });
+            row.Add(speakerPopup);
 
-            speakerContainer.Add(speakerPopup);
-            row.Add(speakerContainer);
+            List<CardVisualTemplate> templateAssets = new List<CardVisualTemplate>();
+            foreach (string guid in AssetDatabase.FindAssets("t:CardVisualTemplate"))
+            {
+                CardVisualTemplate loaded = AssetDatabase.LoadAssetAtPath<CardVisualTemplate>(AssetDatabase.GUIDToAssetPath(guid));
+                if (loaded != null)
+                {
+                    templateAssets.Add(loaded);
+                }
+            }
+
+            templateAssets.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
+
+            List<string> templateChoices = new List<string> { "(Default Look)" };
+            List<CardVisualTemplate> choiceTemplates = new List<CardVisualTemplate> { null };
+            int selectedTemplateIndex = 0;
+            foreach (CardVisualTemplate t in templateAssets)
+            {
+                templateChoices.Add(t.name);
+                choiceTemplates.Add(t);
+                if (card.visualTemplate == t)
+                {
+                    selectedTemplateIndex = templateChoices.Count - 1;
+                }
+            }
+
+            PopupField<string> templatePopup = new PopupField<string>(templateChoices, selectedTemplateIndex);
+            templatePopup.style.fontSize = 10;
+            templatePopup.style.height = 18;
+            templatePopup.RegisterValueChangedCallback(evt =>
+            {
+                int newIdx = templateChoices.IndexOf(evt.newValue);
+                CardVisualTemplate newTemplate = newIdx >= 0 && newIdx < choiceTemplates.Count ? choiceTemplates[newIdx] : null;
+                if (card.visualTemplate != newTemplate)
+                {
+                    Undo.RecordObject(card, "Assign Card Visual Template");
+                    card.visualTemplate = newTemplate;
+                    EditorUtility.SetDirty(card);
+                    parentGraphView?.Populate(parentGraphView.Database);
+                }
+            });
+            row.Add(templatePopup);
+
+            List<string> artChoices = new List<string> { "Art: Speaker", "Art: Image", "Art: None" };
+            PopupField<string> artPopup = new PopupField<string>(artChoices, (int)card.artMode);
+            artPopup.style.fontSize = 10;
+            artPopup.style.height = 18;
+            artPopup.RegisterValueChangedCallback(evt =>
+            {
+                CardArtMode newMode = (CardArtMode)artChoices.IndexOf(evt.newValue);
+                if (card.artMode != newMode)
+                {
+                    Undo.RecordObject(card, "Change Card Art Mode");
+                    card.artMode = newMode;
+                    EditorUtility.SetDirty(card);
+                    parentGraphView?.Populate(parentGraphView.Database);
+                }
+            });
+            row.Add(artPopup);
 
             if (card.dayAdvance > 0)
             {
@@ -247,7 +299,47 @@ namespace Game.Scripts.Editor
                 row.Add(dayLabel);
             }
 
+            metaRow = row;
             return row;
+        }
+
+        public override void OnSelected()
+        {
+            base.OnSelected();
+            if (metaRow != null)
+            {
+                metaRow.style.display = DisplayStyle.Flex;
+            }
+
+            if (summaryLabel != null)
+            {
+                summaryLabel.style.display = DisplayStyle.None;
+            }
+        }
+
+        public override void OnUnselected()
+        {
+            base.OnUnselected();
+            if (metaRow != null)
+            {
+                metaRow.style.display = DisplayStyle.None;
+            }
+
+            if (summaryLabel != null)
+            {
+                summaryLabel.text = BuildSummary(Card);
+                summaryLabel.style.display = DisplayStyle.Flex;
+            }
+        }
+
+        private static string BuildSummary(CardData card)
+        {
+            string speaker = card.speaker != null ? card.speaker.DisplayName : "No Speaker";
+            string look = card.visualTemplate != null ? card.visualTemplate.name : "Default Look";
+            string art = card.artMode == CardArtMode.EventImage ? "Art: Image"
+                : card.artMode == CardArtMode.None ? "Art: None"
+                : "Art: Speaker";
+            return Truncate($"{speaker}  ·  {look}  ·  {art}", 48, "");
         }
 
         private VisualElement BuildChoices(CardData card)

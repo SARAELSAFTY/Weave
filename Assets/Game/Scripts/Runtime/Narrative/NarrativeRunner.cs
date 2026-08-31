@@ -158,7 +158,6 @@ namespace Game.Scripts.Runtime.Narrative
                 return true;
             }
 
-            List<string> missingSpeakerCards = new List<string>();
             List<string> brokenBranchCards = new List<string>();
 
             foreach (CardData card in database.cards)
@@ -168,21 +167,10 @@ namespace Game.Scripts.Runtime.Narrative
                     continue;
                 }
 
-                if (card.RequiresSpeaker && card.speaker == null)
-                {
-                    missingSpeakerCards.Add(card.AssetName);
-                }
-
                 if (card.HasBrokenBranch)
                 {
                     brokenBranchCards.Add(card.AssetName);
                 }
-            }
-
-            if (missingSpeakerCards.Count > 0)
-            {
-                error = $"Every card needs a speaker (except Generated Commoner petitions). Missing on: {string.Join(", ", missingSpeakerCards)}.";
-                return false;
             }
 
             if (brokenBranchCards.Count > 0)

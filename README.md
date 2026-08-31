@@ -12,7 +12,7 @@ Content is authored as ScriptableObject assets and edited through a dedicated gr
 - **Free-form petitions** — type commands to a petitioner across multiple turns; negotiate until a proposal is made, then confirm or press on (with a spam-tolerance meter)
 - **Collapse epilogues** — when a resource collapses, a chronicler summarizes your reign from your actual decision history, with authored fallback cards
 - **Full English/Arabic localization** — RTL text shaping, per-language fonts, localized authored content and UI, and Arabic-sanitized LLM output
-- **Authoring tooling** — visual Card Graph editor, custom inspectors, an LLM prompt tester, and a one-click test story generator
+- **Authoring tooling** — visual Card Graph editor, custom inspectors, and an LLM prompt tester
 
 ## Requirements
 
@@ -31,9 +31,9 @@ The game remains playable without a configured proxy: authored cards and all res
 
 1. Open the repository folder in **Unity Hub** (Unity 6000.0.79f1).
 2. Open [`Assets/Game/Scenes/Game.unity`](Assets/Game/Scenes/Game.unity).
-3. Enter Play Mode — the scene is pre-wired to the generated sample story.
+3. Assign your `NarrativeDatabase` to the Game Manager, then enter Play Mode. The runner validates the graph on startup and refuses to start on broken wiring, so authoring mistakes surface immediately.
 
-To regenerate the sample content at any time, run **Weave → Generate Full Test Story**. It rebuilds the complete "Wicked King & The Royal Court" database under `Assets/_TestContent` (6 characters, 4 resources, 17 cards covering branching, reactions, petitions, warnings, and every ending type).
+Story content is authored as ScriptableObjects (see [Content model](#content-model)) and edited through the **Weave → Card Graph** window. The repository ships with card art and visual templates but no bundled story; create your own database under `Assets/Game/Data`.
 
 ### Controls
 
@@ -73,9 +73,10 @@ PlayerChoiceInput ──► GameManager ──► NarrativeRunner (card progress
 
 | Asset | Purpose |
 | --- | --- |
-| `CardData` | Story text, localized choices, resource changes, routing, and optional LLM behavior |
-| `SpeakerData` | Portrait, localized display name, and the LLM persona prompt |
-| `ResourceData` | Starting value, warning threshold/speaker/cooldown, collapse threshold, localized name |
+| `CardData` | Story text, localized choices, resource changes, routing, card art (portrait / illustration modes, per-card image, visual template), and optional LLM behavior |
+| `CardVisualTemplate` | Reusable background + border pair that cards can pick instead of individual sprites |
+| `SpeakerData` | Portrait, localized display name, and the LLM persona prompt (optional per card — speaker-less cards render as event cards) |
+| `ResourceData` | Starting value, warning threshold/speaker/cooldown, collapse threshold, HUD icon, localized name |
 | `ResourceCatalog` | Resource list + authored fallback ending card per collapse condition |
 | `LlmPromptTemplates` | All shared system instructions, language requirements, seed prompts, and the single-turn user message (single source of truth, fully Inspector-editable) |
 | `LlmSettings` | Model, temperature, token limits, history depths, petition budgets, timeouts |
@@ -125,7 +126,7 @@ Open **Weave → Card Graph**, then select or create a `NarrativeDatabase`:
 1. Create cards, speakers, a resource catalog, and resources from the toolbar or the right-click menu.
 2. Set the database's **Starting Card**.
 3. Connect cards through their ports: left/right for branching cards, `Continue` for LLM/petition cards. Resource→Collapse-Ending edges visualize fallback endings.
-4. Assign a speaker to every card — the runtime refuses to start otherwise.
+4. Assign a speaker where a card should speak — cards without one render as speaker-less event cards. Branching cards still need both outgoing links, or the runner refuses to start.
 5. Author resource changes per choice, warning settings per resource, and a collapse ending entry per collapsible resource.
 6. Optionally set per-card **Reaction/Petition Seed Overrides**; empty fields fall back to the `LlmPromptTemplates` defaults.
 7. Test prompts in **Weave → LLM Tester**, then Play Mode.
@@ -136,7 +137,6 @@ Open **Weave → Card Graph**, then select or create a `NarrativeDatabase`:
 | --- | --- |
 | **Weave → Card Graph** | Visual graph editor for cards, speakers, and resources (create, connect, delete, layout persistence) |
 | **Weave → LLM Tester** | Compose and send real prompts against your proxy without a full run |
-| **Weave → Generate Full Test Story** | Regenerate the complete bilingual sample story under `Assets/_TestContent` |
 | Custom inspectors | Card/Speaker/Resource editors with authoring guidance; `LlmSettings` model picker; `LocalizedLabel` preview buttons |
 
 ## Project Layout
@@ -145,19 +145,20 @@ Open **Weave → Card Graph**, then select or create a `NarrativeDatabase`:
 /
 ├── Assets/
 │   ├── Game/
-│   │   ├── Art/Cards/              Card background art
+│   │   ├── Art/Cards/              Card art sets (composites, borders, patterns)
+│   │   ├── Art/Characters/         Speaker portrait art
+│   │   ├── Content/CardTemplates/  Reusable CardVisualTemplate assets
 │   │   ├── Data/                   Authoring destination folders (Cards, Speakers, Resources)
 │   │   ├── Resources/              FontSettings.asset + bundled fonts (auto-loaded)
-│   │   ├── Scenes/Game.unity       Main scene (pre-wired to the sample story)
+│   │   ├── Scenes/Game.unity       Main scene
 │   │   └── Scripts/
 │   │       ├── Definitions/        ScriptableObject content types
-│   │       ├── Editor/             Card Graph editor, inspectors, tester, generators
+│   │       ├── Editor/             Card Graph editor, inspectors, and prompt tester
 │   │       ├── Input/              Player choice input (drag, touch, keyboard)
 │   │       ├── Localization/       Language manager, RTL helper, fonts, fallback strings
 │   │       ├── Runtime/Llm/        Proxy client, prompt builders, petitions, settings
 │   │       ├── Runtime/Narrative/  Runner, resources, warnings, history
 │   │       └── UI/                 Card view, HUD, menus, choice-card animation
-│   ├── _TestContent/               Generated sample story (regenerate freely)
 │   └── Gentleland/                 Steampunk UI asset pack (third-party)
 ├── proxy/                          Cloudflare Worker LLM proxy (Wrangler)
 └── README.md

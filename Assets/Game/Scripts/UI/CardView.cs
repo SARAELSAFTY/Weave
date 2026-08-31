@@ -16,6 +16,11 @@ namespace Game.Scripts.UI
         [SerializeField, Tooltip("Canvas group for card transparency.")] private CanvasGroup canvasGroup;
         [SerializeField, Tooltip("Character portrait image.")] private Image speakerPortrait;
         [SerializeField, Tooltip("Speaker character name text.")] private TMP_Text speakerNameText;
+        [SerializeField, Tooltip("Card background pattern image.")] private Image cardBackgroundImage;
+        [SerializeField, Tooltip("Card border frame overlay image.")] private Image cardBorderImage;
+        [SerializeField, Tooltip("Optional illustration overlay rendered above the portrait and card background.")] private Image cardIllustrationImage;
+        [SerializeField, Tooltip("Background pattern used when the shown card does not override it.")] private Sprite defaultCardBackground;
+        [SerializeField, Tooltip("Border frame used when the shown card does not override it.")] private Sprite defaultCardBorder;
 
         [Header("Ending")]
         [SerializeField, Tooltip("Restart button shown on game ending screen.")] private Button restartButton;
@@ -80,6 +85,16 @@ namespace Game.Scripts.UI
             homePosition = cardRectTransform.anchoredPosition;
             homeRotation = cardRectTransform.localRotation;
 
+            if (defaultCardBackground == null && cardBackgroundImage != null)
+            {
+                defaultCardBackground = cardBackgroundImage.sprite;
+            }
+
+            if (defaultCardBorder == null && cardBorderImage != null)
+            {
+                defaultCardBorder = cardBorderImage.sprite;
+            }
+
             RtlTextHelper.Configure(descriptionText);
             RtlTextHelper.Configure(leftChoiceText);
             RtlTextHelper.Configure(rightChoiceText);
@@ -137,7 +152,8 @@ namespace Game.Scripts.UI
             restartButton.gameObject.SetActive(false);
             HidePetitionInput();
 
-            ApplySpeaker(speaker);
+            ApplySpeaker(speaker, cardData);
+            ApplyCardVisuals(cardData);
             ApplyStaticCardText(cardData, useReactionFallbacks: false);
         }
 
@@ -153,7 +169,8 @@ namespace Game.Scripts.UI
             restartButton.gameObject.SetActive(false);
             HidePetitionInput();
 
-            ApplySpeaker(speaker);
+            ApplySpeaker(speaker, cardData);
+            ApplyCardVisuals(cardData);
             SetLabel(descriptionText, string.Empty);
             ApplyChoiceTexts(cardData, useReactionFallbacks: true);
         }
@@ -174,7 +191,8 @@ namespace Game.Scripts.UI
             SetLabel(leftChoiceText, string.Empty);
             SetLabel(rightChoiceText, string.Empty);
 
-            ApplySpeaker(speaker);
+            ApplySpeaker(speaker, cardData);
+            ApplyCardVisuals(cardData);
         }
 
         public void ConvertPetitionToNormalChoices(CardData cardData, string finalReactionText)
@@ -230,7 +248,8 @@ namespace Game.Scripts.UI
             SetLabel(leftChoiceText, string.Empty);
             SetLabel(rightChoiceText, string.Empty);
 
-            ApplySpeaker(speaker);
+            ApplySpeaker(speaker, cardData);
+            ApplyCardVisuals(cardData);
             restartButton.gameObject.SetActive(true);
         }
 
@@ -266,8 +285,25 @@ namespace Game.Scripts.UI
             }
             else
             {
-                leftChoiceCardAnimator?.SnapToPark();
-                rightChoiceCardAnimator?.SnapToPark();
+                if (leftChoiceCardAnimator != null && !leftChoiceCardAnimator.IsDismissing)
+                {
+                    leftChoiceCardAnimator.SnapToPark();
+                }
+
+                if (rightChoiceCardAnimator != null && !rightChoiceCardAnimator.IsDismissing)
+                {
+                    rightChoiceCardAnimator.SnapToPark();
+                }
+            }
+        }
+
+        /// <summary>Yields until any in-flight confirm toss has finished flying off.</summary>
+        public IEnumerator WaitForChoiceFlight()
+        {
+            while ((leftChoiceCardAnimator != null && leftChoiceCardAnimator.IsDismissing) ||
+                   (rightChoiceCardAnimator != null && rightChoiceCardAnimator.IsDismissing))
+            {
+                yield return null;
             }
         }
 
@@ -376,15 +412,16 @@ namespace Game.Scripts.UI
             RestartRequested?.Invoke();
         }
 
-        private void ApplySpeaker(SpeakerData speaker)
+        private void ApplySpeaker(SpeakerData speaker, CardData card)
         {
-            bool hasSpeaker = speaker != null;
+            CardArtMode mode = card != null ? card.artMode : CardArtMode.SpeakerPortrait;
+            bool hasPortrait = mode == CardArtMode.SpeakerPortrait && speaker != null && speaker.portrait != null;
 
-            speakerPortrait.gameObject.SetActive(hasSpeaker);
-            speakerPortrait.sprite = hasSpeaker ? speaker.portrait : null;
-            speakerPortrait.enabled = hasSpeaker && speaker.portrait != null;
+            speakerPortrait.gameObject.SetActive(hasPortrait);
+            speakerPortrait.sprite = hasPortrait ? speaker.portrait : null;
+            speakerPortrait.enabled = hasPortrait;
 
-            if (hasSpeaker)
+            if (speaker != null)
             {
                 speakerNameText.gameObject.SetActive(true);
                 SetLabel(speakerNameText, speaker.GetDisplayName(CurrentLanguage), TextFontCategory.SpeakerName);
@@ -393,6 +430,32 @@ namespace Game.Scripts.UI
             {
                 SetLabel(speakerNameText, string.Empty, TextFontCategory.SpeakerName);
                 speakerNameText.gameObject.SetActive(false);
+            }
+        }
+
+        private void ApplyCardVisuals(CardData card)
+        {
+            CardVisualTemplate template = card != null ? card.visualTemplate : null;
+
+            if (cardBackgroundImage != null)
+            {
+                cardBackgroundImage.sprite = template != null && template.background != null
+                    ? template.background
+                    : defaultCardBackground;
+            }
+
+            if (cardBorderImage != null)
+            {
+                Sprite border = template != null ? template.border : defaultCardBorder;
+                cardBorderImage.sprite = border;
+                cardBorderImage.enabled = border != null;
+            }
+
+            if (cardIllustrationImage != null)
+            {
+                bool showImage = card != null && card.artMode == CardArtMode.EventImage && card.cardImage != null;
+                cardIllustrationImage.sprite = showImage ? card.cardImage : null;
+                cardIllustrationImage.enabled = showImage;
             }
         }
 
@@ -451,7 +514,7 @@ namespace Game.Scripts.UI
                 RtlTextHelper.Apply(petitionInputField.textComponent, CurrentLanguage);
             }
 
-            ApplySpeaker(currentSpeaker);
+            ApplySpeaker(currentSpeaker, currentCardData);
 
             if (isPetitionCard)
             {

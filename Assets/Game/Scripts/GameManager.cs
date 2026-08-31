@@ -20,6 +20,8 @@ namespace Game.Scripts
         [SerializeField, Min(0.05f), Tooltip("Card exit animation duration in seconds.")] private float cardExitDuration = 0.25f;
         [SerializeField, Tooltip("UI text element showing the current day.")] private DayDisplay dayDisplay;
         [SerializeField, Tooltip("Start screen shown before a run begins.")] private StartScreenView startScreenView;
+        [SerializeField, Tooltip("HUD panels (resource bar, day badge) hidden while the start screen is up.")]
+        private GameObject[] hudObjects;
         [SerializeField, Tooltip("Pause overlay shown during a run.")] private PauseMenuView pauseMenuView;
         [SerializeField, Tooltip("Shared chat service for LLM reaction cards.")] private LlmReactionClient llmReactionClient;
         [SerializeField, Tooltip("Global LLM settings.")] private LlmSettings llmSettings;
@@ -91,6 +93,7 @@ namespace Game.Scripts
             narrativeRunner.DayChanged += HandleDayChanged;
             historyTracker = new PlayerHistoryTracker(resourceState, narrativeRunner, narrativeDatabase.resourceCatalog);
             resourceWarningMonitor = new ResourceWarningMonitor(narrativeDatabase.resourceCatalog, resourceState);
+            SetHudActive(false);
 
             if (!narrativeRunner.StartRun(out string error))
             {
@@ -174,6 +177,22 @@ namespace Game.Scripts
             }
         }
 
+        private void SetHudActive(bool active)
+        {
+            if (hudObjects == null)
+            {
+                return;
+            }
+
+            foreach (GameObject hud in hudObjects)
+            {
+                if (hud != null)
+                {
+                    hud.SetActive(active);
+                }
+            }
+        }
+
         private void BeginRun()
         {
             if (!enabled)
@@ -182,6 +201,7 @@ namespace Game.Scripts
             }
 
             startScreenView.Hide();
+            SetHudActive(true);
             runInProgress = true;
             showingResourceWarning = false;
             resourceWarningMonitor?.Reset();
@@ -245,6 +265,7 @@ namespace Game.Scripts
             showingResourceWarning = false;
             cardView.PlayConfirmAnimation(choseRight);
             yield return cardView.AnimateCardExit(choseRight, cardExitDuration);
+            yield return cardView.WaitForChoiceFlight();
             ShowCurrentCard();
         }
 
@@ -274,6 +295,7 @@ namespace Game.Scripts
             }
 
             yield return cardView.AnimateCardExit(choseRight, cardExitDuration);
+            yield return cardView.WaitForChoiceFlight();
             HandleStepResult(result);
         }
 

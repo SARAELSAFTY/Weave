@@ -11,11 +11,19 @@ namespace Game.Scripts.Definitions
         DefinedSpeaker = 1
     }
 
+    /// <summary>What art the card presents: the speaker's portrait, the event image, or nothing.</summary>
+    public enum CardArtMode
+    {
+        SpeakerPortrait = 0,
+        EventImage = 1,
+        None = 2
+    }
+
     [CreateAssetMenu(fileName = "Scene_Speaker_Slug", menuName = "Weave/Card Data", order = 0)]
     public class CardData : NamedGameAsset
     {
         [Header("Speaker")]
-        [Tooltip("Character speaking this card. Required for run execution.")]
+        [Tooltip("Character speaking this card. Optional - leave empty for narrator/event cards.")]
         public SpeakerData speaker;
 
         [Header("Card Content")]
@@ -69,14 +77,18 @@ namespace Game.Scripts.Definitions
         [Tooltip("Card to advance to upon swipe/resolution (used when isLlmReactionCard or isPetitionCard is true).")]
         public CardData continueNextCard;
 
+        [Header("Card Visuals")]
+        [Tooltip("What art this card presents: the speaker's portrait, the Event Image, or nothing. The speaker portrait can be hidden even when the speaker has one.")]
+        public CardArtMode artMode = CardArtMode.SpeakerPortrait;
+
+        [Tooltip("Illustration shown above the portrait area and card background when Art Mode is Event Image.")]
+        public Sprite cardImage;
+
+        [Tooltip("Visual template defining the complete card look (background + border). Leave empty to use the scene default.")]
+        public CardVisualTemplate visualTemplate;
+
         /// <summary>True when routing uses <see cref="continueNextCard"/> instead of left/right branches.</summary>
         public bool UsesContinueExit => isLlmReactionCard || isPetitionCard;
-
-        /// <summary>
-        /// False only for petitions whose petitioner is generated on the fly; every other card must
-        /// have a speaker for the run to execute.
-        /// </summary>
-        public bool RequiresSpeaker => !(isPetitionCard && petitionerSource == PetitionerSource.GeneratedCommoner);
 
         /// <summary>True when there is no valid outgoing link (terminal card).</summary>
         public bool IsEnding => UsesContinueExit

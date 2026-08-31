@@ -4,6 +4,7 @@ using Game.Scripts.Localization;
 using Game.Scripts.Runtime.Narrative;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Game.Scripts.UI
 {
@@ -14,6 +15,7 @@ namespace Game.Scripts.UI
         {
             public ResourceData resource;
             public TMP_Text label;
+            public Image icon;
         }
 
         [SerializeField] private ResourceState resourceState;
@@ -37,7 +39,21 @@ namespace Game.Scripts.UI
             foreach (LabelBinding binding in labels)
             {
                 RtlTextHelper.Configure(binding.label);
+                ApplyIcon(binding);
             }
+        }
+
+        private static void ApplyIcon(LabelBinding binding)
+        {
+            if (binding.icon == null)
+            {
+                return;
+            }
+
+            binding.icon.preserveAspect = true;
+            binding.icon.raycastTarget = false;
+            binding.icon.sprite = binding.resource != null ? binding.resource.icon : null;
+            binding.icon.enabled = binding.icon.sprite != null;
         }
 
         protected override void OnEnable()
