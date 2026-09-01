@@ -5,15 +5,15 @@ using UnityEngine;
 
 namespace Game.Scripts.Localization
 {
+    /// <summary>Controls how font alignment is applied when resolving fonts from <see cref="FontSettings"/>.</summary>
     public enum FontAlignmentMode
     {
-        [Tooltip("Preserve the original alignment set in the Editor / Prefab")]
         PreserveEditorAlignment = 0,
 
-        [Tooltip("Force all text components to Middle Center alignment")]
         ForceMiddleCenter = 1
     }
 
+    /// <summary>Logical text categories that can each map to a distinct font override.</summary>
     public enum TextFontCategory
     {
         Default = 0,
@@ -24,14 +24,24 @@ namespace Game.Scripts.Localization
         Choice = 5
     }
 
+    /// <summary>Pairs an English and Arabic font for a single text category, with an optional override flag.</summary>
     [Serializable]
     public class CategoryFontPair
     {
-        [Tooltip("If true, overrides the global default font for this category. If false, falls back to default.")]
+        /// <summary>When true, this category's fonts take precedence over the global defaults.</summary>
+        [Tooltip("When enabled, this category's fonts take precedence over the global defaults.")]
         public bool overrideDefault = false;
+
+        /// <summary>Font used for English text in this category.</summary>
+        [Tooltip("Font used for English text in this category.")]
         public TMP_FontAsset englishFont;
+
+        /// <summary>Font used for Arabic text in this category.</summary>
+        [Tooltip("Font used for Arabic text in this category.")]
         public TMP_FontAsset arabicFont;
 
+        /// <summary>Returns the font for the given language, falling back to the other language's font if needed.</summary>
+        /// <param name="language">Target language.</param>
         public TMP_FontAsset GetFont(GameLanguage language)
         {
             if (language == GameLanguage.Arabic)
@@ -42,46 +52,60 @@ namespace Game.Scripts.Localization
         }
     }
 
+    /// <summary>ScriptableObject that maps language and text category to TMP fonts, loaded from Resources at runtime.</summary>
+    /// <remarks>
+    /// Searched in order: "FontSettings", "Fonts/FontSettings", then any FontSettings asset found via LoadAll.
+    /// Also registers all assigned fonts as TMP fallback assets so mixed-script text renders correctly.
+    /// </remarks>
     [CreateAssetMenu(fileName = "FontSettings", menuName = "Weave/Localization/Font Settings")]
     public class FontSettings : ScriptableObject
     {
-        [Header("Global Default Fonts")]
-        [SerializeField, Tooltip("Default font asset used for English text.")]
+        [Tooltip("Default font for English text when no category override applies.")]
+        [SerializeField]
         private TMP_FontAsset englishFont;
 
-        [SerializeField, Tooltip("Default font asset used for Arabic text.")]
+        [Tooltip("Default font for Arabic text when no category override applies.")]
+        [SerializeField]
         private TMP_FontAsset arabicFont;
 
-        [Header("Alignment")]
-        [SerializeField, Tooltip("Controls how text alignment is handled across languages.")]
+        [Tooltip("Whether to force middle-center alignment on all resolved text components.")]
+        [SerializeField]
         private FontAlignmentMode alignmentMode = FontAlignmentMode.PreserveEditorAlignment;
 
-        [Header("Category Overrides (Optional)")]
-        [SerializeField, Tooltip("Master switch: If disabled, all text uses the Global Default Fonts regardless of category.")]
+        [Tooltip("Enable per-category font overrides below.")]
+        [SerializeField]
         private bool enableCategoryOverrides = true;
 
-        [SerializeField, Tooltip("Font override for Titles and Headers.")]
+        [Header("Category Overrides")]
+        [Tooltip("Font override for title text, used when its Override toggle is on.")]
+        [SerializeField]
         private CategoryFontPair titleFont = new CategoryFontPair();
 
-        [SerializeField, Tooltip("Font override for Character/Speaker Names.")]
+        [Tooltip("Font override for speaker name labels, used when its Override toggle is on.")]
+        [SerializeField]
         private CategoryFontPair speakerNameFont = new CategoryFontPair();
 
-        [SerializeField, Tooltip("Font override for Menu & UI buttons.")]
+        [Tooltip("Font override for menu and button text, used when its Override toggle is on.")]
+        [SerializeField]
         private CategoryFontPair menuUIFont = new CategoryFontPair();
 
-        [SerializeField, Tooltip("Font override for Card story & dialogue body.")]
+        [Tooltip("Font override for dialogue body text, used when its Override toggle is on.")]
+        [SerializeField]
         private CategoryFontPair dialogueBodyFont = new CategoryFontPair();
 
-        [SerializeField, Tooltip("Font override for Card Choice swipe labels.")]
+        [Tooltip("Font override for choice button text, used when its Override toggle is on.")]
+        [SerializeField]
         private CategoryFontPair choiceFont = new CategoryFontPair();
 
         private static FontSettings cachedDefault;
 
+        /// <summary>The configured alignment mode applied to all resolved text components.</summary>
         public FontAlignmentMode AlignmentMode => alignmentMode;
 
-        /// <summary>
-        /// Returns the appropriate TMP_FontAsset for the specified language and optional category.
-        /// </summary>
+        /// <summary>Resolves the appropriate font for a language and optional text category.</summary>
+        /// <param name="language">Target language.</param>
+        /// <param name="category">Text category; use Default to skip overrides.</param>
+        /// <returns>The best matching font, or null if none are assigned.</returns>
         public TMP_FontAsset GetFont(GameLanguage language, TextFontCategory category = TextFontCategory.Default)
         {
             if (enableCategoryOverrides && category != TextFontCategory.Default)
@@ -97,7 +121,6 @@ namespace Game.Scripts.Localization
                 }
             }
 
-            // Fallback to Global Default Font
             switch (language)
             {
                 case GameLanguage.Arabic:
@@ -121,9 +144,8 @@ namespace Game.Scripts.Localization
             }
         }
 
-        /// <summary>
-        /// Attempts to load the default FontSettings asset from any Resources folder.
-        /// </summary>
+        /// <summary>Loads the singleton FontSettings asset from Resources, caching the result.</summary>
+        /// <returns>The loaded instance, or null if no asset is found.</returns>
         public static FontSettings LoadDefault()
         {
             if (cachedDefault != null)
@@ -137,6 +159,7 @@ namespace Game.Scripts.Localization
                 cachedDefault = Resources.Load<FontSettings>("Fonts/FontSettings");
             }
 
+            // Last resort: grab any FontSettings asset in Resources root.
             if (cachedDefault == null)
             {
                 FontSettings[] all = Resources.LoadAll<FontSettings>("");
@@ -149,9 +172,11 @@ namespace Game.Scripts.Localization
             return cachedDefault;
         }
 
-        /// <summary>
-        /// Registers all Arabic and English font assets as fallbacks so missing glyphs are automatically resolved.
-        /// </summary>
+        /// <summary>Registers all assigned fonts as TMP global fallbacks and cross-links English/Arabic pairs.</summary>
+        /// <remarks>
+        /// Ensures glyphs missing from one font fall through to the other language's font,
+        /// preventing blank characters when mixed-script text is rendered.
+        /// </remarks>
         public void EnsureFallbackRegistered()
         {
             if (TMP_Settings.fallbackFontAssets != null)
@@ -174,7 +199,7 @@ namespace Game.Scripts.Localization
                 }
             }
 
-            // Cross-link fallbacks directly on font assets so they resolve missing glyphs without warnings
+            // Cross-link so each language's font falls back to the other for missing glyphs.
             LinkFallback(arabicFont, englishFont);
             LinkFallback(englishFont, arabicFont);
         }

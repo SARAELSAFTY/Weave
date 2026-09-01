@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
-    /// <summary>Card Graph editor window: toolbar + hosted <see cref="CardGraphView"/>.</summary>
+    /// <summary>Editor window hosting the card graph: database picker, asset creation toolbar and the graph view.</summary>
     public class CardGraphWindow : EditorWindow
     {
         private const string NewCardFolder = "Assets/Game/Data/Cards";
@@ -25,14 +25,16 @@ namespace Game.Scripts.Editor
         private ObjectField databaseField;
         private PopupField<string> startingCardDropdown;
 
+        /// <summary>Opens (or focuses) the Card Graph window from the Weave menu.</summary>
         [MenuItem("Weave/Card Graph")]
         public static void OpenWindow()
         {
             CardGraphWindow window = GetWindow<CardGraphWindow>("Card Graph");
             window.minSize = new Vector2(900, 650);
-            window.titleContent = new GUIContent("Card Graph", EditorGUIUtility.IconContent("d_Project").image);
+            window.titleContent = new GUIContent("Card Graph");
         }
 
+        /// <summary>Rebuilds the graph in every open Card Graph window; called after assets are edited elsewhere.</summary>
         public static void RefreshOpenWindows()
         {
             foreach (CardGraphWindow window in Resources.FindObjectsOfTypeAll<CardGraphWindow>())
@@ -186,6 +188,7 @@ namespace Game.Scripts.Editor
             }
         }
 
+        /// <summary>Rebuilds the starting-card dropdown choices from the current database and reselects the current starting card.</summary>
         public void RefreshStartingCardDropdownOptions()
         {
             if (currentDatabase == null || startingCardDropdown == null) return;
@@ -207,6 +210,7 @@ namespace Game.Scripts.Editor
             startingCardDropdown.SetValueWithoutNotify(options.Contains(currentStartName) ? currentStartName : "(None)");
         }
 
+        /// <summary>Rebuilds the graph view from the current database.</summary>
         public void PopulateGraph()
         {
             RefreshStartingCardDropdownOptions();
@@ -218,6 +222,8 @@ namespace Game.Scripts.Editor
             CreateCardAt(null);
         }
 
+        /// <summary>Creates a new CardData asset, adds it to the current database and positions its node.</summary>
+        /// <param name="windowPosition">Graph position for the new node; null defers placement to the graph view's pending-drop flow.</param>
         public void CreateCardAt(Vector2? windowPosition)
         {
             if (currentDatabase == null) return;
@@ -276,6 +282,8 @@ namespace Game.Scripts.Editor
             CreateSpeakerAt(null);
         }
 
+        /// <summary>Creates a new SpeakerData asset, adds it to the current database and positions its node.</summary>
+        /// <param name="windowPosition">Graph position for the new node; null defers placement to the graph view's pending-drop flow.</param>
         public void CreateSpeakerAt(Vector2? windowPosition)
         {
             if (currentDatabase == null) return;
@@ -302,6 +310,7 @@ namespace Game.Scripts.Editor
                 graphView?.SetPendingNewSpeaker(newSpeaker);
             }
 
+            // Convenience: if a card is selected, the new speaker is assigned to it right away.
             CardData selectedCard = Selection.activeObject as CardData;
             if (selectedCard != null)
             {
@@ -319,6 +328,8 @@ namespace Game.Scripts.Editor
             EditorGUIUtility.PingObject(newSpeaker);
         }
 
+        /// <summary>Creates a new ResourceData asset in the database's catalog and positions its node.</summary>
+        /// <param name="windowPosition">Graph position for the new node; null defers placement to the graph view's pending-drop flow.</param>
         public void CreateResourceAt(Vector2? windowPosition)
         {
             if (currentDatabase == null || currentDatabase.resourceCatalog == null) return;

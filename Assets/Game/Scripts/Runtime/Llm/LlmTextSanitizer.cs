@@ -2,19 +2,25 @@ using System.Text.RegularExpressions;
 
 namespace Game.Scripts.Runtime.Llm
 {
-    /// <summary>Removes characters that cannot appear in Arabic narrative text.</summary>
+    /// <summary>Repairs model-mangled Arabic text by stripping non-Arabic characters and rejoining orphaned final letters.</summary>
+    /// <remarks>LLMs sometimes split Arabic words at letter boundaries, producing isolated final-form letters
+    /// separated by whitespace. The <see cref="OrphanedFinalLetter"/> regex detects and merges these back.</remarks>
     public static class LlmTextSanitizer
     {
-        // Arabic blocks, whitespace, ASCII digits, and common narration punctuation.
+        // Matches any character outside Arabic Unicode blocks (Arabic, Arabic Supplement, Arabic Presentation Forms-A/B)
+        // while preserving whitespace, common punctuation, Arabic-specific punctuation (؟ ،), and digits.
         private static readonly Regex NonArabic = new Regex(
             @"[^\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\s.,!?؟،0-9]");
 
-        // Models occasionally break a word into "letter[.] letter" with a single orphaned letter
-        // after the break (e.g. "الموار. د"). Single-letter Arabic words do not occur in correct
-        // text, so rejoin them. و is excluded because it can legitimately appear isolated.
+        // Detects an Arabic letter followed by optional period + whitespace + another Arabic letter at a word boundary,
+        // which indicates the model split off a final-form letter. Rejoins them by removing the intervening separator.
+        // Negative lookahead (?!\u0648) avoids merging the conjunction و (wa) with adjacent words.
         private static readonly Regex OrphanedFinalLetter = new Regex(
             @"([\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF])\.?\s+(?!\u0648)([\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF])(?=[\s.,!?؟،]|$)");
 
+        /// <summary>Removes non-Arabic characters and repairs orphaned final-letter splits in the given text.</summary>
+        /// <param name="text">Raw LLM output expected to be Arabic.</param>
+        /// <returns>Cleaned Arabic text, or the original value if null/empty.</returns>
         public static string StripNonArabic(string text)
         {
             if (string.IsNullOrEmpty(text))

@@ -5,16 +5,32 @@ using UnityEngine;
 
 namespace Game.Scripts.Runtime.Narrative
 {
+    /// <summary>Immutable result of a single narrative step, carrying either the next card, an error, or a collapse ending.</summary>
     public readonly struct NarrativeStepResult
     {
+        /// <summary>The ending card to display when the run has concluded; null if the run continues.</summary>
         public readonly CardData endingCard;
+
+        /// <summary>A human-readable error message when the step could not resolve; null or empty on success.</summary>
         public readonly string error;
+
+        /// <summary>True when the ending was triggered by a resource dropping to or below its collapse threshold.</summary>
         public readonly bool isCollapseEnding;
+
+        /// <summary>The resource whose collapse threshold was breached; only meaningful when <see cref="isCollapseEnding"/> is true.</summary>
         public readonly ResourceData collapsedResource;
 
+        /// <summary>True when <see cref="error"/> contains a non-empty message.</summary>
         public bool HasError => !string.IsNullOrEmpty(error);
+
+        /// <summary>True when an ending card is present and should be displayed.</summary>
         public bool HasEnded => endingCard != null;
 
+        /// <summary>Constructs a step result with optional collapse-ending metadata.</summary>
+        /// <param name="endingCard">The ending card, or null if the run continues.</param>
+        /// <param name="error">An error message, or null/empty on success.</param>
+        /// <param name="isCollapseEnding">Whether this ending was caused by resource collapse.</param>
+        /// <param name="collapsedResource">The resource that collapsed, if applicable.</param>
         public NarrativeStepResult(CardData endingCard, string error, bool isCollapseEnding = false, ResourceData collapsedResource = null)
         {
             this.endingCard = endingCard;
@@ -24,18 +40,26 @@ namespace Game.Scripts.Runtime.Narrative
         }
     }
 
-    /// <summary>Advances cards, applies resource changes, and tracks day progression.</summary>
+    /// <summary>Drives the narrative card sequence by resolving choices, applying resource changes, advancing days, and detecting collapse endings.</summary>
+    /// <remarks>Non-MonoBehaviour; constructed with a <see cref="NarrativeDatabase"/> and <see cref="ResourceState"/>. Call <see cref="StartRun"/> before <see cref="Choose"/>.</remarks>
     public class NarrativeRunner
     {
         private readonly NarrativeDatabase database;
         private readonly ResourceState resourceState;
         private readonly ResourceCatalog resourceCatalog;
 
+        /// <summary>The card currently being presented to the player.</summary>
         public CardData CurrentCard { get; private set; }
+
+        /// <summary>The current in-game day, starting at 1 and incremented by each card's dayAdvance value.</summary>
         public int Day { get; private set; } = 1;
 
+        /// <summary>Raised after <see cref="Day"/> is incremented by a positive dayAdvance value.</summary>
         public event Action DayChanged;
 
+        /// <summary>Creates a runner bound to the given database and resource state.</summary>
+        /// <param name="database">The narrative database providing cards and the resource catalog.</param>
+        /// <param name="resourceState">The mutable resource values modified by card choices.</param>
         public NarrativeRunner(NarrativeDatabase database, ResourceState resourceState)
         {
             this.database = database;
@@ -43,6 +67,9 @@ namespace Game.Scripts.Runtime.Narrative
             resourceCatalog = database != null ? database.resourceCatalog : null;
         }
 
+        /// <summary>Validates the database and sets <see cref="CurrentCard"/> to the starting card.</summary>
+        /// <param name="error">Receives a validation error message on failure; null on success.</param>
+        /// <returns>True if the run started successfully.</returns>
         public bool StartRun(out string error)
         {
             error = null;
@@ -67,6 +94,9 @@ namespace Game.Scripts.Runtime.Narrative
             return true;
         }
 
+        /// <summary>Resolves a player choice on the current card, applies resource changes, advances the day, and checks for collapse endings.</summary>
+        /// <param name="choseRight">True for the right branch, false for the left branch. Ignored when the card uses a continue exit.</param>
+        /// <returns>A <see cref="NarrativeStepResult"/> describing the outcome of this step.</returns>
         public NarrativeStepResult Choose(bool choseRight)
         {
             if (CurrentCard == null)

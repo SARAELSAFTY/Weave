@@ -3,26 +3,27 @@ using UnityEngine;
 
 namespace Game.Scripts.UI
 {
-    /// <summary>
-    /// Code-driven choice card feel, reproducing the original clip motion. The authored scene
-    /// position is the parked (off-screen) pose; dragging toward this card triggers a smooth
-    /// join-in tween, releasing eases it back out, and confirming tosses it away dismissively.
-    /// Left/right motion constants are taken from the original Hover/Confirm clips.
-    /// </summary>
+    /// <summary>Animates a single choice card between its parked, revealed and dismissed poses.</summary>
+    /// <remarks>Left and right cards use mirrored, hand-tuned motion sets so each side joins and throws differently.</remarks>
     public class ChoiceCardAnimator : MonoBehaviour
     {
-        [SerializeField, Range(0.05f, 0.5f), Tooltip("Drag progress at which this card starts joining in.")]
+        [Tooltip("Drag progress (0-1) beyond which the card counts as revealed and eases fully into its join pose.")]
+        [SerializeField, Range(0.05f, 0.5f)]
         private float revealThreshold = 0.15f;
 
-        [SerializeField, Min(0.05f), Tooltip("Seconds for the join-in / ease-out tween.")]
+        [Tooltip("Time in seconds the card takes to ease between its parked and revealed poses.")]
+        [SerializeField, Min(0.05f)]
         private float joinDuration = 0.25f;
 
-        [SerializeField, Min(0.05f), Tooltip("Seconds for the confirm toss (dip, then fly off).")]
+        [Tooltip("Total time in seconds of the confirm animation: dip, then throw off-screen.")]
+        [SerializeField, Min(0.05f)]
         private float confirmDuration = 0.8f;
 
-        [SerializeField, Range(0.1f, 0.9f), Tooltip("Share of the confirm toss spent dipping before the upward flight.")]
+        [Tooltip("Fraction of Confirm Duration spent dipping before the card is thrown.")]
+        [SerializeField, Range(0.1f, 0.9f)]
         private float confirmDipFraction = 0.45f;
 
+        /// <summary>Offset and tilt values describing one side's card motion.</summary>
         private struct SideMotion
         {
             public Vector2 joinOffset;
@@ -32,6 +33,7 @@ namespace Game.Scripts.UI
             public float dismissTilt;
         }
 
+        // Hand-tuned motion values reproducing the original card feel; the two sides are intentionally asymmetric.
         private static readonly SideMotion LeftMotion = new SideMotion
         {
             joinOffset = new Vector2(482f, -125f),
@@ -59,7 +61,6 @@ namespace Game.Scripts.UI
         private bool dismissing;
         private Coroutine dismissRoutine;
 
-        /// <summary>True while the confirm toss is playing.</summary>
         public bool IsDismissing => dismissing;
 
         private void Awake()
@@ -76,7 +77,8 @@ namespace Game.Scripts.UI
             ApplyReveal(0f);
         }
 
-        /// <summary>Feeds this side's drag progress; crossing the threshold tweens the card in, dropping below tweens it out.</summary>
+        /// <summary>Marks the card revealed (eases to the join pose) once drag progress passes the reveal threshold, parked otherwise.</summary>
+        /// <param name="progress">Drag progress from 0 (parked) to 1 (fully dragged).</param>
         public void SetRevealProgress(float progress)
         {
             if (dismissing)
@@ -87,7 +89,7 @@ namespace Game.Scripts.UI
             target = Mathf.Clamp01(progress) > revealThreshold ? 1f : 0f;
         }
 
-        /// <summary>Eases the card back to its parked, invisible state (cancelled drag).</summary>
+        /// <summary>Eases the card back to its parked pose after an unconfirmed drag.</summary>
         public void EaseBackToPark()
         {
             if (dismissing)
@@ -98,7 +100,7 @@ namespace Game.Scripts.UI
             target = 0f;
         }
 
-        /// <summary>Instantly returns the card to its parked, invisible state.</summary>
+        /// <summary>Immediately resets the card to its parked pose, cancelling any dismissal in flight.</summary>
         public void SnapToPark()
         {
             StopDismiss();
@@ -108,7 +110,7 @@ namespace Game.Scripts.UI
             ApplyReveal(0f);
         }
 
-        /// <summary>Reveals the card fully, then tosses it away dismissively (chosen side).</summary>
+        /// <summary>Starts the confirm animation: the card dips, then throws off-screen.</summary>
         public void PlayConfirm()
         {
             StopDismiss();
@@ -140,6 +142,7 @@ namespace Game.Scripts.UI
             ApplyReveal(reveal);
         }
 
+        /// <summary>Plays the dip-then-throw dismissal over Confirm Duration seconds, then hides the card.</summary>
         private IEnumerator ConfirmDismissRoutine()
         {
             Vector2 joined = parkPosition + motion.joinOffset;
@@ -178,6 +181,7 @@ namespace Game.Scripts.UI
 
         private void ApplyReveal(float value)
         {
+            // Smoothstep so the join eases in and out instead of moving linearly.
             float smooth = value * value * (3f - 2f * value);
             cardTransform.anchoredPosition = Vector2.Lerp(parkPosition, parkPosition + motion.joinOffset, smooth);
             cardTransform.localRotation = Quaternion.Euler(0f, 0f, motion.joinTilt * smooth);

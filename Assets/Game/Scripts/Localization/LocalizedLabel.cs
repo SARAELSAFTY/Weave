@@ -3,27 +3,32 @@ using UnityEngine;
 
 namespace Game.Scripts.Localization
 {
-    /// <summary>
-    /// Drop-in component for any TMP_Text in menus or UI.
-    /// Define English and Arabic text in the Inspector, and it automatically
-    /// refreshes whenever the game language changes.
-    /// </summary>
+    /// <summary>Displays a bilingual text label on a TMP_Text component, auto-refreshing on language changes.</summary>
+    /// <remarks>
+    /// Works in both play mode and edit mode (ExecuteAlways). In edit mode the label always shows English
+    /// since LanguageManager may not exist outside play mode.
+    /// </remarks>
     [ExecuteAlways]
     [RequireComponent(typeof(TMP_Text))]
     [AddComponentMenu("Weave/Localization/Localized Label")]
     public class LocalizedLabel : MonoBehaviour
     {
+        [Tooltip("The TMP_Text component that displays the localized content.")]
         [SerializeField] private TMP_Text textComponent;
 
-        [SerializeField, Tooltip("Font category used for category-specific font overrides from FontSettings.")]
+        [Tooltip("Text category used to resolve a per-category font override.")]
+        [SerializeField]
         private TextFontCategory fontCategory = TextFontCategory.Default;
 
-        [SerializeField, TextArea(1, 5), Tooltip("Text shown when game is in English.")]
+        [Tooltip("English version of the label text.")]
+        [SerializeField, TextArea(1, 5)]
         private string english;
 
-        [SerializeField, TextArea(1, 5), Tooltip("Text shown when game is in Arabic.")]
+        [Tooltip("Arabic version of the label text.")]
+        [SerializeField, TextArea(1, 5)]
         private string arabic;
 
+        /// <summary>Gets or sets the English text, refreshing the display on change.</summary>
         public string English
         {
             get => english;
@@ -34,6 +39,7 @@ namespace Game.Scripts.Localization
             }
         }
 
+        /// <summary>Gets or sets the Arabic text, refreshing the display on change.</summary>
         public string Arabic
         {
             get => arabic;
@@ -44,6 +50,7 @@ namespace Game.Scripts.Localization
             }
         }
 
+        /// <summary>Gets or sets the font category, refreshing the display on change.</summary>
         public TextFontCategory FontCategory
         {
             get => fontCategory;
@@ -54,8 +61,10 @@ namespace Game.Scripts.Localization
             }
         }
 
+        /// <summary>The resolved TMP_Text component this label writes to.</summary>
         public TMP_Text TargetText => textComponent;
 
+        // Seeds the English field from the existing TMP_Text content when first added via Inspector.
         private void Reset()
         {
             if (textComponent == null)
@@ -82,6 +91,7 @@ namespace Game.Scripts.Localization
             }
         }
 
+        // Subscribes only during play mode; edit mode skips subscription but still refreshes.
         private void OnEnable()
         {
             if (textComponent == null)
@@ -105,6 +115,7 @@ namespace Game.Scripts.Localization
             }
         }
 
+        // Live preview in the Inspector without entering play mode.
         private void OnValidate()
         {
             if (textComponent == null)
@@ -118,6 +129,7 @@ namespace Game.Scripts.Localization
             }
         }
 
+        /// <summary>Updates the displayed text, font, and RTL settings for the current language.</summary>
         public void Refresh()
         {
             if (textComponent == null)
@@ -125,6 +137,7 @@ namespace Game.Scripts.Localization
                 return;
             }
 
+            // In edit mode there is no LanguageManager; default to English for preview.
             GameLanguage language = Application.isPlaying && LanguageManager.Instance != null
                 ? LanguageManager.Instance.CurrentLanguage
                 : GameLanguage.English;

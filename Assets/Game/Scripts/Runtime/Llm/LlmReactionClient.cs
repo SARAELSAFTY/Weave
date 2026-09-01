@@ -7,25 +7,26 @@ using UnityEngine.Networking;
 
 namespace Game.Scripts.Runtime.Llm
 {
+    /// <summary>MonoBehaviour that sends chat-completions requests to a Groq-compatible proxy and parses the responses.</summary>
+    /// <remarks>Handles two request types: single-turn reactions (plain text) and multi-turn petition turns (structured JSON).
+    /// All HTTP work runs as coroutines via <see cref="UnityWebRequest"/>.</remarks>
     public class LlmReactionClient : MonoBehaviour
     {
-        [SerializeField, Tooltip("Global LLM settings.")]
+        [Tooltip("Reference to the LLM settings asset providing model name, token limits, temperature, and timeout values.")]
+        [SerializeField]
         private LlmSettings settings;
 
-        [SerializeField, Tooltip("URL of the LLM proxy server.")]
+        [Tooltip("URL of the Cloudflare Worker (or similar) proxy that forwards requests to the Groq API with authentication.")]
+        [SerializeField]
         private string proxyUrl = "https://your-proxy.workers.dev";
 
-        /// <summary>
-        /// Assigns settings/proxyUrl in code instead of via the Inspector. Intended for editor tooling
-        /// (LlmTesterWindow) that spins up a temporary instance of this component so it can reuse the real
-        /// request/parse logic below instead of duplicating it.
-        /// </summary>
-        public void Configure(LlmSettings settingsToUse, string proxyUrlToUse)
-        {
-            settings = settingsToUse;
-            proxyUrl = proxyUrlToUse;
-        }
-
+        /// <summary>Sends a single-turn reaction request and returns the cleaned response text via callback.</summary>
+        /// <param name="systemPrompt">System message defining character voice and format constraints.</param>
+        /// <param name="singleTurnUserMessage">User message describing the situation to react to; may be null or empty.</param>
+        /// <param name="language">Target language for post-processing sanitization.</param>
+        /// <param name="onSuccess">Called with the sanitized response text on success.</param>
+        /// <param name="onFailure">Called with an error code when validation, network, or parsing fails.</param>
+        /// <param name="maxTokensOverride">Optional per-request token limit overriding <see cref="LlmSettings.maxTokensPerResponse"/>.</param>
         public void RequestReaction(string systemPrompt, string singleTurnUserMessage, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
             if (!TryValidateConfig(onFailure))
@@ -36,10 +37,12 @@ namespace Game.Scripts.Runtime.Llm
             StartCoroutine(RequestRoutine(systemPrompt, singleTurnUserMessage, language, onSuccess, onFailure, maxTokensOverride));
         }
 
-        /// <summary>
-        /// Sends a full multi-turn message list (from <see cref="PetitionSession.BuildMessagesForSubmission"/>)
-        /// and returns the parsed resolution plus cleaned raw text for <see cref="PetitionSession.RecordReply"/>.
-        /// </summary>
+        /// <summary>Sends a multi-turn petition request with full conversation history and returns the parsed resolution.</summary>
+        /// <param name="messages">Complete message list including system prompt, prior turns, and current user input.</param>
+        /// <param name="language">Target language for post-processing sanitization of the reaction field.</param>
+        /// <param name="onSuccess">Called with the parsed <see cref="PetitionResolution"/> and raw assistant content on success.</param>
+        /// <param name="onFailure">Called with an error code when validation, network, or parsing fails.</param>
+        /// <param name="maxTokensOverride">Optional per-request token limit overriding <see cref="LlmSettings.maxTokensPerResponse"/>.</param>
         public void RequestPetitionTurn(List<GroqApiMessage> messages, GameLanguage language, Action<PetitionResolution, string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
             if (!TryValidateConfig(onFailure))
@@ -197,12 +200,14 @@ namespace Game.Scripts.Runtime.Llm
             return JsonUtility.ToJson(request);
         }
 
+        // Strips <think>...</think> blocks emitted by reasoning models that leak chain-of-thought into visible output.
         private static string StripThoughtBlocks(string text)
         {
             if (string.IsNullOrEmpty(text)) return text;
             return System.Text.RegularExpressions.Regex.Replace(text, @"<think>[\s\S]*?</think>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
         }
 
+        // Recovers the reaction field when the model ignores response_format and returns raw petition JSON as plain text.
         private static string StripLeakedPetitionJson(string content)
         {
             string trimmed = content.Trim();
@@ -213,6 +218,7 @@ namespace Game.Scripts.Runtime.Llm
             return content;
         }
 
+        // Removes parenthetical (...) and asterisk-wrapped *...* stage directions the model may produce despite system instructions.
         private static string StripStageDirections(string content)
         {
             content = System.Text.RegularExpressions.Regex.Replace(content, @"\([^)]*\)", "").Trim();
@@ -235,7 +241,6 @@ namespace Game.Scripts.Runtime.Llm
                     string content = response.choices[0]?.message?.content;
                     if (string.IsNullOrWhiteSpace(content)) return null;
 
-                    // Defense in depth if reasoning_effort is misconfigured away from "none".
                     content = StripThoughtBlocks(content);
 
                     content = StripLeakedPetitionJson(content);
@@ -271,9 +276,9 @@ namespace Game.Scripts.Runtime.Llm
 
                     content = content.Trim();
 
-                    // Strip <think> blocks before JSON parse - a leading block would break FromJson.
                     content = StripThoughtBlocks(content);
 
+                    // Models sometimes wrap JSON in ```json fences despite response_format=json_object; strip them before parsing.
                     if (content.StartsWith("```json", StringComparison.OrdinalIgnoreCase))
                     {
                         content = content.Substring(7);

@@ -1,23 +1,28 @@
 using Game.Scripts.Definitions;
+using Game.Scripts.Localization;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
+    /// <summary>Graph node representing a SpeakerData asset, showing a persona badge and portrait preview.</summary>
     public class SpeakerNode : BaseNode
     {
         private static readonly Color SpeakerHeaderColor = new Color(0.28f, 0.15f, 0.38f);
         private static readonly Color SpeakerBorderColor = new Color(0.65f, 0.35f, 0.85f);
         private static readonly Color LlmAccent = new Color(0.85f, 0.6f, 1.0f);
 
+        /// <summary>The speaker asset this node represents.</summary>
         public SpeakerData Speaker { get; }
 
         protected override Object TargetAsset => Speaker;
-        protected override string TargetId => Speaker != null ? Speaker.DisplayName : "Null Speaker";
+        protected override string TargetId => Speaker != null ? Speaker.AssetName : "Null Speaker";
         protected override string PingActionLabel => "Ping Speaker Asset";
         protected override string OpenActionLabel => "Open Speaker Asset";
 
+        /// <summary>Builds the node badges, body text and portrait preview for the given speaker.</summary>
+        /// <param name="speaker">Speaker asset to display; may be null for a placeholder node.</param>
         public SpeakerNode(SpeakerData speaker)
         {
             Speaker = speaker;
@@ -57,7 +62,7 @@ namespace Game.Scripts.Editor
 
             if (hasPersona)
             {
-                badges.Add(MakeBadge("PERSONA", LlmAccent, new Color(0.30f, 0.12f, 0.45f), "Has LLM persona prompt authored"));
+                badges.Add(MakeBadge("PERSONA", LlmAccent, new Color(0.30f, 0.12f, 0.45f)));
             }
 
             return badges;
@@ -79,7 +84,7 @@ namespace Game.Scripts.Editor
                 }
             };
 
-            AddIdentityLabels(body, speaker.DisplayName, speaker.assetName);
+            AddIdentityLabels(body, speaker.GetDisplayName(GameLanguage.English), speaker.assetName);
 
             if (hasPersona)
             {

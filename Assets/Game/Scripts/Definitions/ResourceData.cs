@@ -2,28 +2,31 @@ using UnityEngine;
 
 namespace Game.Scripts.Definitions
 {
+    /// <summary>Defines a tracked gameplay resource with icon, starting value, collapse threshold, and low-value warning behavior.</summary>
     [CreateAssetMenu(fileName = "Res_NewResource", menuName = "Weave/Resource Data", order = 2)]
     public class ResourceData : NamedGameAsset
     {
-        [Tooltip("Resource icon image.")]
+        [Header("Display")]
+        [Tooltip("Icon sprite representing this resource in the UI.")]
         public Sprite icon;
 
-        [Tooltip("Starting value for this resource at the beginning of a run.")]
+        [Header("Values")]
+        [Tooltip("Initial value assigned to this resource at the start of a new game.")]
         public int defaultStartingValue = 50;
 
-        [Header("Collapse Threshold")]
-        [Tooltip("Resource triggers its collapse ending at or below this value.")]
+        [Tooltip("Value at or below which the resource is considered collapsed.")]
         public int collapseThreshold = 0;
 
-        [Header("Warning Threshold")]
-        [Range(0, 100), Tooltip("Resource triggers a Warning reaction at or below this percent of its starting value.")]
+        [Header("Low-Value Warning")]
+        [Range(0, 100)]
+        [Tooltip("Percentage of max at which a low-value warning triggers (0–100%).")]
         public int warningThresholdPercent = 30;
 
-        [Header("Warning Alert Speaker")]
-        [Tooltip("Speaker who reacts when this resource crosses the Warning threshold.")]
+        [Tooltip("Speaker who delivers the low-value warning message.")]
         public SpeakerData warningSpeaker;
 
-        [Min(0), Tooltip("Minimum story cards that must pass after a warning before this resource can warn again.")]
+        [Min(0)]
+        [Tooltip("Minimum number of cards between consecutive warnings for this resource.")]
         public int warningCooldownCards = 5;
     }
 }

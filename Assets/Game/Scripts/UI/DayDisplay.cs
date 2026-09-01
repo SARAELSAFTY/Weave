@@ -5,15 +5,19 @@ using UnityEngine.Serialization;
 
 namespace Game.Scripts.UI
 {
+    /// <summary>Shows the current day number as a localized "Day N" label.</summary>
     public class DayDisplay : LocalizedDisplay
     {
+        [Tooltip("Text component showing the day counter. Found automatically on this object or its children if left empty.")]
         [SerializeField, FormerlySerializedAs("dayText")]
         private TMP_Text textComponent;
 
-        [SerializeField, FormerlySerializedAs("format"), Tooltip("English format string for day text.")]
+        [Tooltip("English format for the day label; {0} is replaced by the day number.")]
+        [SerializeField, FormerlySerializedAs("format")]
         private string formatEnglish = "Day {0}";
 
-        [SerializeField, Tooltip("Arabic format string for day text.")]
+        [Tooltip("Arabic format for the day label; {0} is replaced by the day number.")]
+        [SerializeField]
         private string formatArabic = "اليوم {0}";
 
         private int _lastDay = 1;
@@ -36,6 +40,8 @@ namespace Game.Scripts.UI
             RtlTextHelper.Configure(textComponent);
         }
 
+        /// <summary>Sets the displayed day number and refreshes the label.</summary>
+        /// <param name="day">Day number to display.</param>
         public void SetDay(int day)
         {
             _lastDay = day;

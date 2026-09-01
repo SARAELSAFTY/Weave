@@ -10,7 +10,13 @@ using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
-    /// <summary>Graph canvas that mirrors a NarrativeDatabase and writes edge/position edits back to assets.</summary>
+    /// <summary>
+    /// GraphView implementation for editing a <see cref="NarrativeDatabase"/>: displays card, speaker, and resource nodes with edges representing narrative links, and persists node positions back to the database.
+    /// </summary>
+    /// <remarks>
+    /// Node positions are serialized into the database's editor-only position lists so layout survives domain reloads.
+    /// The <c>isPopulating</c> flag suppresses <see cref="graphViewChanged"/> callbacks during full rebuilds to avoid spurious undo records.
+    /// </remarks>
     public class CardGraphView : GraphView
     {
         private static readonly Vector2 DefaultNodeSize = new Vector2(260, 200);
@@ -21,6 +27,7 @@ namespace Game.Scripts.Editor
 
         private readonly CardGraphWindow window;
         private NarrativeDatabase database;
+        // Guard flag: true while Populate is rebuilding the graph, so OnGraphViewChanged does not record undo or trigger re-populate.
         private bool isPopulating;
         private readonly Label emptyNoticeLabel;
 
@@ -28,8 +35,12 @@ namespace Game.Scripts.Editor
         private readonly Dictionary<SpeakerData, Vector2> positionsBySpeaker = new Dictionary<SpeakerData, Vector2>();
         private readonly Dictionary<ResourceData, Vector2> positionsByResource = new Dictionary<ResourceData, Vector2>();
 
+        // When set, the next Populate call places this newly-created asset at the viewport center instead of the grid fallback.
         private UnityEngine.Object pendingNewAsset;
 
+        /// <summary>
+        /// Updates or inserts a position entry in the given list and cache; returns false if the position is unchanged.
+        /// </summary>
         private static bool TrySavePosition<TAsset, TEntry>(
             List<TEntry> list, Dictionary<TAsset, Vector2> cache, TAsset asset, Vector2 position,
             Func<TEntry, TAsset> getAsset, Func<TAsset, Vector2, TEntry> makeEntry)
@@ -45,6 +56,7 @@ namespace Game.Scripts.Editor
             return true;
         }
 
+        /// <summary>Removes a position entry from the given list and cache for the specified asset; returns false if no entry existed.</summary>
         private static bool TryRemovePosition<TAsset, TEntry>(
             List<TEntry> list, Dictionary<TAsset, Vector2> cache, TAsset asset, Func<TEntry, TAsset> getAsset)
             where TAsset : UnityEngine.Object
@@ -57,23 +69,31 @@ namespace Game.Scripts.Editor
             return true;
         }
 
+        /// <summary>The narrative database currently displayed in the graph, or null if none is loaded.</summary>
         public NarrativeDatabase Database => database;
 
+        /// <summary>Marks a newly created card so that the next <see cref="Populate"/> places it at the viewport center.</summary>
         public void SetPendingNewCard(CardData card)
         {
             pendingNewAsset = card;
         }
 
+        /// <summary>Marks a newly created speaker so that the next <see cref="Populate"/> places it at the viewport center.</summary>
         public void SetPendingNewSpeaker(SpeakerData speaker)
         {
             pendingNewAsset = speaker;
         }
 
+        /// <summary>Marks a newly created resource so that the next <see cref="Populate"/> places it at the viewport center.</summary>
         public void SetPendingNewResource(ResourceData resource)
         {
             pendingNewAsset = resource;
         }
 
+        /// <summary>
+        /// Initializes the graph view with zoom, drag, selection manipulators, a grid background, and an empty-state notice label.
+        /// </summary>
+        /// <param name="window">The owning editor window used for delegating create/repopulate actions.</param>
         public CardGraphView(CardGraphWindow window)
         {
             this.window = window;
@@ -97,11 +117,16 @@ namespace Game.Scripts.Editor
             graphViewChanged = OnGraphViewChanged;
         }
 
+        /// <summary>Returns all ports that belong to a different node and have the opposite direction, enabling cross-node connections only.</summary>
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
             return ports.Where(p => p.node != startPort.node && p.direction != startPort.direction).ToList();
         }
 
+        /// <summary>
+        /// Rebuilds the entire graph from the given database: clears existing elements, creates card/speaker/resource nodes at saved or default positions, draws edges, and shows an empty-state message when appropriate.
+        /// </summary>
+        /// <param name="db">The narrative database to visualize.</param>
         public void Populate(NarrativeDatabase db)
         {
             isPopulating = true;
@@ -136,11 +161,11 @@ namespace Game.Scripts.Editor
             Dictionary<ResourceData, ResourceNode> nodesByResource = CreateResourceNodes();
             DrawCollapseEdges(nodesByResource, nodesByCard);
 
-            // Node layout can resolve a frame late; defer the flag reset so a late
-            // graphViewChanged event doesn't re-save positions before they've settled.
+            // Defer clearing the guard so that any layout callbacks fired during element addition are also suppressed.
             EditorApplication.delayCall += () => isPopulating = false;
         }
 
+        /// <summary>Clears in-memory position caches and reloads them from the database's serialized editor position lists.</summary>
         private void LoadPositionsFromDatabase()
         {
             positionsByCard.Clear();
@@ -181,6 +206,7 @@ namespace Game.Scripts.Editor
             }
         }
 
+        /// <summary>Creates and adds a <see cref="CardNode"/> for each card in the database, returning the ordered node list.</summary>
         private List<CardNode> CreateNodes(Dictionary<CardData, CardNode> nodesByCard)
         {
             List<CardNode> nodeList = new List<CardNode>();
@@ -204,6 +230,7 @@ namespace Game.Scripts.Editor
             return nodeList;
         }
 
+        /// <summary>Returns the saved position for a card, or computes a grid-based fallback from its list index.</summary>
         private Vector2 ResolveNodePosition(CardData card, int indexInList)
         {
             int column = indexInList % GridColumns;
@@ -212,6 +239,7 @@ namespace Game.Scripts.Editor
             return ResolveNewOrSavedPosition(card, positionsByCard, SavePositionToDatabase, gridPosition);
         }
 
+        /// <summary>Computes the center of the current viewport in content-space coordinates, used for placing newly created nodes.</summary>
         private Vector2 ViewportCenterInContentSpace()
         {
             Vector2 viewSize = layout.size == Vector2.zero ? FallbackViewSize : layout.size;
@@ -221,8 +249,7 @@ namespace Game.Scripts.Editor
         }
 
         /// <summary>
-        /// Shared "new node lands at viewport center, otherwise reuse saved or fall back" resolution
-        /// used by card, speaker, and resource nodes.
+        /// Resolves a node's position: if the asset is the pending new asset, places it at viewport center; otherwise uses saved position or falls back to the provided default.
         /// </summary>
         private Vector2 ResolveNewOrSavedPosition<TAsset>(
             TAsset asset,
@@ -248,6 +275,7 @@ namespace Game.Scripts.Editor
             return fallbackPosition;
         }
 
+        /// <summary>Creates edges between card nodes based on each card's left/right/continue next-card references.</summary>
         private void DrawEdges(List<CardNode> nodeList, Dictionary<CardData, CardNode> nodesByCard)
         {
             foreach (CardNode sourceNode in nodeList)
@@ -267,6 +295,7 @@ namespace Game.Scripts.Editor
             }
         }
 
+        /// <summary>Connects an output port to the input port of the target card's node if both exist in the graph.</summary>
         private void TryConnect(Port outputPort, CardData targetCard, Dictionary<CardData, CardNode> nodesByCard)
         {
             if (targetCard != null && nodesByCard.TryGetValue(targetCard, out CardNode targetNode))
@@ -275,6 +304,8 @@ namespace Game.Scripts.Editor
             }
         }
 
+        /// <summary>Sets the database's starting card with undo support and triggers a full graph repopulate to update visual indicators.</summary>
+        /// <param name="card">The card to designate as the starting card.</param>
         public void SetStartingCard(CardData card)
         {
             if (database == null || card == null) return;
@@ -287,6 +318,7 @@ namespace Game.Scripts.Editor
 
         private static readonly Vector2 DefaultSpeakerNodeSize = new Vector2(240, 170);
 
+        /// <summary>Creates and adds a <see cref="SpeakerNode"/> for each speaker in the database at saved or default positions.</summary>
         private void CreateSpeakerNodes()
         {
             if (database?.speakers == null) return;
@@ -304,6 +336,7 @@ namespace Game.Scripts.Editor
             }
         }
 
+        /// <summary>Returns the saved position for a speaker, or a default left-column position based on list index.</summary>
         private Vector2 ResolveSpeakerNodePosition(SpeakerData speaker, int indexInList)
         {
             Vector2 defaultPosition = new Vector2(-260, indexInList * 210 + 60);
@@ -312,6 +345,7 @@ namespace Game.Scripts.Editor
 
         private static readonly Vector2 DefaultResourceNodeSize = new Vector2(200, 150);
 
+        /// <summary>Creates and adds a <see cref="ResourceNode"/> for each resource in the catalog, returning a lookup dictionary.</summary>
         private Dictionary<ResourceData, ResourceNode> CreateResourceNodes()
         {
             Dictionary<ResourceData, ResourceNode> nodesByResource = new Dictionary<ResourceData, ResourceNode>();
@@ -333,6 +367,7 @@ namespace Game.Scripts.Editor
             return nodesByResource;
         }
 
+        /// <summary>Draws non-deletable edges from resource collapse ports to their configured ending card nodes.</summary>
         private void DrawCollapseEdges(Dictionary<ResourceData, ResourceNode> nodesByResource, Dictionary<CardData, CardNode> nodesByCard)
         {
             if (database?.resourceCatalog?.collapseEndings == null) return;
@@ -349,12 +384,14 @@ namespace Game.Scripts.Editor
             }
         }
 
+        /// <summary>Returns the saved position for a resource, or a default far-left-column position based on list index.</summary>
         private Vector2 ResolveResourceNodePosition(ResourceData resource, int indexInList)
         {
             Vector2 defaultPosition = new Vector2(-520, indexInList * 190 + 60);
             return ResolveNewOrSavedPosition(resource, positionsByResource, SaveResourcePositionToDatabase, defaultPosition);
         }
 
+        /// <summary>Persists the positions of all moved graph elements (cards, speakers, resources) back to the database with undo support.</summary>
         private void SaveMovedNodePositions(List<GraphElement> movedElements)
         {
             if (database == null || movedElements == null) return;

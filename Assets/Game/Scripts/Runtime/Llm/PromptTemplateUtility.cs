@@ -2,14 +2,16 @@ using UnityEngine;
 
 namespace Game.Scripts.Runtime.Llm
 {
-    /// <summary>
-    /// Fills a single {token} placeholder in an author-editable template string. Centralizes the pattern so
-    /// every templated seed prompt (e.g. LlmPromptTemplates.defaultWarningSeedPrompt) is filled the same safe
-    /// way instead of an ad-hoc string.Replace at the call site, and warns instead of silently no-op'ing if an
-    /// Inspector edit accidentally removes the token.
-    /// </summary>
+    /// <summary>Provides simple token-based placeholder substitution for LLM prompt templates.</summary>
     public static class PromptTemplateUtility
     {
+        /// <summary>Replaces all occurrences of {token} in the template with the given value.</summary>
+        /// <param name="template">Prompt template string containing {token} placeholders.</param>
+        /// <param name="token">Placeholder name without braces (e.g. "resourceName").</param>
+        /// <param name="value">Replacement string; null is treated as empty.</param>
+        /// <returns>The template with placeholders replaced, or empty string if the template was null/empty.</returns>
+        /// <remarks>Logs a warning when the expected placeholder is not found in the template,
+        /// which usually indicates a mismatch between the template text and the calling code.</remarks>
         public static string Fill(string template, string token, string value)
         {
             if (string.IsNullOrEmpty(template))

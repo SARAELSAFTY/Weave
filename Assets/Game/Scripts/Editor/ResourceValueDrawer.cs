@@ -4,9 +4,11 @@ using UnityEngine;
 
 namespace Game.Scripts.Editor
 {
+    /// <summary>Draws a ResourceValue (resource reference + delta) on a single inspector row.</summary>
     [CustomPropertyDrawer(typeof(ResourceValue))]
     public class ResourceValueDrawer : PropertyDrawer
     {
+        /// <summary>Draws the resource reference at 65% width and the value beside it at 30%.</summary>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);

@@ -6,18 +6,23 @@ using UnityEngine.UI;
 
 namespace Game.Scripts.UI
 {
+    /// <summary>Start screen with a single localized Play button.</summary>
     public class StartScreenView : SingleLocalizedButtonView
     {
-        [SerializeField, Tooltip("Button that begins the run.")] private Button playButton;
-        [SerializeField, Tooltip("Play button label. Auto-fetched from the button if left empty.")]
+        [Tooltip("Button that starts the game when clicked.")]
+        [SerializeField] private Button playButton;
+        [Tooltip("Label on the play button. Found automatically from the button's children if left empty.")]
+        [SerializeField]
         private TMP_Text playButtonText;
-        [SerializeField, Tooltip("Localized Play button label.")]
+        [Tooltip("Localized label shown on the play button.")]
+        [SerializeField]
         private LocalizedText playButtonLocalized = new LocalizedText
         {
             english = "Play",
             arabic = "ابدأ"
         };
 
+        /// <summary>Raised when the player clicks Play.</summary>
         public event Action PlayRequested;
 
         protected override Button ViewButton => playButton;

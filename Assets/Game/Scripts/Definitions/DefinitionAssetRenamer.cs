@@ -4,12 +4,13 @@ using UnityEngine;
 
 namespace Game.Scripts.Definitions
 {
-    /// <summary>
-    /// OnValidate helper: renames a ScriptableObject asset file to match its author-facing name.
-    /// Uses delayCall so rename does not run mid-serialization.
-    /// </summary>
+    /// <summary>Editor-only utility that keeps ScriptableObject asset filenames in sync with their logical names.</summary>
     internal static class DefinitionAssetRenamer
     {
+        /// <summary>Schedules a deferred rename of the asset file to match <paramref name="trimmedName"/> on the next editor tick.</summary>
+        /// <remarks>Uses <see cref="EditorApplication.delayCall"/> to avoid re-entrant asset database operations during serialization callbacks.</remarks>
+        /// <param name="asset">The asset whose filename should be updated.</param>
+        /// <param name="trimmedName">Desired filename without extension.</param>
         public static void ScheduleRenameToMatch(Object asset, string trimmedName)
         {
             if (asset == null || string.IsNullOrWhiteSpace(trimmedName)) return;

@@ -4,17 +4,22 @@ using Game.Scripts.Localization;
 
 namespace Game.Scripts.Runtime.Llm
 {
-    /// <summary>
-    /// Builds every system prompt sent to the LLM. All static text comes from LlmPromptTemplates -
-    /// this class only selects the right template fields and assembles sections. See CardData for
-    /// per-card seed overrides and GameManager for which call site uses which method below.
-    /// </summary>
+    /// <summary>Assembles complete system prompts for persona, petition, and epilogue LLM requests from templates and runtime data.</summary>
+    /// <remarks>All static prompt text comes from <see cref="LlmPromptTemplates"/>; this class only composes sections.
+    /// The sole exception is <see cref="SingleTurnUserMessage"/>, which is the only hardcoded prompt string in the codebase.</remarks>
     public static class SpeakerPromptBuilder
     {
-        /// <summary>
-        /// Plain in-character line, no JSON. Used for reaction cards, resource warnings, and a petition
-        /// card's opening announcement - anywhere a speaker just talks.
-        /// </summary>
+        /// <summary>Hardcoded user message sent with single-turn reaction requests; the only prompt string not stored on LlmPromptTemplates.</summary>
+        public const string SingleTurnUserMessage = "Respond to the situation above.";
+
+        /// <summary>Builds a complete system prompt for a persona/reaction request combining voice, situation, state, and terminology.</summary>
+        /// <param name="speaker">Speaker data providing the persona prompt section.</param>
+        /// <param name="gameStateSnapshot">Serialized kingdom state injected as the State section.</param>
+        /// <param name="situationalPrompt">Situational context injected as the Situation section.</param>
+        /// <param name="templates">Prompt templates providing system instructions and language strings.</param>
+        /// <param name="language">Target language controlling which language instruction is selected.</param>
+        /// <param name="resources">Optional resource list for Arabic terminology mapping.</param>
+        /// <returns>The assembled system prompt string.</returns>
         public static string BuildPersonaPrompt(
             SpeakerData speaker,
             string gameStateSnapshot,
@@ -25,7 +30,7 @@ namespace Game.Scripts.Runtime.Llm
         {
             return new PromptComposer()
                 .AddRaw(templates != null ? templates.personaSystemInstructions : null)
-                .AddSection("Language Requirement", GetPlainTextLanguageInstruction(templates, language))
+                .AddSection("Language Requirement", GetLanguageInstruction(templates, language))
                 .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
                 .AddSection("Situation", situationalPrompt)
                 .AddSection("State", gameStateSnapshot)
@@ -33,10 +38,15 @@ namespace Game.Scripts.Runtime.Llm
                 .ToString();
         }
 
-        /// <summary>
-        /// JSON-mode prompt for a single petition turn. The schema described in
-        /// LlmPromptTemplates.petitionSystemInstructions must match <see cref="PetitionResolution"/> exactly.
-        /// </summary>
+        /// <summary>Builds a complete system prompt for a petition turn including resource constraints and delta bounds.</summary>
+        /// <param name="speaker">Speaker data providing the persona prompt section.</param>
+        /// <param name="gameStateSnapshot">Serialized kingdom state injected as the State section.</param>
+        /// <param name="situationalPrompt">Situational context injected as the Situation section.</param>
+        /// <param name="validResources">Resources the model may reference in resourceChanges deltas.</param>
+        /// <param name="clampMagnitude">Maximum absolute delta value communicated to the model.</param>
+        /// <param name="templates">Prompt templates providing petition system instructions and language strings.</param>
+        /// <param name="language">Target language controlling which language instruction is selected.</param>
+        /// <returns>The assembled system prompt string.</returns>
         public static string BuildPetitionTurnPrompt(
             SpeakerData speaker,
             string gameStateSnapshot,
@@ -48,7 +58,7 @@ namespace Game.Scripts.Runtime.Llm
         {
             return new PromptComposer()
                 .AddRaw(templates != null ? templates.petitionSystemInstructions : null)
-                .AddSection("Language Requirement", GetJsonLanguageInstruction(templates, language))
+                .AddSection("Language Requirement", GetLanguageInstruction(templates, language))
                 .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
                 .AddSection("Situation", situationalPrompt)
                 .AddSection("State", gameStateSnapshot)
@@ -56,6 +66,7 @@ namespace Game.Scripts.Runtime.Llm
                 .ToString();
         }
 
+        // Composes the Resources section listing valid resource names and delta bounds, plus Arabic terminology if applicable.
         private static string BuildResourcesSection(IReadOnlyList<ResourceData> resources, int clampMagnitude, GameLanguage language)
         {
             string section = $"Valid resources: {BuildValidResourceList(resources)}. " +
@@ -64,7 +75,14 @@ namespace Game.Scripts.Runtime.Llm
             return terminology != null ? section + "\n" + terminology : section;
         }
 
-        /// <summary>End-of-run epilogue summary prompt (collapse endings only).</summary>
+        /// <summary>Builds a complete system prompt for the end-of-reign epilogue narration.</summary>
+        /// <param name="dayCount">Length of the reign in days.</param>
+        /// <param name="collapsedResourceName">Name of the resource that reached zero and ended the reign.</param>
+        /// <param name="finalResourceSummary">Formatted summary of all resource values at collapse.</param>
+        /// <param name="fullChoiceHistory">Ordered list of ruler decisions throughout the reign.</param>
+        /// <param name="templates">Prompt templates providing epilogue system instructions and language strings.</param>
+        /// <param name="language">Target language controlling which language instruction is selected.</param>
+        /// <returns>The assembled system prompt string.</returns>
         public static string BuildEpiloguePrompt(
             int dayCount,
             string collapsedResourceName,
@@ -81,12 +99,13 @@ namespace Game.Scripts.Runtime.Llm
 
             return new PromptComposer()
                 .AddRaw(templates != null ? templates.epilogueSystemInstructions : null)
-                .AddSection("Language Requirement", GetPlainTextLanguageInstruction(templates, language))
+                .AddSection("Language Requirement", GetLanguageInstruction(templates, language))
                 .AddSection("REIGN RECORD", reignRecord)
                 .ToString();
         }
 
-        private static string GetPlainTextLanguageInstruction(LlmPromptTemplates templates, GameLanguage language)
+        // Selects the appropriate language instruction template based on the current game language.
+        private static string GetLanguageInstruction(LlmPromptTemplates templates, GameLanguage language)
         {
             if (templates == null)
             {
@@ -94,22 +113,11 @@ namespace Game.Scripts.Runtime.Llm
             }
 
             return language == GameLanguage.Arabic
-                ? templates.plainTextArabicInstruction
-                : templates.plainTextEnglishInstruction;
+                ? templates.arabicInstruction
+                : templates.englishInstruction;
         }
 
-        private static string GetJsonLanguageInstruction(LlmPromptTemplates templates, GameLanguage language)
-        {
-            if (templates == null)
-            {
-                return null;
-            }
-
-            return language == GameLanguage.Arabic
-                ? templates.jsonArabicInstruction
-                : templates.jsonEnglishInstruction;
-        }
-
+        // Builds an Arabic terminology mapping section listing approved Arabic terms for each resource; returns null for non-Arabic languages.
         private static string BuildTerminologySection(IReadOnlyList<ResourceData> resources, GameLanguage language)
         {
             if (language != GameLanguage.Arabic || resources == null)
@@ -137,6 +145,7 @@ namespace Game.Scripts.Runtime.Llm
                    string.Join("\n", lines);
         }
 
+        // Joins valid resource asset names into a comma-separated list for the prompt; returns "None" if empty.
         private static string BuildValidResourceList(IReadOnlyList<ResourceData> validResources)
         {
             List<string> validNames = new List<string>();

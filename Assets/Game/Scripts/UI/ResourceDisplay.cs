@@ -8,17 +8,24 @@ using UnityEngine.UI;
 
 namespace Game.Scripts.UI
 {
+    /// <summary>Shows each resource's localized name, current value and icon.</summary>
     public class ResourceDisplay : LocalizedDisplay
     {
+        /// <summary>Wires one resource to the label and icon that display it.</summary>
         [Serializable]
         public struct LabelBinding
         {
+            [Tooltip("Resource whose name and value are displayed.")]
             public ResourceData resource;
+            [Tooltip("Text showing the resource name and current value.")]
             public TMP_Text label;
+            [Tooltip("Optional icon; hidden when the resource has none.")]
             public Image icon;
         }
 
+        [Tooltip("Runtime resource values displayed by this element.")]
         [SerializeField] private ResourceState resourceState;
+        [Tooltip("One entry per resource shown, pairing each resource with its label and icon.")]
         [SerializeField] private LabelBinding[] labels;
 
         private void Awake()

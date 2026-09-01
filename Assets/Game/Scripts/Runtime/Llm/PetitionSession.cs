@@ -5,35 +5,47 @@ using Game.Scripts.Localization;
 
 namespace Game.Scripts.Runtime.Llm
 {
-    /// <summary>
-    /// Multi-turn conversation state for one petition audience: spam-dot budget, message history,
-    /// and any proposal awaiting player confirmation. Create per shown petition card; discard on resolve.
-    /// </summary>
+    /// <summary>Tracks the state of a single multi-turn petition audience including turn budget, conversation history, and resolution status.</summary>
+    /// <remarks>Owns the Groq message list sent to <see cref="LlmReactionClient.RequestPetitionTurn"/> and a human-readable transcript for UI display.</remarks>
     public class PetitionSession
     {
+        /// <summary>Full Groq conversation history (system + alternating user/assistant turns) rebuilt each submission.</summary>
         private readonly List<GroqApiMessage> history = new List<GroqApiMessage>();
+        /// <summary>Human-readable log of ruler inputs and petitioner reactions for UI transcript display.</summary>
         private readonly List<string> transcript = new List<string>();
+        /// <summary>Holds the current player input until RecordReply commits it to history and transcript.</summary>
         private string pendingPlayerInput;
 
-        public int DotBudget { get; }
-        public int DotsRemaining { get; private set; }
-        public bool DotsExhausted => DotsRemaining <= 0;
+        /// <summary>Total number of turns allocated for this audience at construction time.</summary>
+        public int TurnBudget { get; }
+        /// <summary>Number of turns still available before the audience ends.</summary>
+        public int TurnsRemaining { get; private set; }
+        /// <summary>True when no turns remain and the petitioner should deliver a closing statement.</summary>
+        public bool TurnsExhausted => TurnsRemaining <= 0;
 
+        /// <summary>The most recent proposal-phase resolution, or null if the petitioner has not yet proposed.</summary>
         public PetitionResolution LastProposal { get; private set; }
+        /// <summary>True when a proposal has been received and the game is waiting for ruler confirmation.</summary>
         public bool AwaitingConfirmation => LastProposal != null;
 
-        public PetitionSession(int dotBudget)
+        /// <summary>Creates a new petition session with the given turn budget.</summary>
+        /// <param name="turnBudget">Number of turns for this audience; clamped to a minimum of 1.</param>
+        public PetitionSession(int turnBudget)
         {
-            DotBudget = dotBudget < 1 ? 1 : dotBudget;
-            DotsRemaining = DotBudget;
+            TurnBudget = turnBudget < 1 ? 1 : turnBudget;
+            TurnsRemaining = TurnBudget;
         }
 
-        /// <summary>
-        /// Builds the prompt for the next petition turn.
-        /// The player's message is buffered until <see cref="RecordReply"/> so a failed API call
-        /// never pollutes history. Clears any pending proposal - confirmation must go through
-        /// <see cref="LastProposal"/>, not this method.
-        /// </summary>
+        /// <summary>Builds the complete message list for the next petition API call, including system prompt and history.</summary>
+        /// <param name="playerInput">The ruler's latest input for this turn.</param>
+        /// <param name="speaker">Speaker data providing persona and identity context.</param>
+        /// <param name="gameStateSnapshot">Serialized kingdom state injected into the system prompt.</param>
+        /// <param name="situationalPrompt">Optional situational context appended to the system prompt.</param>
+        /// <param name="validResources">Resources the model may reference in resourceChanges deltas.</param>
+        /// <param name="clampMagnitude">Maximum absolute delta value communicated to the model.</param>
+        /// <param name="templates">Prompt templates providing system instructions and language strings.</param>
+        /// <param name="language">Target language for language instruction selection.</param>
+        /// <returns>A message list ready for <see cref="LlmReactionClient.RequestPetitionTurn"/>.</returns>
         public List<GroqApiMessage> BuildMessagesForSubmission(
             string playerInput,
             SpeakerData speaker,
@@ -60,10 +72,9 @@ namespace Game.Scripts.Runtime.Llm
             return messages;
         }
 
-        /// <summary>
-        /// Commits the buffered player message and stores the assistant reply for continuity.
-        /// Pass the cleaned raw response text so the model sees its prior turn verbatim on the next call.
-        /// </summary>
+        /// <summary>Commits a completed petition turn to history and transcript, decrementing the turn budget.</summary>
+        /// <param name="resolution">The parsed resolution from this turn; may be null on parse failure.</param>
+        /// <param name="rawContent">Raw assistant message content stored verbatim in conversation history.</param>
         public void RecordReply(PetitionResolution resolution, string rawContent)
         {
             history.Add(new GroqApiMessage { role = "user", content = pendingPlayerInput });
@@ -80,10 +91,7 @@ namespace Game.Scripts.Runtime.Llm
                 transcript.Add($"Petitioner: {reply}");
             }
 
-            if (resolution != null && resolution.isSpam)
-            {
-                DotsRemaining = Math.Max(0, DotsRemaining - 1);
-            }
+            TurnsRemaining = Math.Max(0, TurnsRemaining - 1);
 
             if (resolution != null && resolution.IsProposal)
             {
@@ -91,6 +99,7 @@ namespace Game.Scripts.Runtime.Llm
             }
         }
 
+        /// <summary>Returns the human-readable transcript of all ruler/petitioner exchanges so far.</summary>
         public IReadOnlyList<string> GetTranscript() => transcript;
     }
 }

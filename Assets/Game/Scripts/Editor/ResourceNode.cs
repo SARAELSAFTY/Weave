@@ -1,24 +1,30 @@
 using Game.Scripts.Definitions;
+using Game.Scripts.Localization;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
+    /// <summary>Graph node representing a ResourceData asset, with an output port for collapse endings.</summary>
     public class ResourceNode : BaseNode
     {
         private static readonly Color ResourceHeaderColor = new Color(0.10f, 0.28f, 0.22f);
         private static readonly Color ResourceBorderColor = new Color(0.25f, 0.75f, 0.55f);
 
+        /// <summary>The resource asset this node represents.</summary>
         public ResourceData Data { get; }
+        /// <summary>Output port connecting this resource to the card ending that collapses it.</summary>
         public Port CollapsePort { get; private set; }
 
         protected override Object TargetAsset => Data;
-        protected override string TargetId => Data != null ? Data.DisplayName : "Null Resource";
+        protected override string TargetId => Data != null ? Data.AssetName : "Null Resource";
 
         protected override string PingActionLabel => "Ping Resource Asset";
         protected override string OpenActionLabel => "Open Resource Asset";
 
+        /// <summary>Builds the node body, preview icon and collapse port for the given resource.</summary>
+        /// <param name="data">Resource asset to display; may be null for a placeholder node.</param>
         public ResourceNode(ResourceData data)
         {
             Data = data;
@@ -62,7 +68,7 @@ namespace Game.Scripts.Editor
                 }
             };
 
-            AddIdentityLabels(body, data.DisplayName, data.assetName);
+            AddIdentityLabels(body, data.GetDisplayName(GameLanguage.English), data.assetName);
 
             Label startValue = new Label($"Starting Value: {data.defaultStartingValue}");
             startValue.style.fontSize = 10;

@@ -4,9 +4,11 @@ using UnityEngine;
 
 namespace Game.Scripts.Editor
 {
+    /// <summary>Custom inspector for LlmSettings: a friendly model picker plus all remaining settings, hiding turn-limit fields that don't match the selected mode.</summary>
     [CustomEditor(typeof(LlmSettings))]
     public class LlmSettingsEditor : UnityEditor.Editor
     {
+        /// <summary>Display label paired with a Groq model identifier.</summary>
         private readonly struct ModelOption
         {
             public readonly string label;
@@ -19,12 +21,14 @@ namespace Game.Scripts.Editor
             }
         }
 
+        /// <summary>Models offered in the popup; ids are the Groq model identifiers stored on LlmSettings.</summary>
         private static readonly ModelOption[] Models =
         {
             new ModelOption("GPT-OSS 20B", "openai/gpt-oss-20b"),
             new ModelOption("Qwen 3.6 27B", "qwen/qwen3.6-27b")
         };
 
+        /// <summary>Draws the model popup (applying the recommended reasoning effort on change) and all settings except fields irrelevant to the current turn-limit mode.</summary>
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -45,7 +49,7 @@ namespace Game.Scripts.Editor
             }
             else
             {
-                EditorGUILayout.HelpBox("The current model is not in the quick-select list. Choose a listed model to replace it.", MessageType.Warning);
+                // Unknown/custom model id: show the popup from the first entry but keep the custom id until the user picks a listed model.
                 EditorGUI.BeginChangeCheck();
                 int newIndex = EditorGUILayout.Popup("Model", 0, GetModelLabels());
                 if (EditorGUI.EndChangeCheck())
@@ -56,7 +60,21 @@ namespace Game.Scripts.Editor
             }
 
             EditorGUILayout.Space(4);
-            DrawPropertiesExcluding(serializedObject, "m_Script", "groqModel");
+
+            SerializedProperty modeProperty = serializedObject.FindProperty("petitionTurnLimitMode");
+            // Hide the turn-limit fields that don't apply to the selected mode (Fixed uses one value, RandomRange uses min/max).
+            System.Collections.Generic.List<string> excluded = new System.Collections.Generic.List<string> { "m_Script", "groqModel" };
+            if (modeProperty != null && (PetitionTurnLimitMode)modeProperty.enumValueIndex == PetitionTurnLimitMode.Fixed)
+            {
+                excluded.Add("petitionMinTurnLimit");
+                excluded.Add("petitionMaxTurnLimit");
+            }
+            else
+            {
+                excluded.Add("petitionTurnLimit");
+            }
+
+            DrawPropertiesExcluding(serializedObject, excluded.ToArray());
 
             serializedObject.ApplyModifiedProperties();
         }

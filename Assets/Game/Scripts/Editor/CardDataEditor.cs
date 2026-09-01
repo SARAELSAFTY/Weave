@@ -1,12 +1,20 @@
 using Game.Scripts.Definitions;
+using Game.Scripts.Localization;
 using UnityEditor;
 using UnityEngine;
 
 namespace Game.Scripts.Editor
 {
+    /// <summary>
+    /// Custom inspector for <see cref="CardData"/> that conditionally shows fields based on card mode (standard, LLM reaction, or petition) and syncs changes back to open graph windows.
+    /// </summary>
     [CustomEditor(typeof(CardData))]
     public class CardDataEditor : UnityEditor.Editor
     {
+        /// <summary>
+        /// Draws the card inspector with mode-dependent field visibility: speaker is hidden for petition cards using generated commoners;
+        /// description/choices are hidden for LLM and petition cards; LLM and petition toggles are mutually exclusive.
+        /// </summary>
         public override void OnInspectorGUI()
         {
             CardData card = (CardData)target;
@@ -23,15 +31,7 @@ namespace Game.Scripts.Editor
 
             SerializedProperty assetNameProp = serializedObject.FindProperty("assetName");
             EditorGUILayout.PropertyField(assetNameProp, new GUIContent(
-                "Asset Name (ID)",
-                "Author-facing identifier. Convention: <Scene>_<Speaker>_<Slug>, e.g. Market_Advisor_WarnsBlight. " +
-                "Drives the graph node title and auto-renames the asset file on save. NOT shown to players."));
-
-            SerializedProperty displayNameProp = serializedObject.FindProperty("displayName");
-            EditorGUILayout.PropertyField(displayNameProp, new GUIContent(
-                "Display Name (UI)",
-                "Optional player-facing label. Most cards leave this empty. " +
-                "Falls back to Asset Name when blank."));
+                "Asset Name (ID)"));
 
             EditorGUILayout.Space(8);
 
@@ -40,25 +40,25 @@ namespace Game.Scripts.Editor
             bool usesGeneratedCommoner = isPetitionProp.boolValue && petitionerSourceProp != null &&
                                          petitionerSourceProp.enumValueIndex == (int)PetitionerSource.GeneratedCommoner;
 
-            // Show Speaker at the top for non-petition cards only.
+            // Speaker selector is only relevant for non-petition cards; petition cards use petitionerSource instead.
             if (!isPetitionProp.boolValue)
             {
-                EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker", "Character speaking this card. Optional - leave empty for narrator/event cards."));
+                EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker"));
             }
 
             EditorGUILayout.Space(6);
-            EditorGUILayout.LabelField("Card Visuals", EditorStyles.boldLabel);
             SerializedProperty artModeProp = serializedObject.FindProperty("artMode");
             EditorGUILayout.PropertyField(artModeProp, new GUIContent(
-                "Art Mode", "What art this card presents: the speaker's portrait, the Event Image, or nothing."));
+                "Art Mode"));
             if (artModeProp.enumValueIndex == (int)CardArtMode.EventImage)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("cardImage"), new GUIContent(
-                    "Event Image", "Illustration shown above the portrait area and card background."));
+                    "Event Image"));
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("visualTemplate"), new GUIContent(
-                "Visual Template", "Complete card look (background + border). Leave empty to use the scene default."));
+                "Visual Template"));
 
+            // Description text areas are only relevant for standard narrative cards; LLM/petition cards generate text at runtime.
             if (!isLlmProp.boolValue && !isPetitionProp.boolValue)
             {
                 LocalizedTextGui.DrawTextAreas(descriptionLocalizedProp, "Card Description (Story Text)");
@@ -70,13 +70,14 @@ namespace Game.Scripts.Editor
 
             EditorGUI.BeginChangeCheck();
             bool newIsLlm = EditorGUILayout.Toggle(
-                new GUIContent("Is LLM Reaction Card", "Generates description text dynamically at runtime via LLM."),
+                new GUIContent("Is LLM Reaction Card"),
                 isLlmProp.boolValue);
             if (EditorGUI.EndChangeCheck())
             {
                 isLlmProp.boolValue = newIsLlm;
                 if (newIsLlm)
                 {
+                    // LLM and petition modes are mutually exclusive; clear hand-authored description since LLM generates it.
                     isPetitionProp.boolValue = false;
                     LocalizedTextGui.Clear(descriptionLocalizedProp);
                 }
@@ -84,13 +85,14 @@ namespace Game.Scripts.Editor
 
             EditorGUI.BeginChangeCheck();
             bool newIsPetition = EditorGUILayout.Toggle(
-                new GUIContent("Is Petition Card", "Prompts player for free-form command input resolved dynamically by LLM."),
+                new GUIContent("Is Petition Card"),
                 isPetitionProp.boolValue);
             if (EditorGUI.EndChangeCheck())
             {
                 isPetitionProp.boolValue = newIsPetition;
                 if (newIsPetition)
                 {
+                    // Petition and LLM modes are mutually exclusive; clear hand-authored description since petition text is generated.
                     isLlmProp.boolValue = false;
                     LocalizedTextGui.Clear(descriptionLocalizedProp);
                 }
@@ -102,20 +104,11 @@ namespace Game.Scripts.Editor
 
                 SerializedProperty reactionSeedOverrideProp = serializedObject.FindProperty("reactionSeedOverride");
                 EditorGUILayout.PropertyField(reactionSeedOverrideProp, new GUIContent(
-                    "Reaction Seed Override",
-                    "Leave empty to use the global default from LlmPromptTemplates.defaultReactionSeedPrompt."));
-
-                bool usingOverride = !string.IsNullOrWhiteSpace(reactionSeedOverrideProp.stringValue);
-                EditorGUILayout.HelpBox(
-                    usingOverride
-                        ? "This card uses its own Reaction Seed Override above."
-                        : "This card uses the global reaction seed from LlmPromptTemplates.defaultReactionSeedPrompt.",
-                    MessageType.Info);
+                    "Reaction Seed Override"));
 
                 SpeakerData speaker = speakerProp.objectReferenceValue as SpeakerData;
                 if (speaker != null && string.IsNullOrWhiteSpace(speaker.llmPersonaPrompt))
                 {
-                    EditorGUILayout.HelpBox($"Speaker '{speaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
                 }
 
                 EditorGUILayout.Space(6);
@@ -125,42 +118,26 @@ namespace Game.Scripts.Editor
             else if (isPetitionProp.boolValue)
             {
                 EditorGUILayout.PropertyField(petitionerSourceProp, new GUIContent(
-                    "Petitioner Source",
-                    "Generated Commoner invents a temporary common subject (new name, trade, problem) each audience " +
-                    "and discards it afterwards. Defined Speaker uses the speaker assigned below and lets the AI " +
-                    "craft a problem suited to that character."));
+                    "Petitioner Source"));
 
                 if (usesGeneratedCommoner)
                 {
-                    EditorGUILayout.HelpBox("A temporary common subject will be generated for each audience; no speaker asset is needed.", MessageType.Info);
                 }
                 else
                 {
-                    // Defined Speaker — show the Speaker field here, in context.
-                    EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker", "The noble or character bringing this petition."));
+                    EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker"));
                     SpeakerData definedSpeaker = speakerProp.objectReferenceValue as SpeakerData;
                     if (definedSpeaker == null)
                     {
-                        EditorGUILayout.HelpBox("Assign a speaker asset for Defined Speaker mode.", MessageType.Warning);
                     }
                     else if (string.IsNullOrWhiteSpace(definedSpeaker.llmPersonaPrompt))
                     {
-                        EditorGUILayout.HelpBox($"Speaker '{definedSpeaker.DisplayName}' has no persona prompt authored.", MessageType.Warning);
                     }
                 }
 
                 SerializedProperty petitionSeedOverrideProp = serializedObject.FindProperty("petitionSeedOverride");
                 EditorGUILayout.PropertyField(petitionSeedOverrideProp, new GUIContent(
-                    "Petition Seed Override",
-                    "Leave empty to use the global default from LlmPromptTemplates.defaultPetitionSeedPrompt."));
-
-                bool usingOverride = !string.IsNullOrWhiteSpace(petitionSeedOverrideProp.stringValue);
-                EditorGUILayout.HelpBox(
-                    (usingOverride
-                        ? "This card uses its own Petition Seed Override above"
-                        : "This card uses the global petition seed from LlmPromptTemplates.defaultPetitionSeedPrompt")
-                    + " for both the opening announcement and every turn. If a turn request fails, the player can retry.",
-                    MessageType.Info);
+                    "Petition Seed Override"));
 
                 EditorGUILayout.Space(6);
                 SerializedProperty continueNextCardProp = serializedObject.FindProperty("continueNextCard");
@@ -168,7 +145,6 @@ namespace Game.Scripts.Editor
             }
             else if (card.IsEnding)
             {
-                EditorGUILayout.HelpBox("This is an Ending card (no outgoing next card links).", MessageType.Info);
             }
             else
             {
@@ -198,10 +174,6 @@ namespace Game.Scripts.Editor
 
                 if (card.HasBrokenBranch)
                 {
-                    EditorGUILayout.HelpBox(
-                        "One branch has no next card. The run fails the moment the player swipes that way - " +
-                        "link a card or leave both sides empty to make this an ending.",
-                        MessageType.Error);
                 }
             }
 

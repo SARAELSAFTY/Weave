@@ -12,19 +12,40 @@ using UnityEngine.SceneManagement;
 
 namespace Game.Scripts
 {
+    /// <summary>Orchestrates the core game flow: card presentation, player choices, petitions, resource warnings, and LLM-driven narrative.</summary>
+    /// <remarks>
+    /// Coordinates CardView, NarrativeRunner, ResourceWarningMonitor, PlayerHistoryTracker, and LlmReactionClient
+    /// to drive a day-based card game where each choice advances a branching narrative. Supports LLM-generated
+    /// speaker reactions, petition dialogues with turn limits, and collapse-ending epilogues.
+    /// </remarks>
     public class GameManager : MonoBehaviour
     {
-        [SerializeField, Tooltip("Card UI component in scene.")] private CardView cardView;
-        [SerializeField, Tooltip("Tracks kingdom resource values.")] private ResourceState resourceState;
-        [SerializeField, Tooltip("Story database containing cards.")] private NarrativeDatabase narrativeDatabase;
-        [SerializeField, Min(0.05f), Tooltip("Card exit animation duration in seconds.")] private float cardExitDuration = 0.25f;
-        [SerializeField, Tooltip("UI text element showing the current day.")] private DayDisplay dayDisplay;
-        [SerializeField, Tooltip("Start screen shown before a run begins.")] private StartScreenView startScreenView;
-        [SerializeField, Tooltip("HUD panels (resource bar, day badge) hidden while the start screen is up.")]
-        private GameObject[] hudObjects;
-        [SerializeField, Tooltip("Pause overlay shown during a run.")] private PauseMenuView pauseMenuView;
-        [SerializeField, Tooltip("Shared chat service for LLM reaction cards.")] private LlmReactionClient llmReactionClient;
-        [SerializeField, Tooltip("Global LLM settings.")] private LlmSettings llmSettings;
+        [Tooltip("Card view responsible for displaying cards, animations, and petition UI.")]
+        [SerializeField] private CardView cardView;
+
+        [Tooltip("Tracks the current values of all kingdom resources.")]
+        [SerializeField] private ResourceState resourceState;
+
+        [Tooltip("Database of narrative cards, speakers, resource catalog, and LLM prompt templates.")]
+        [SerializeField] private NarrativeDatabase narrativeDatabase;
+
+        [Tooltip("Duration in seconds for the card-exit animation after a choice is made.")]
+        [SerializeField, Min(0.05f)] private float cardExitDuration = 0.25f;
+
+        [Tooltip("UI element that displays the current day number.")]
+        [SerializeField] private DayDisplay dayDisplay;
+
+        [Tooltip("Start screen shown before the run begins.")]
+        [SerializeField] private StartScreenView startScreenView;
+
+        [Tooltip("Pause menu overlay shown when the player presses Escape.")]
+        [SerializeField] private PauseMenuView pauseMenuView;
+
+        [Tooltip("Optional client used to request LLM-generated speaker reactions and petition dialogue.")]
+        [SerializeField] private LlmReactionClient llmReactionClient;
+
+        [Tooltip("Optional settings controlling LLM token limits, history counts, and petition parameters.")]
+        [SerializeField] private LlmSettings llmSettings;
 
         private bool inputEnabled;
         private bool runInProgress;
@@ -38,13 +59,13 @@ namespace Game.Scripts
         private SpeakerData currentPetitionSpeaker;
         private bool currentPetitionSpeakerIsTemp;
 
-        // NarrativeDatabase.promptTemplates is the single source of truth for prompt text - see LlmPromptTemplates.
         private LlmPromptTemplates Templates => narrativeDatabase != null ? narrativeDatabase.promptTemplates : null;
 
         private GameLanguage CurrentLanguage => LanguageManager.Instance != null
             ? LanguageManager.Instance.CurrentLanguage
             : GameLanguage.English;
 
+        /// <summary>True when the game is accepting left/right choice input (not paused, not mid-animation).</summary>
         public bool AcceptsChoiceInput => inputEnabled && !isPaused;
         private int CurrentDay => narrativeRunner?.Day ?? 1;
         private PlayerHistoryTracker historyTracker;
@@ -76,12 +97,12 @@ namespace Game.Scripts
 
             if (missingReference)
             {
-                // Missing required references are unrecoverable; disabling permanently stops this
-                // component (OnDisable also detaches the view event wiring).
                 enabled = false;
             }
         }
 
+        // Deferred from Awake: these objects depend on validated Inspector references and should only
+        // be constructed when all required fields are confirmed present.
         private void Start()
         {
             if (!enabled)
@@ -93,7 +114,6 @@ namespace Game.Scripts
             narrativeRunner.DayChanged += HandleDayChanged;
             historyTracker = new PlayerHistoryTracker(resourceState, narrativeRunner, narrativeDatabase.resourceCatalog);
             resourceWarningMonitor = new ResourceWarningMonitor(narrativeDatabase.resourceCatalog, resourceState);
-            SetHudActive(false);
 
             if (!narrativeRunner.StartRun(out string error))
             {
@@ -102,6 +122,8 @@ namespace Game.Scripts
             }
         }
 
+        // Runtime-created ScriptableObjects (warning cards, generated endings, temp speakers) are not
+        // tracked by Unity's asset database and must be explicitly destroyed to avoid leaks.
         private void OnDestroy()
         {
             if (narrativeRunner != null)
@@ -177,22 +199,6 @@ namespace Game.Scripts
             }
         }
 
-        private void SetHudActive(bool active)
-        {
-            if (hudObjects == null)
-            {
-                return;
-            }
-
-            foreach (GameObject hud in hudObjects)
-            {
-                if (hud != null)
-                {
-                    hud.SetActive(active);
-                }
-            }
-        }
-
         private void BeginRun()
         {
             if (!enabled)
@@ -201,7 +207,6 @@ namespace Game.Scripts
             }
 
             startScreenView.Hide();
-            SetHudActive(true);
             runInProgress = true;
             showingResourceWarning = false;
             resourceWarningMonitor?.Reset();
@@ -243,6 +248,8 @@ namespace Game.Scripts
             pauseMenuView.Hide();
         }
 
+        /// <summary>Handles a player's left/right choice, routing through resource-warning dismissal or normal card resolution.</summary>
+        /// <param name="choseRight">True for right choice, false for left.</param>
         public void ChooseSide(bool choseRight)
         {
             if (!AcceptsChoiceInput)
@@ -274,6 +281,7 @@ namespace Game.Scripts
             inputEnabled = false;
             cardView.PlayConfirmAnimation(choseRight);
 
+            // Capture choice text before Choose() advances the narrative, since CurrentCard will change.
             CardData currentCard = narrativeRunner.CurrentCard;
             bool isLlmCard = currentCard != null && currentCard.isLlmReactionCard;
             string chosenChoiceText = currentCard != null && !isLlmCard
@@ -321,6 +329,8 @@ namespace Game.Scripts
                 return;
             }
 
+            // Show the generated card immediately with a "generating..." placeholder;
+            // the LLM callback will overwrite the description when the response arrives.
             CardData generatedCard = CreateGeneratedCollapseEndingCard(endingCard, speaker);
             cardView.ShowEnding(generatedCard, speaker);
 
@@ -336,14 +346,12 @@ namespace Game.Scripts
 
             llmReactionClient.RequestReaction(
                 epiloguePrompt,
-                templates != null ? templates.singleTurnUserMessage : string.Empty,
+                SpeakerPromptBuilder.SingleTurnUserMessage,
                 CurrentLanguage,
                 line =>
                 {
                     if (!string.IsNullOrWhiteSpace(line))
                     {
-                        // Fill both languages: a language toggle mid-generation would otherwise
-                        // leave the other language frozen on the "generating" placeholder.
                         generatedCard.descriptionLocalized = new LocalizedText { english = line, arabic = line };
                         cardView.ShowEnding(generatedCard, speaker);
                         return;
@@ -368,7 +376,6 @@ namespace Game.Scripts
             }
 
             generatedCollapseEndingCard.assetName = fallbackCard.AssetName + "_Generated";
-            generatedCollapseEndingCard.displayName = fallbackCard.DisplayName;
             generatedCollapseEndingCard.speaker = speaker != null ? speaker : fallbackCard.speaker;
             generatedCollapseEndingCard.descriptionLocalized = new LocalizedText
             {
@@ -523,10 +530,11 @@ namespace Game.Scripts
             return BuildCommonerSpeaker();
         }
 
+        // Creates a runtime-only SpeakerData; caller must track currentPetitionSpeakerIsTemp
+        // so CleanupPetitionSpeaker can destroy it later.
         private SpeakerData BuildCommonerSpeaker()
         {
             SpeakerData commoner = ScriptableObject.CreateInstance<SpeakerData>();
-            commoner.displayName = "A Common Subject";
             commoner.displayNameLocalized = new LocalizedText { english = "A Common Subject", arabic = "أحد رعايا التاج" };
             commoner.llmPersonaPrompt = Templates != null ? Templates.defaultCommonerPersona : string.Empty;
             return commoner;
@@ -548,7 +556,7 @@ namespace Game.Scripts
             LlmPromptTemplates templates = Templates;
             cardView.ShowPetition(card, speaker);
             inputEnabled = false;
-            currentPetitionSession = new PetitionSession(llmSettings != null ? llmSettings.petitionSpamDotBudget : 3);
+            currentPetitionSession = new PetitionSession(llmSettings != null ? llmSettings.ResolvePetitionTurnLimit() : 3);
 
             string gameStateSnapshot = GetPetitionSnapshotOrDefault();
             string seed = card.EffectivePetitionSeed(templates);
@@ -564,28 +572,28 @@ namespace Game.Scripts
 
                     cardView.SetDescriptionText(line);
                     cardView.ShowPetitionInput();
-                    cardView.UpdatePetitionDots(currentPetitionSession.DotsRemaining);
+                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
                 },
                 error =>
                 {
                     Debug.LogWarning($"[GameManager] Petition situation generation failed: {error}");
                     cardView.SetDescriptionText(FallbackStrings.PetitionOpeningUnavailable(CurrentLanguage));
                     cardView.ShowPetitionInput();
-                    cardView.UpdatePetitionDots(currentPetitionSession.DotsRemaining);
+                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
                 },
                 () =>
                 {
                     Debug.LogWarning("[GameManager] llmReactionClient is missing; showing fallback petition opening.", this);
                     cardView.SetDescriptionText(FallbackStrings.PetitionOpeningUnavailable(CurrentLanguage));
                     cardView.ShowPetitionInput();
-                    cardView.UpdatePetitionDots(currentPetitionSession.DotsRemaining);
+                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
                 });
         }
 
         private void HandlePetitionSubmitted(string playerInput)
         {
             CardData card = narrativeRunner.CurrentCard;
-            if (card == null || !card.isPetitionCard || currentPetitionSession == null)
+            if (card == null || !card.isPetitionCard || currentPetitionSession == null || currentPetitionSession.TurnsExhausted)
             {
                 return;
             }
@@ -632,31 +640,39 @@ namespace Game.Scripts
             currentPetitionSession?.RecordReply(result, rawContent);
             cardView.SetPetitionSubmitting(false);
 
-            if (currentPetitionSession != null && currentPetitionSession.DotsExhausted)
-            {
-                CardData currentCard = narrativeRunner.CurrentCard;
-                SpeakerData speaker = currentPetitionSpeaker != null ? currentPetitionSpeaker : (currentCard != null ? currentCard.speaker : null);
-                HandlePetitionDotsExhausted(currentCard, speaker);
-                return;
-            }
-
             if (result.IsProposal)
             {
                 cardView.ShowPetitionProposal(result.reaction);
-                cardView.UpdatePetitionDots(currentPetitionSession.DotsRemaining);
+                if (currentPetitionSession != null && currentPetitionSession.TurnsExhausted)
+                {
+                    cardView.DisablePetitionFurtherInput();
+                    cardView.UpdatePetitionDots(0);
+                }
+                else
+                {
+                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
+                }
+                return;
+            }
+
+            if (currentPetitionSession != null && currentPetitionSession.TurnsExhausted)
+            {
+                CardData currentCard = narrativeRunner.CurrentCard;
+                SpeakerData speaker = currentPetitionSpeaker != null ? currentPetitionSpeaker : (currentCard != null ? currentCard.speaker : null);
+                HandlePetitionTurnsExhausted(currentCard, speaker);
                 return;
             }
 
             cardView.ShowPetitionDeliberation(result.reaction);
-            cardView.UpdatePetitionDots(currentPetitionSession.DotsRemaining);
+            cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
         }
 
-        private void HandlePetitionDotsExhausted(CardData card, SpeakerData speaker)
+        private void HandlePetitionTurnsExhausted(CardData card, SpeakerData speaker)
         {
             cardView.UpdatePetitionDots(0);
             cardView.SetPetitionSubmitting(true);
 
-            string seed = Templates != null ? Templates.defaultPetitionExhaustedSeedPrompt : string.Empty;
+            string seed = Templates != null ? Templates.petitionClosingSeedPrompt : string.Empty;
             string snapshot = GetPetitionSnapshotOrDefault();
 
             RequestSpeakerReaction(speaker, snapshot, seed,
@@ -723,6 +739,8 @@ namespace Game.Scripts
             HandleStepResult(result);
         }
 
+        // Applies a brief cooldown before re-enabling the submit button to prevent rapid-fire retries
+        // that could compound rate-limiting or error states.
         private void OnPetitionFailed(LlmRequestError error)
         {
             Debug.LogWarning($"[GameManager] Petition resolution failed: {error}");
@@ -767,7 +785,6 @@ namespace Game.Scripts
                 : FallbackStrings.KingdomStatusUnknown(CurrentLanguage);
         }
 
-        // Shared continuation once a step result is known to be error-free.
         private void HandleStepResult(NarrativeStepResult result)
         {
             if (result.HasEnded)
@@ -789,8 +806,6 @@ namespace Game.Scripts
             ShowCurrentCard();
         }
 
-        // Builds the persona system prompt and dispatches a reaction request. Callers own success/failure
-        // behavior and their own fallback for a missing client.
         private void RequestSpeakerReaction(SpeakerData speaker, string gameStateSnapshot, string seed,
             Action<string> onSuccess, Action<LlmRequestError> onFailure, Action onMissingClient, int? maxTokensOverride = null)
         {
@@ -808,7 +823,7 @@ namespace Game.Scripts
             string fullSystemPrompt = SpeakerPromptBuilder.BuildPersonaPrompt(
                 speaker, gameStateSnapshot, seed, templates, CurrentLanguage, resources);
 
-            llmReactionClient.RequestReaction(fullSystemPrompt, templates != null ? templates.singleTurnUserMessage : string.Empty, CurrentLanguage, onSuccess, onFailure, maxTokensOverride);
+            llmReactionClient.RequestReaction(fullSystemPrompt, SpeakerPromptBuilder.SingleTurnUserMessage, CurrentLanguage, onSuccess, onFailure, maxTokensOverride);
         }
 
         private void HandleDayChanged()

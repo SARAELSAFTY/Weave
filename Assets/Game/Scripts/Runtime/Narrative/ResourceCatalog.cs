@@ -5,23 +5,34 @@ using UnityEngine;
 
 namespace Game.Scripts.Runtime.Narrative
 {
-    /// <summary>Maps a resource to the fallback ending card shown when its collapse generation fails.</summary>
+    /// <summary>Pairs a resource with the ending card shown when that resource collapses.</summary>
     [Serializable]
     public class ResourceCollapseEnding
     {
+        /// <summary>The resource whose collapse triggers this ending.</summary>
+        [Tooltip("The resource whose collapse triggers this ending.")]
         public ResourceData resource;
+
+        /// <summary>The ending card displayed when the paired resource collapses.</summary>
+        [Tooltip("The ending card displayed when the paired resource collapses.")]
         public CardData endingCard;
     }
 
+    /// <summary>ScriptableObject listing all game resources and their associated collapse-ending cards.</summary>
     [CreateAssetMenu(fileName = "ResourceCatalog", menuName = "Weave/Resource Catalog")]
     public class ResourceCatalog : ScriptableObject
     {
+        /// <summary>All resources tracked by the game.</summary>
+        [Tooltip("All resources tracked by the game.")]
         public List<ResourceData> resources = new List<ResourceData>();
 
-        [Tooltip("Per-resource fallback ending card shown when collapse generation fails. Every resource " +
-                 "that should trigger a distinct lose ending needs an entry here.")]
+        /// <summary>Maps each resource to the ending card shown when it reaches its collapse threshold.</summary>
+        [Tooltip("Maps each resource to the ending card shown when it reaches its collapse threshold.")]
         public List<ResourceCollapseEnding> collapseEndings = new List<ResourceCollapseEnding>();
 
+        /// <summary>Finds a resource by its asset name using case-insensitive comparison.</summary>
+        /// <param name="assetName">The asset name to search for.</param>
+        /// <returns>The matching <see cref="ResourceData"/>, or null if not found.</returns>
         public ResourceData FindByAssetName(string assetName)
         {
             if (string.IsNullOrWhiteSpace(assetName) || resources == null)
@@ -40,6 +51,9 @@ namespace Game.Scripts.Runtime.Narrative
             return null;
         }
 
+        /// <summary>Returns the collapse-ending card mapped to the given resource, or null if no mapping exists.</summary>
+        /// <param name="resource">The resource to look up in <see cref="collapseEndings"/>.</param>
+        /// <returns>The associated ending card, or null.</returns>
         public CardData GetCollapseEndingCard(ResourceData resource)
         {
             if (resource == null || collapseEndings == null)

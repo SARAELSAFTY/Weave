@@ -7,7 +7,6 @@ export default {
       "Access-Control-Max-Age": "86400",
     };
 
-    // 1. Handle CORS preflight requests
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -15,7 +14,6 @@ export default {
       });
     }
 
-    // 2. Reject any non-POST HTTP methods
     if (request.method !== "POST") {
       return new Response(
         JSON.stringify({ error: "Method Not Allowed. Only POST is accepted." }),
@@ -30,8 +28,7 @@ export default {
       );
     }
 
-    // 3. Reject oversized payloads (>20KB abuse protection)
-    const MAX_BODY_BYTES = 20 * 1024; // 20KB
+    const MAX_BODY_BYTES = 20 * 1024;
     const contentLength = request.headers.get("Content-Length");
     if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
       return new Response(
@@ -75,7 +72,6 @@ export default {
       );
     }
 
-    // 4. Verify GROQ_API_KEY environment secret
     if (!env.GROQ_API_KEY) {
       return new Response(
         JSON.stringify({ error: "Server misconfiguration: GROQ_API_KEY secret is not set." }),
@@ -89,7 +85,6 @@ export default {
       );
     }
 
-    // 5. Forward request to Groq API
     try {
       const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",

@@ -8,38 +8,81 @@ using UnityEngine.UI;
 
 namespace Game.Scripts.UI
 {
+    /// <summary>Drives card presentation including static cards, petition input, LLM reaction display, endings, drag preview, and exit animation.</summary>
+    /// <remarks>Subscribes to LanguageManager for live language switching. Choice sub-cards are animated by paired <see cref="ChoiceCardAnimator"/> components.</remarks>
     public class CardView : MonoBehaviour
     {
-        [SerializeField, Tooltip("Main card story text.")] private TMP_Text descriptionText;
-        [SerializeField, Tooltip("Left choice text label.")] private TMP_Text leftChoiceText;
-        [SerializeField, Tooltip("Right choice text label.")] private TMP_Text rightChoiceText;
-        [SerializeField, Tooltip("Canvas group for card transparency.")] private CanvasGroup canvasGroup;
-        [SerializeField, Tooltip("Character portrait image.")] private Image speakerPortrait;
-        [SerializeField, Tooltip("Speaker character name text.")] private TMP_Text speakerNameText;
-        [SerializeField, Tooltip("Card background pattern image.")] private Image cardBackgroundImage;
-        [SerializeField, Tooltip("Card border frame overlay image.")] private Image cardBorderImage;
-        [SerializeField, Tooltip("Optional illustration overlay rendered above the portrait and card background.")] private Image cardIllustrationImage;
-        [SerializeField, Tooltip("Background pattern used when the shown card does not override it.")] private Sprite defaultCardBackground;
-        [SerializeField, Tooltip("Border frame used when the shown card does not override it.")] private Sprite defaultCardBorder;
+        [Header("Card Content")]
+        [Tooltip("Text component displaying the card's main description or dialogue body.")]
+        [SerializeField] private TMP_Text descriptionText;
 
-        [Header("Ending")]
-        [SerializeField, Tooltip("Restart button shown on game ending screen.")] private Button restartButton;
+        [Tooltip("Text component for the left choice label shown during drag or on a normal card.")]
+        [SerializeField] private TMP_Text leftChoiceText;
 
-        [Header("Petition")]
-        [SerializeField, Tooltip("Root object containing the petition input field and submit button.")] private GameObject petitionInputRoot;
-        [SerializeField, Tooltip("Text input field for petition commands.")] private TMP_InputField petitionInputField;
-        [SerializeField, Tooltip("Submit button for petition commands.")] private Button petitionSubmitButton;
-        [SerializeField, Tooltip("Confirm button shown once the AI has proposed a resolution.")] private Button petitionConfirmButton;
-        [SerializeField, Tooltip("Dot meter showing remaining petition turns. Optional.")] private Image[] petitionPatienceDots;
+        [Tooltip("Text component for the right choice label shown during drag or on a normal card.")]
+        [SerializeField] private TMP_Text rightChoiceText;
 
-        [Header("Exit Feel")]
-        [SerializeField, Tooltip("Horizontal distance card moves offscreen on exit.")] private float exitDistance = 1400f;
-        [SerializeField, Tooltip("Maximum rotation angle during exit.")] private float exitRotationDegrees = 18f;
-        [SerializeField, Tooltip("Easing curve for exit animation.")] private AnimationCurve exitEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        [Tooltip("Canvas group controlling overall card opacity during exit animations.")]
+        [SerializeField] private CanvasGroup canvasGroup;
 
-        [Header("Choice Card Feel")]
-        [SerializeField, Tooltip("Animator driver on the left choice card object.")] private ChoiceCardAnimator leftChoiceCardAnimator;
-        [SerializeField, Tooltip("Animator driver on the right choice card object.")] private ChoiceCardAnimator rightChoiceCardAnimator;
+        [Header("Speaker & Art")]
+        [Tooltip("Image displaying the speaker's portrait when the card uses SpeakerPortrait art mode.")]
+        [SerializeField] private Image speakerPortrait;
+
+        [Tooltip("Text component showing the current speaker's localized display name.")]
+        [SerializeField] private TMP_Text speakerNameText;
+
+        [Tooltip("Background image overridden per-card by the visual template; falls back to the default sprite.")]
+        [SerializeField] private Image cardBackgroundImage;
+
+        [Tooltip("Border image overridden per-card by the visual template; falls back to the default sprite.")]
+        [SerializeField] private Image cardBorderImage;
+
+        [Tooltip("Illustration image shown only when the card uses EventImage art mode and has a cardImage assigned.")]
+        [SerializeField] private Image cardIllustrationImage;
+
+        [Tooltip("Fallback background sprite used when no visual template provides one.")]
+        [SerializeField] private Sprite defaultCardBackground;
+
+        [Tooltip("Fallback border sprite used when no visual template provides one.")]
+        [SerializeField] private Sprite defaultCardBorder;
+
+        [Header("Ending UI")]
+        [Tooltip("Button shown only on ending cards that triggers a run restart.")]
+        [SerializeField] private Button restartButton;
+
+        [Header("Petition Input")]
+        [Tooltip("Root GameObject containing the petition text input and submit button; toggled active during petition cards.")]
+        [SerializeField] private GameObject petitionInputRoot;
+
+        [Tooltip("Text input field where the player types petition commands.")]
+        [SerializeField] private TMP_InputField petitionInputField;
+
+        [Tooltip("Button that submits the current petition input text.")]
+        [SerializeField] private Button petitionSubmitButton;
+
+        [Tooltip("Optional button shown after an LLM proposal to confirm the petition action before proceeding.")]
+        [SerializeField] private Button petitionConfirmButton;
+
+        [Tooltip("Array of dot images indicating remaining petition patience; alpha dims for exhausted dots.")]
+        [SerializeField] private Image[] petitionPatienceDots;
+
+        [Header("Exit Animation")]
+        [Tooltip("Horizontal distance in pixels the card travels during its exit animation.")]
+        [SerializeField] private float exitDistance = 1400f;
+
+        [Tooltip("Rotation in degrees applied to the card at full exit displacement.")]
+        [SerializeField] private float exitRotationDegrees = 18f;
+
+        [Tooltip("Curve controlling the easing of position, rotation, and fade during the card exit animation.")]
+        [SerializeField] private AnimationCurve exitEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+        [Header("Choice Sub-Cards")]
+        [Tooltip("Animator driving the left choice sub-card reveal and dismiss.")]
+        [SerializeField] private ChoiceCardAnimator leftChoiceCardAnimator;
+
+        [Tooltip("Animator driving the right choice sub-card reveal and dismiss.")]
+        [SerializeField] private ChoiceCardAnimator rightChoiceCardAnimator;
 
         private RectTransform cardRectTransform;
         private Vector2 homePosition;
@@ -51,10 +94,16 @@ namespace Game.Scripts.UI
         private SpeakerData currentSpeaker;
         private string currentDynamicDescription;
 
+        /// <summary>Raised when the player clicks the restart button on an ending card.</summary>
         public event Action RestartRequested;
+
+        /// <summary>Raised when the player submits petition input text; carries the trimmed input string.</summary>
         public event Action<string> PetitionCommandSubmitted;
+
+        /// <summary>Raised when the player clicks the petition confirm button after an LLM proposal.</summary>
         public event Action PetitionConfirmRequested;
 
+        /// <summary>True when the card accepts drag gestures (not an ending or petition card).</summary>
         public bool AcceptsDrag => !isEndingCard && !isPetitionCard;
 
         private GameLanguage CurrentLanguage => LanguageManager.Instance != null
@@ -140,6 +189,9 @@ namespace Game.Scripts.UI
             }
         }
 
+        /// <summary>Presents a normal choice card with static text, speaker, and visuals; resets position and hides petition UI.</summary>
+        /// <param name="cardData">The card data providing text, art, and branch configuration.</param>
+        /// <param name="speaker">The speaker whose portrait and name are displayed; may be null.</param>
         public void Show(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
@@ -157,6 +209,9 @@ namespace Game.Scripts.UI
             ApplyStaticCardText(cardData, useReactionFallbacks: false);
         }
 
+        /// <summary>Presents a card showing an LLM reaction with empty description (populated later) and reaction-fallback choice labels.</summary>
+        /// <param name="cardData">The card data providing choice text fallbacks and visuals.</param>
+        /// <param name="speaker">The speaker whose portrait and name are displayed; may be null.</param>
         public void ShowLlmReaction(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
@@ -175,6 +230,9 @@ namespace Game.Scripts.UI
             ApplyChoiceTexts(cardData, useReactionFallbacks: true);
         }
 
+        /// <summary>Presents a petition card with empty text fields, ready for the petition input UI to be activated separately.</summary>
+        /// <param name="cardData">The card data providing speaker and visual configuration.</param>
+        /// <param name="speaker">The speaker whose portrait and name are displayed; may be null.</param>
         public void ShowPetition(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = false;
@@ -195,6 +253,9 @@ namespace Game.Scripts.UI
             ApplyCardVisuals(cardData);
         }
 
+        /// <summary>Converts an active petition card into a normal choice card displaying the final LLM reaction text and reaction-fallback labels.</summary>
+        /// <param name="cardData">The card data providing choice text fallbacks.</param>
+        /// <param name="finalReactionText">The LLM-generated reaction text displayed as the card description.</param>
         public void ConvertPetitionToNormalChoices(CardData cardData, string finalReactionText)
         {
             isPetitionCard = false;
@@ -209,6 +270,7 @@ namespace Game.Scripts.UI
             ResetCardPosition();
         }
 
+        /// <summary>Activates the petition input field and submit button, clearing any previous text.</summary>
         public void ShowPetitionInput()
         {
             if (petitionInputField != null)
@@ -224,12 +286,26 @@ namespace Game.Scripts.UI
             SetPetitionSubmitting(false);
         }
 
+        /// <summary>Hides the petition input root, preventing further player input for this petition.</summary>
+        public void DisablePetitionFurtherInput()
+        {
+            if (petitionInputRoot != null)
+            {
+                petitionInputRoot.SetActive(false);
+            }
+        }
+
+        /// <summary>Replaces the card description with dynamically generated text (e.g., an LLM response).</summary>
+        /// <param name="text">The new description text; null is treated as empty.</param>
         public void SetDescriptionText(string text)
         {
             currentDynamicDescription = text ?? string.Empty;
             SetLabel(descriptionText, currentDynamicDescription);
         }
 
+        /// <summary>Presents an ending card with its description, hides choice labels, and shows the restart button.</summary>
+        /// <param name="cardData">The ending card data; null displays a fallback run-ended message.</param>
+        /// <param name="speaker">The speaker whose portrait and name are displayed; may be null.</param>
         public void ShowEnding(CardData cardData, SpeakerData speaker)
         {
             isEndingCard = true;
@@ -253,6 +329,9 @@ namespace Game.Scripts.UI
             restartButton.gameObject.SetActive(true);
         }
 
+        /// <summary>Updates card position, rotation, and choice sub-card reveal based on horizontal drag progress.</summary>
+        /// <param name="horizontalDrag">Current horizontal drag displacement in pixels from center.</param>
+        /// <param name="swipeThreshold">The pixel distance at which drag is considered fully committed; clamped to minimum 1.</param>
         public void SetDragProgress(float horizontalDrag, float swipeThreshold)
         {
             if (isEndingCard || isPetitionCard)
@@ -271,6 +350,8 @@ namespace Game.Scripts.UI
             rightChoiceCardAnimator?.SetRevealProgress(progress);
         }
 
+        /// <summary>Snap-resets the card to its home position and optionally eases choice sub-cards back to their park positions.</summary>
+        /// <param name="easeChoiceCards">When true, choice sub-cards animate back; when false, they snap immediately (unless currently dismissing).</param>
         public void ResetCardPosition(bool easeChoiceCards = false)
         {
             cardRectTransform.anchoredPosition = homePosition;
@@ -297,7 +378,7 @@ namespace Game.Scripts.UI
             }
         }
 
-        /// <summary>Yields until any in-flight confirm toss has finished flying off.</summary>
+        /// <summary>Coroutine that yields each frame until both choice sub-card animators finish their dismiss flights.</summary>
         public IEnumerator WaitForChoiceFlight()
         {
             while ((leftChoiceCardAnimator != null && leftChoiceCardAnimator.IsDismissing) ||
@@ -307,6 +388,8 @@ namespace Game.Scripts.UI
             }
         }
 
+        /// <summary>Triggers the confirm-dismiss animation on the chosen side and eases the unchosen side back to park.</summary>
+        /// <param name="choseRight">True to confirm the right choice card, false for the left.</param>
         public void PlayConfirmAnimation(bool choseRight)
         {
             ChoiceCardAnimator chosen = choseRight ? rightChoiceCardAnimator : leftChoiceCardAnimator;
@@ -315,11 +398,17 @@ namespace Game.Scripts.UI
             other?.EaseBackToPark();
         }
 
+        /// <summary>Returns true if the given screen point lies within this card's rectangle.</summary>
+        /// <param name="screenPoint">The screen-space point to test.</param>
+        /// <param name="eventCamera">The camera used for the screen-to-rect conversion.</param>
         public bool ContainsScreenPoint(Vector2 screenPoint, Camera eventCamera)
         {
             return RectTransformUtility.RectangleContainsScreenPoint(cardRectTransform, screenPoint, eventCamera);
         }
 
+        /// <summary>Coroutine animating the card offscreen in the chosen direction using <see cref="exitEase"/> for position, rotation, and alpha.</summary>
+        /// <param name="choseRight">True to fly right, false to fly left.</param>
+        /// <param name="duration">Total animation duration in seconds.</param>
         public IEnumerator AnimateCardExit(bool choseRight, float duration)
         {
             Vector2 startPosition = cardRectTransform.anchoredPosition;
@@ -366,6 +455,8 @@ namespace Game.Scripts.UI
             }
         }
 
+        /// <summary>Toggles petition input and button interactability based on whether a submission is in progress.</summary>
+        /// <param name="isSubmitting">True to disable all petition controls; false to re-enable them (submit also requires non-empty text).</param>
         public void SetPetitionSubmitting(bool isSubmitting)
         {
             if (petitionInputField != null)
@@ -459,11 +550,15 @@ namespace Game.Scripts.UI
             }
         }
 
+        /// <summary>Displays an LLM deliberation response in the description and reopens petition input without a confirm button.</summary>
+        /// <param name="reactionText">The LLM-generated deliberation text.</param>
         public void ShowPetitionDeliberation(string reactionText)
         {
             DisplayPetitionResponse(reactionText, showConfirm: false);
         }
 
+        /// <summary>Displays an LLM proposal response in the description and reopens petition input with the confirm button visible.</summary>
+        /// <param name="reactionText">The LLM-generated proposal text.</param>
         public void ShowPetitionProposal(string reactionText)
         {
             DisplayPetitionResponse(reactionText, showConfirm: true);
@@ -481,6 +576,8 @@ namespace Game.Scripts.UI
             }
         }
 
+        /// <summary>Updates petition patience dots: fully opaque for remaining count, dimmed (alpha 0.25) for exhausted ones.</summary>
+        /// <param name="remainingDots">Number of patience dots that should appear active; clamped to array length.</param>
         public void UpdatePetitionDots(int remainingDots)
         {
             if (petitionPatienceDots == null || petitionPatienceDots.Length == 0) return;

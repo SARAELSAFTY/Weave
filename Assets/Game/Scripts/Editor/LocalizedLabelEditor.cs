@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Game.Scripts.Editor
 {
+    /// <summary>Custom inspector for LocalizedLabel: target text, font category, translations and edit-mode preview buttons.</summary>
     [CustomEditor(typeof(LocalizedLabel))]
     [CanEditMultipleObjects]
     public class LocalizedLabelEditor : UnityEditor.Editor
@@ -21,6 +22,7 @@ namespace Game.Scripts.Editor
             arabicProp = serializedObject.FindProperty("arabic");
         }
 
+        /// <summary>Draws the label fields and preview buttons that apply either translation in the editor.</summary>
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -43,6 +45,7 @@ namespace Game.Scripts.Editor
 
             if (GUILayout.Button("Preview English"))
             {
+                // Undo must cover the object SetText actually modifies: the target text when assigned, otherwise the label itself.
                 Undo.RecordObject(label.TargetText != null ? (Object)label.TargetText : label, "Preview English");
                 RtlTextHelper.SetText(label.TargetText, label.English, GameLanguage.English, label.FontCategory);
                 EditorUtility.SetDirty(label.gameObject);

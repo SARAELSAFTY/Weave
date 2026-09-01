@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 
 namespace Game.Scripts.Editor
 {
+    /// <summary>Graph node representing a CardData asset: status badges, description preview and ports for its branches.</summary>
     public class CardNode : BaseNode
     {
         private const int DescriptionPreviewLength = 50;
@@ -23,10 +24,15 @@ namespace Game.Scripts.Editor
         private static readonly Color PetitionBorder = new Color(0.1f, 0.85f, 0.75f);
         private static readonly Color DefaultBorder = new Color(0.28f, 0.30f, 0.35f);
 
+        /// <summary>The card asset this node represents.</summary>
         public CardData Card { get; }
+        /// <summary>Input port; cards leading into this one connect here.</summary>
         public Port InputPort { get; private set; }
+        /// <summary>Output port for the left choice branch.</summary>
         public Port LeftPort { get; private set; }
+        /// <summary>Output port for the right choice branch.</summary>
         public Port RightPort { get; private set; }
+        /// <summary>Output port for the continue exit, when the card has no choices.</summary>
         public Port ContinuePort { get; private set; }
 
         private readonly CardGraphView parentGraphView;
@@ -35,10 +41,14 @@ namespace Game.Scripts.Editor
         private Label summaryLabel;
 
         protected override Object TargetAsset => Card;
-        protected override string TargetId => Card != null ? Card.DisplayName : "Null Card";
+        protected override string TargetId => Card != null ? Card.AssetName : "Null Card";
         protected override string PingActionLabel => "Ping Card Asset";
         protected override string OpenActionLabel => "Open Card Asset";
 
+        /// <summary>Builds the node chrome, badges, body and branch ports for the given card.</summary>
+        /// <param name="card">Card asset to display.</param>
+        /// <param name="isStartCard">Whether this card is the database's starting card (highlighted border + START badge).</param>
+        /// <param name="parentGraphView">Graph view owning this node, used for rebuilds and starting-card changes.</param>
         public CardNode(CardData card, bool isStartCard, CardGraphView parentGraphView)
         {
             Card = card;
@@ -91,57 +101,49 @@ namespace Game.Scripts.Editor
             if (isStartCard)
             {
                 badges.Add(MakeBadge("START",
-                    new Color(1.0f, 0.85f, 0.1f), new Color(0.45f, 0.38f, 0.0f),
-                    "Starting Card"));
+                    new Color(1.0f, 0.85f, 0.1f), new Color(0.45f, 0.38f, 0.0f)));
             }
 
             if (card.isLlmReactionCard)
             {
                 badges.Add(MakeBadge("LLM",
-                    new Color(0.85f, 0.65f, 1f), new Color(0.30f, 0.12f, 0.45f),
-                    "LLM reaction card"));
+                    new Color(0.85f, 0.65f, 1f), new Color(0.30f, 0.12f, 0.45f)));
             }
 
             if (card.isPetitionCard)
             {
                 badges.Add(MakeBadge("PETITION",
-                    new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f),
-                    "Petition card - player types free-form commands resolved by AI."));
+                    new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f)));
             }
 
             if (card.isPetitionCard && card.petitionerSource == PetitionerSource.GeneratedCommoner)
             {
                 badges.Add(MakeBadge("COMMONER",
-                    new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f),
-                    "Petitioner is generated fresh each audience - no speaker asset needed."));
+                    new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f)));
             }
             else if ((card.isLlmReactionCard || card.isPetitionCard) && card.speaker != null &&
                      string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
             {
                 badges.Add(MakeBadge("No Speaker Persona",
-                    new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f),
-                    $"Speaker '{card.speaker.DisplayName}' has no Persona Prompt authored, so this reaction will have no persona."));
+                    new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f)));
             }
 
             if (!card.isPetitionCard && card.speaker == null)
             {
                 badges.Add(MakeBadge("NARRATOR",
-                    new Color(0.7f, 0.8f, 1f), new Color(0.15f, 0.25f, 0.45f),
-                    "No speaker assigned - presented as a narrator/event card."));
+                    new Color(0.7f, 0.8f, 1f), new Color(0.15f, 0.25f, 0.45f)));
             }
 
             if (card.HasBrokenBranch)
             {
                 badges.Add(MakeBadge("DEAD END",
-                    new Color(1.0f, 0.45f, 0.45f), new Color(0.45f, 0.10f, 0.10f),
-                    "One branch has no next card - swiping that way will fail the run. Link it or remove the choice."));
+                    new Color(1.0f, 0.45f, 0.45f), new Color(0.45f, 0.10f, 0.10f)));
             }
 
             if (card.IsEnding)
             {
                 badges.Add(MakeBadge("ENDING",
-                    new Color(1.0f, 0.45f, 0.45f), new Color(0.45f, 0.10f, 0.10f),
-                    "This card ends the game because it has no next card choice links."));
+                    new Color(1.0f, 0.45f, 0.45f), new Color(0.45f, 0.10f, 0.10f)));
             }
 
             return badges;
@@ -187,6 +189,7 @@ namespace Game.Scripts.Editor
             return body;
         }
 
+        // Builds the inline-editable row (speaker / visual template / art mode popups) shown only while the node is selected.
         private VisualElement BuildMetaRow(CardData card)
         {
             VisualElement row = new VisualElement
@@ -207,7 +210,7 @@ namespace Game.Scripts.Editor
             foreach (SpeakerData s in speakerList)
             {
                 if (s == null) continue;
-                choices.Add(s.DisplayName);
+                choices.Add(s.GetDisplayName(GameLanguage.English));
                 choiceSpeakers.Add(s);
                 if (card.speaker == s)
                 {
@@ -303,6 +306,7 @@ namespace Game.Scripts.Editor
             return row;
         }
 
+        /// <summary>Shows the editable meta row in place of the summary label while the node is selected.</summary>
         public override void OnSelected()
         {
             base.OnSelected();
@@ -317,6 +321,7 @@ namespace Game.Scripts.Editor
             }
         }
 
+        /// <summary>Restores the read-only summary label when the node is deselected, rebuilding it to reflect any edits.</summary>
         public override void OnUnselected()
         {
             base.OnUnselected();
@@ -334,7 +339,7 @@ namespace Game.Scripts.Editor
 
         private static string BuildSummary(CardData card)
         {
-            string speaker = card.speaker != null ? card.speaker.DisplayName : "No Speaker";
+            string speaker = card.speaker != null ? card.speaker.GetDisplayName(GameLanguage.English) : "No Speaker";
             string look = card.visualTemplate != null ? card.visualTemplate.name : "Default Look";
             string art = card.artMode == CardArtMode.EventImage ? "Art: Image"
                 : card.artMode == CardArtMode.None ? "Art: None"
@@ -440,12 +445,11 @@ namespace Game.Scripts.Editor
                 {
                     if (rv.resource == null) continue;
 
-                    string name = rv.resource.DisplayName;
+                    string name = rv.resource.GetDisplayName(GameLanguage.English);
                     Label resLabel = new Label($"{(rv.value >= 0 ? "+" : "")}{rv.value}{name[0]}");
                     resLabel.style.fontSize = 9;
                     resLabel.style.color = new StyleColor(rv.value >= 0 ? ResourceAccent : NegativeResourceAccent);
                     resLabel.style.marginLeft = 2;
-                    resLabel.tooltip = $"{name}: {rv.value}";
                     resourceContainer.Add(resLabel);
                 }
                 leftSide.Add(resourceContainer);
@@ -478,13 +482,13 @@ namespace Game.Scripts.Editor
             return text.Length > maxLength ? text.Substring(0, maxLength) + "..." : text;
         }
 
+        /// <summary>Adds card-specific context-menu actions: starting card, card kind toggles and speaker assignment.</summary>
         protected override void AddCustomContextMenuActions(ContextualMenuPopulateEvent evt)
         {
             evt.menu.AppendAction("Set as Starting Card", _ => parentGraphView.SetStartingCard(Card),
                 isStartCardCached ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
 
-            // Empty seeds fall back to LlmPromptTemplates defaults; do not write hardcoded seeds here.
-
+            // LLM reaction and petition are mutually exclusive card kinds; enabling one disables the other.
             evt.menu.AppendAction("Is LLM Reaction Card", _ =>
             {
                 Undo.RecordObject(Card, "Toggle LLM Reaction");
@@ -522,7 +526,7 @@ namespace Game.Scripts.Editor
                     if (s != null)
                     {
                         SpeakerData speakerObj = s;
-                        string label = s.DisplayName;
+                        string label = s.GetDisplayName(GameLanguage.English);
                         evt.menu.AppendAction($"Assign Speaker/{label}", _ => AssignSpeaker(speakerObj),
                             Card.speaker == speakerObj ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
                     }

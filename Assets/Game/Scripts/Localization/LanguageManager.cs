@@ -4,18 +4,30 @@ using UnityEngine.InputSystem;
 
 namespace Game.Scripts.Localization
 {
+    /// <summary>Singleton that owns the active language and broadcasts language-change events.</summary>
+    /// <remarks>
+    /// Auto-bootstraps a DontDestroyOnLoad instance via RuntimeInitializeOnLoadMethod before any scene loads.
+    /// If a scene-placed duplicate exists, it hands off its authored FontSettings to the live singleton
+    /// and destroys only the component (not the host GameObject, which may carry other essential components).
+    /// </remarks>
     public class LanguageManager : MonoBehaviour
     {
+        /// <summary>The live singleton instance.</summary>
         public static LanguageManager Instance { get; private set; }
+
+        /// <summary>True when the singleton has been created and not yet destroyed.</summary>
         public static bool HasInstance => Instance != null;
 
         private GameLanguage currentLanguage = GameLanguage.English;
 
-        [SerializeField, Tooltip("Active Font Settings for language font switching. Auto-loaded if not assigned.")]
+        [Tooltip("Font mapping asset used to resolve fonts per language and text category.")]
+        [SerializeField]
         private FontSettings fontSettings;
 
+        /// <summary>The currently active language.</summary>
         public GameLanguage CurrentLanguage => currentLanguage;
 
+        /// <summary>The loaded font settings, lazily falling back to Resources if not assigned in the Inspector.</summary>
         public FontSettings FontSettings
         {
             get
@@ -28,8 +40,10 @@ namespace Game.Scripts.Localization
             }
         }
 
+        /// <summary>Raised after the active language changes.</summary>
         public event Action LanguageChanged;
 
+        /// <summary>Creates the DontDestroyOnLoad singleton before any scene is loaded.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
@@ -43,14 +57,12 @@ namespace Game.Scripts.Localization
             go.AddComponent<LanguageManager>();
         }
 
+        // Handles the duplicate-instance case: transfers authored settings to the live singleton
+        // and removes only this component so the host GameObject remains intact.
         private void Awake()
         {
             if (Instance != null && Instance != this)
             {
-                // A manager already exists (auto-created before scene load). Hand over any authored
-                // FontSettings so the Inspector assignment is honoured, then remove only THIS component.
-                // Never Destroy(gameObject) here - this component may sit on an essential object
-                // (e.g. GameManager) and destroying the host would break the game.
                 if (fontSettings != null)
                 {
                     Instance.fontSettings = fontSettings;
@@ -82,10 +94,11 @@ namespace Game.Scripts.Localization
             }
         }
 
+        // Editor-only hotkey (F10) to toggle language without leaving play mode.
         private void Update()
         {
 #if UNITY_EDITOR
-            // Dev-only hotkey for flipping between English and Arabic in the Editor.
+
             if (Keyboard.current != null && Keyboard.current.f10Key.wasPressedThisFrame)
             {
                 SetLanguage(currentLanguage == GameLanguage.English ? GameLanguage.Arabic : GameLanguage.English);
@@ -93,6 +106,8 @@ namespace Game.Scripts.Localization
 #endif
         }
 
+        /// <summary>Sets the active language and raises <see cref="LanguageChanged"/> if it differs from the current value.</summary>
+        /// <param name="language">The language to switch to.</param>
         public void SetLanguage(GameLanguage language)
         {
             if (currentLanguage == language)
