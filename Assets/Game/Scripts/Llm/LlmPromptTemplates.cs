@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>ScriptableObject holding all static prompt text sent to the LLM across reaction, petition, and epilogue requests.</summary>
     /// <remarks>Edit these templates in the Inspector. Each tooltip states which LLM request the field is sent in.</remarks>

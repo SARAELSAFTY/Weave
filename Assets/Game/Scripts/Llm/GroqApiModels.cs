@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>Requests JSON-only output from the Groq chat-completions API.</summary>
     [Serializable]

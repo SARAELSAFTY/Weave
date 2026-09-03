@@ -1,4 +1,4 @@
-using Game.Scripts.Runtime.Llm;
+using Game.Scripts.Llm;
 using UnityEditor;
 using UnityEngine;
 

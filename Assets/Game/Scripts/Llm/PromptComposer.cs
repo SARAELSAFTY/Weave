@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>Fluent builder that assembles LLM system prompts from labeled sections separated by double newlines.</summary>
     public class PromptComposer

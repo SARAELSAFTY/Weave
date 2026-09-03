@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Game.Scripts.Definitions;
 using UnityEngine;
 
-namespace Game.Scripts.Runtime.Narrative
+namespace Game.Scripts.Narrative
 {
     /// <summary>Holds the mutable integer values for every resource in the catalog and broadcasts changes.</summary>
     /// <remarks>Initializes all resources to their defaultStartingValue in Awake. Disables itself if the catalog reference is missing.</remarks>

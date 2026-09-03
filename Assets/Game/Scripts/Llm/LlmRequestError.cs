@@ -1,4 +1,4 @@
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>Error codes returned by <see cref="LlmReactionClient"/> when an LLM request fails.</summary>
     public enum LlmRequestError

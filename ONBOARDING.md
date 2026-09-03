@@ -7,8 +7,8 @@ graph editor, and Groq-hosted LLM features behind a Cloudflare Worker proxy (`pr
 API key server-side). This guide covers the project-specific setup and architecture, for
 developers already familiar with Unity and C#.
 
-The repository ships no story content. The content slots in the scene are unassigned and
-must be filled as described in section 1.
+The repository ships no story content. Several content slots in the scene still reference
+removed assets and show *Missing*; assign fresh ones as described in section 1.
 
 ## 1. Setup
 
@@ -37,7 +37,7 @@ startup and disables itself.
 | `GameManager.llmSettings` and `LlmReactionClient.settings` | An `LlmSettings` asset (*Create → Weave → LLM Settings*). Optional: without it, LLM features fall back to pre-written text. |
 | `NarrativeDatabase.promptTemplates` | An `LlmPromptTemplates` asset (*Create → Weave → LLM Prompt Templates*) |
 | `ResourceDisplay.labels` | One entry per resource: HUD label + icon |
-| `LanguageManager.fontSettings` | Optional: loads automatically from `Resources` when unassigned |
+| `LanguageManager.fontSettings` | Optional: auto-loads a `FontSettings` asset from `Resources`. None ships, so text keeps the font set on each component until you create one (section 6) |
 
 `LlmReactionClient.proxyUrl` is already set to the shared development Worker.
 
@@ -64,7 +64,7 @@ If the proxy is unavailable, every LLM feature falls back to pre-written localiz
 | `PlayerHistoryTracker` | plain C# | Records choices and petition transcripts; builds the kingdom summary included in every prompt |
 | `PetitionSession` | plain C# | Per-petition state: turn budget, full message history (resent with each turn), pending proposal |
 | `LlmReactionClient` | MonoBehaviour | HTTP communication with the proxy, response parsing and sanitization; error types `NotConfigured`, `RateLimited`, `NetworkError`, `EmptyResponse` |
-| `CardView` + HUD views | UI | Card rendering for all states (normal / reaction / petition / ending), petition input, choice animation |
+| `CardView` + HUD views | UI | Card rendering for all states (normal / reaction / petition / ending), petition input, choice animation; applies the card's visual template and art slot, and previews the default template in edit mode |
 
 Input:
 
@@ -87,11 +87,11 @@ All content assets derive identity from **`NamedGameAsset`**:
 | Asset | Purpose |
 | --- | --- |
 | `NarrativeDatabase` | Story root: starting card, cards, speakers, `resourceCatalog`, `promptTemplates` |
-| `CardData` | Speaker, localized text, day advance, left/right choices (text + resource change + next card), LLM options, continue card, art |
+| `CardData` | Speaker, localized text, day advance, left/right choices (text + resource change + next card), LLM options, continue card, `artMode` / `cardImage` / `visualTemplate` |
 | `SpeakerData` | Portrait, localized name, LLM persona prompt |
 | `ResourceData` | Icon, starting value, collapse threshold, warning threshold % / speaker / cooldown |
 | `ResourceCatalog` | Resource list and one collapse-ending card per resource |
-| `CardVisualTemplate` | Reusable background + border pair (six provided in `Content/CardTemplates/`) |
+| `CardVisualTemplate` | The card look: background, speaker panel, and text panel, each with an optional border (*Create → Weave → Card Visual Template*; six provided in `Content/CardTemplates/`) |
 | `LlmSettings` | Model and all LLM tunables |
 | `LlmPromptTemplates` | All static prompt text |
 | `FontSettings` | Per-language fonts and category overrides; must reside under a `Resources/` folder (section 6) |
@@ -130,6 +130,10 @@ Resource mechanics:
 - **Collapse endings:** each resource node exposes a red **Collapse Ending** port;
   connecting it to a card sets that resource's collapse ending in the catalog.
 - **Starting card:** toolbar dropdown or the node context menu (*Set as Starting Card*).
+- **Card look:** a selected card node reveals three popups — speaker, visual template, and art
+  mode. Art mode picks `Speaker Portrait` (the speaker's portrait), `Event Image` (the card's
+  own `cardImage`), or `None`. An empty template falls back to the scene's
+  `CardView.defaultTemplate`.
 
 ## 5. LLM pipeline
 
@@ -192,9 +196,11 @@ Application is fail-closed (`PetitionResolutionApplier`):
   handled by RTLTMPro. The petition input field is replaced with `RTLTextMeshPro` at
   runtime by design.
 - **`FontSettings`** — per-language fonts plus category overrides (Title, Speaker Name,
-  Menu UI, Dialogue Body, Choice). It resolves via `Resources.Load`, so the active asset
-  must reside under a `Resources/` folder (currently
-  `Assets/Game/Resources/Fonts/FontSettings.asset`).
+  Menu UI, Dialogue Body, Choice) and an alignment mode. `FontSettings.LoadDefault` resolves
+  it through `Resources` (`FontSettings`, then `Fonts/FontSettings`, then any `FontSettings`
+  asset), so the file must live under a `Resources/` folder. **None ships in the repo**, so
+  every text component keeps the font set on it in the Inspector and no category override or
+  forced alignment applies.
 - **LLM output** — the templates' language instructions specify the response language;
   Arabic output is then sanitized as above.
 - **`FallbackStrings`** — pre-written bilingual lines for every LLM fallback path.

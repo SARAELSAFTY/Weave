@@ -20,8 +20,9 @@ Everything project-specific — setup, scene wiring, systems, trip hazards — l
 4. Assign the database and LLM settings on the Game Manager, the catalog on
    `ResourceState`, press Play.
 
-The repo ships **no story** — the scene's content slots are intentionally empty. The LLM
-proxy is already wired into the scene.
+The repo ships **no story**. Several scene content slots still reference removed assets and
+show *Missing*, so nothing plays until you author a story and assign it there. The LLM proxy
+is already wired into the scene.
 
 ## Controls
 
@@ -40,6 +41,7 @@ proxy is already wired into the scene.
 | Content types | `Assets/Game/Scripts/Definitions` — all ScriptableObjects |
 | Authoring tool | **Weave → Card Graph** + custom inspectors |
 | Content assets | `Assets/Game/Data` — cards, speakers, resources |
+| Card visuals | `Assets/Game/Art` (card art, portraits, fonts) + `Assets/Game/Content/CardTemplates` — looks assigned per card |
 | LLM proxy | `proxy/` — Cloudflare Worker; the Groq key stays server-side |
 | UI art | `Assets/Gentleland` — third-party Steampunk pack (don't edit) |
 
@@ -49,6 +51,8 @@ proxy is already wired into the scene.
   references fail fast at startup with a Console error naming the field.
 - Card types: **branching** (left/right links), **LLM reaction** and **petition**
   (continue link), **ending** (no links). Branching cards need both links or startup aborts.
+- A card's look comes from `CardVisualTemplate`: background, speaker panel, and text panel,
+  each with an optional border. `CardView` previews the scene's default template in edit mode.
 - Petition turns return JSON `{ phase, reaction, resourceChanges, historyTag }`; only an
   explicit `proposal` phase moves resources.
 - Every LLM surface (reactions, warnings, petitions, epilogues) falls back to localized

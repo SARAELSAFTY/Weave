@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>Determines how the per-audience petition turn limit is resolved.</summary>
     public enum PetitionTurnLimitMode

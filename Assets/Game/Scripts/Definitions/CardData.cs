@@ -1,5 +1,5 @@
 using Game.Scripts.Localization;
-using Game.Scripts.Runtime.Llm;
+using Game.Scripts.Llm;
 using UnityEngine;
 
 namespace Game.Scripts.Definitions

@@ -13,4 +13,8 @@ MonoBehaviour:
   m_Name: Tpl_GreenStar
   m_EditorClassIdentifier: 
   background: {fileID: 21300000, guid: 335d9e52400040f88d174757c53ed24c, type: 3}
-  border: {fileID: 21300000, guid: ce4cc84408334344ab19aa81315bbae8, type: 3}
+  backgroundBorder: {fileID: 21300000, guid: ce4cc84408334344ab19aa81315bbae8, type: 3}
+  topPanel: {fileID: 21300000, guid: 2a1ecc25f26443338c25c8bfc86c4570, type: 3}
+  topPanelBorder: {fileID: 0}
+  bottomPanel: {fileID: 21300000, guid: 2a1ecc25f26443338c25c8bfc86c4570, type: 3}
+  bottomPanelBorder: {fileID: 0}

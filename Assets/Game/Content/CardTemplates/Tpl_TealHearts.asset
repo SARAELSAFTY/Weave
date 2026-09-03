@@ -13,4 +13,8 @@ MonoBehaviour:
   m_Name: Tpl_TealHearts
   m_EditorClassIdentifier: 
   background: {fileID: 21300000, guid: c1ed093d4d1f4ee198c8bc336f983e75, type: 3}
-  border: {fileID: 0}
+  backgroundBorder: {fileID: 0}
+  topPanel: {fileID: 21300000, guid: 1e1d3ec0b8ba4ab29cae401cfcf0f910, type: 3}
+  topPanelBorder: {fileID: 0}
+  bottomPanel: {fileID: 21300000, guid: 1e1d3ec0b8ba4ab29cae401cfcf0f910, type: 3}
+  bottomPanelBorder: {fileID: 0}

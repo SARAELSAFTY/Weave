@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Game.Scripts.Definitions;
 using Game.Scripts.Localization;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>Assembles complete system prompts for persona, petition, and epilogue LLM requests from templates and runtime data.</summary>
     /// <remarks>All static prompt text comes from <see cref="LlmPromptTemplates"/>; this class only composes sections.

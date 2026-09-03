@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>Provides simple token-based placeholder substitution for LLM prompt templates.</summary>
     public static class PromptTemplateUtility

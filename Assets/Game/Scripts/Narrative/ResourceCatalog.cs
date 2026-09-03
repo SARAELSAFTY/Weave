@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Game.Scripts.Definitions;
 using UnityEngine;
 
-namespace Game.Scripts.Runtime.Narrative
+namespace Game.Scripts.Narrative
 {
     /// <summary>Pairs a resource with the ending card shown when that resource collapses.</summary>
     [Serializable]

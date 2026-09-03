@@ -1,7 +1,7 @@
 using System;
 using Game.Scripts.Definitions;
 using Game.Scripts.Localization;
-using Game.Scripts.Runtime.Narrative;
+using Game.Scripts.Narrative;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

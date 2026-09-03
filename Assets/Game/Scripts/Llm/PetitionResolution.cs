@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Game.Scripts.Definitions;
-using Game.Scripts.Runtime.Narrative;
+using Game.Scripts.Narrative;
 using UnityEngine;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>A single resource delta entry within a <see cref="PetitionResolution"/>.</summary>
     [Serializable]

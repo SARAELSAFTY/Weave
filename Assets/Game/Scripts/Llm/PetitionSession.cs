@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Game.Scripts.Definitions;
 using Game.Scripts.Localization;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>Tracks the state of a single multi-turn petition audience including turn budget, conversation history, and resolution status.</summary>
     /// <remarks>Owns the Groq message list sent to <see cref="LlmReactionClient.RequestPetitionTurn"/> and a human-readable transcript for UI display.</remarks>

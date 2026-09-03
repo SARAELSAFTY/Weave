@@ -5,7 +5,7 @@ using Game.Scripts.Localization;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>MonoBehaviour that sends chat-completions requests to a Groq-compatible proxy and parses the responses.</summary>
     /// <remarks>Handles two request types: single-turn reactions (plain text) and multi-turn petition turns (structured JSON).

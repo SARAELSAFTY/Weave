@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Game.Scripts.Runtime.Llm
+namespace Game.Scripts.Llm
 {
     /// <summary>Repairs model-mangled Arabic text by stripping non-Arabic characters and rejoining orphaned final letters.</summary>
     /// <remarks>LLMs sometimes split Arabic words at letter boundaries, producing isolated final-form letters

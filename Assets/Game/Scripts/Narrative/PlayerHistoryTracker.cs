@@ -3,7 +3,7 @@ using System.Text;
 using Game.Scripts.Definitions;
 using Game.Scripts.Localization;
 
-namespace Game.Scripts.Runtime.Narrative
+namespace Game.Scripts.Narrative
 {
     /// <summary>Accumulates player choices, petition transcripts, and resource snapshots into a text summary consumed by LLM prompts.</summary>
     /// <remarks>Non-MonoBehaviour; constructed with <see cref="ResourceState"/>, <see cref="NarrativeRunner"/>, and <see cref="ResourceCatalog"/>.</remarks>

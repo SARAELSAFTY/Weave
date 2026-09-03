@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Game.Scripts.Definitions;
 using UnityEngine;
 
-namespace Game.Scripts.Runtime.Narrative
+namespace Game.Scripts.Narrative
 {
     /// <summary>Immutable result of a single narrative step, carrying either the next card, an error, or a collapse ending.</summary>
     public readonly struct NarrativeStepResult

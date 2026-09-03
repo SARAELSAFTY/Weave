@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Game.Scripts.Definitions;
-using Game.Scripts.Runtime.Narrative;
+using Game.Scripts.Narrative;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;

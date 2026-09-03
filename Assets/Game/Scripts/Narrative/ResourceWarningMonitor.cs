@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Game.Scripts.Definitions;
 using UnityEngine;
 
-namespace Game.Scripts.Runtime.Narrative
+namespace Game.Scripts.Narrative
 {
     /// <summary>Detects when a resource drops below its warning threshold and manages per-resource cooldowns so warnings don't repeat too frequently.</summary>
     /// <remarks>Non-MonoBehaviour; call <see cref="Tick"/> once per card resolution to decrement cooldowns, then <see cref="TryGetTriggeredWarning"/> to check for new warnings.</remarks>

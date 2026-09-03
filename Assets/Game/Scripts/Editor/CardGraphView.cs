@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Scripts.Definitions;
-using Game.Scripts.Runtime.Narrative;
+using Game.Scripts.Narrative;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;

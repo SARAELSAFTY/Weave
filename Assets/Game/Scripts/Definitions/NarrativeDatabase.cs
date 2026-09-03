@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Game.Scripts.Runtime.Llm;
-using Game.Scripts.Runtime.Narrative;
+using Game.Scripts.Llm;
+using Game.Scripts.Narrative;
 using UnityEngine;
 
 namespace Game.Scripts.Definitions

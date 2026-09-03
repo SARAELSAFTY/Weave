@@ -3,7 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using Game.Scripts.Definitions;
-using Game.Scripts.Runtime.Narrative;
+using Game.Scripts.Narrative;
 
 namespace Game.Scripts.Editor
 {

@@ -9,7 +9,8 @@ using UnityEngine.UI;
 namespace Game.Scripts.UI
 {
     /// <summary>Drives card presentation including static cards, petition input, LLM reaction display, endings, drag preview, and exit animation.</summary>
-    /// <remarks>Subscribes to LanguageManager for live language switching. Choice sub-cards are animated by paired <see cref="ChoiceCardAnimator"/> components.</remarks>
+    /// <remarks>Subscribes to LanguageManager for live language switching. Choice sub-cards are animated by paired <see cref="ChoiceCardAnimator"/> components. In edit mode it only previews <see cref="defaultTemplate"/> on the card parts.</remarks>
+    [ExecuteAlways]
     public class CardView : MonoBehaviour
     {
         [Header("Card Content")]
@@ -26,26 +27,32 @@ namespace Game.Scripts.UI
         [SerializeField] private CanvasGroup canvasGroup;
 
         [Header("Speaker & Art")]
-        [Tooltip("Image displaying the speaker's portrait when the card uses SpeakerPortrait art mode.")]
-        [SerializeField] private Image speakerPortrait;
+        [Tooltip("Image in the top panel displaying the speaker portrait or the event illustration depending on art mode.")]
+        [SerializeField] private Image cardArtImage;
 
         [Tooltip("Text component showing the current speaker's localized display name.")]
         [SerializeField] private TMP_Text speakerNameText;
 
-        [Tooltip("Background image overridden per-card by the visual template; falls back to the default sprite.")]
+        [Tooltip("Background image overridden per-card by the visual template; falls back to the default template.")]
         [SerializeField] private Image cardBackgroundImage;
 
-        [Tooltip("Border image overridden per-card by the visual template; falls back to the default sprite.")]
+        [Tooltip("Border image overridden per-card by the visual template; falls back to the default template.")]
         [SerializeField] private Image cardBorderImage;
 
-        [Tooltip("Illustration image shown only when the card uses EventImage art mode and has a cardImage assigned.")]
-        [SerializeField] private Image cardIllustrationImage;
+        [Tooltip("Fill image for the top speaker panel; hidden when no template provides a sprite.")]
+        [SerializeField] private Image topPanelImage;
 
-        [Tooltip("Fallback background sprite used when no visual template provides one.")]
-        [SerializeField] private Sprite defaultCardBackground;
+        [Tooltip("Border image overlaid on the top speaker panel; hidden when no template provides a sprite.")]
+        [SerializeField] private Image topPanelBorderImage;
 
-        [Tooltip("Fallback border sprite used when no visual template provides one.")]
-        [SerializeField] private Sprite defaultCardBorder;
+        [Tooltip("Fill image for the bottom text panel; hidden when no template provides a sprite.")]
+        [SerializeField] private Image bottomPanelImage;
+
+        [Tooltip("Border image overlaid on the bottom text panel; hidden when no template provides a sprite.")]
+        [SerializeField] private Image bottomPanelBorderImage;
+
+        [Tooltip("Template providing the fallback part sprites when a card has no visual template assigned.")]
+        [SerializeField] private CardVisualTemplate defaultTemplate;
 
         [Header("Ending UI")]
         [Tooltip("Button shown only on ending cards that triggers a run restart.")]
@@ -112,12 +119,17 @@ namespace Game.Scripts.UI
 
         private void Awake()
         {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
             bool missingReference =
                 InspectorValidation.RequireField(descriptionText, nameof(descriptionText), nameof(CardView), this) |
                 InspectorValidation.RequireField(leftChoiceText, nameof(leftChoiceText), nameof(CardView), this) |
                 InspectorValidation.RequireField(rightChoiceText, nameof(rightChoiceText), nameof(CardView), this) |
                 InspectorValidation.RequireField(canvasGroup, nameof(canvasGroup), nameof(CardView), this) |
-                InspectorValidation.RequireField(speakerPortrait, nameof(speakerPortrait), nameof(CardView), this) |
+                InspectorValidation.RequireField(cardArtImage, nameof(cardArtImage), nameof(CardView), this) |
                 InspectorValidation.RequireField(speakerNameText, nameof(speakerNameText), nameof(CardView), this) |
                 InspectorValidation.RequireField(restartButton, nameof(restartButton), nameof(CardView), this) |
                 InspectorValidation.RequireField(petitionInputRoot, nameof(petitionInputRoot), nameof(CardView), this) |
@@ -133,16 +145,6 @@ namespace Game.Scripts.UI
             cardRectTransform = (RectTransform)transform;
             homePosition = cardRectTransform.anchoredPosition;
             homeRotation = cardRectTransform.localRotation;
-
-            if (defaultCardBackground == null && cardBackgroundImage != null)
-            {
-                defaultCardBackground = cardBackgroundImage.sprite;
-            }
-
-            if (defaultCardBorder == null && cardBorderImage != null)
-            {
-                defaultCardBorder = cardBorderImage.sprite;
-            }
 
             RtlTextHelper.Configure(descriptionText);
             RtlTextHelper.Configure(leftChoiceText);
@@ -175,9 +177,23 @@ namespace Game.Scripts.UI
 
         private void OnEnable()
         {
+            if (!Application.isPlaying)
+            {
+                ApplyEditorPreview();
+                return;
+            }
+
             if (LanguageManager.Instance != null)
             {
                 LanguageManager.Instance.LanguageChanged += RefreshLanguage;
+            }
+        }
+
+        private void OnValidate()
+        {
+            if (!Application.isPlaying)
+            {
+                ApplyEditorPreview();
             }
         }
 
@@ -506,11 +522,17 @@ namespace Game.Scripts.UI
         private void ApplySpeaker(SpeakerData speaker, CardData card)
         {
             CardArtMode mode = card != null ? card.artMode : CardArtMode.SpeakerPortrait;
-            bool hasPortrait = mode == CardArtMode.SpeakerPortrait && speaker != null && speaker.portrait != null;
+            Sprite art = null;
+            if (mode == CardArtMode.SpeakerPortrait && speaker != null)
+            {
+                art = speaker.portrait;
+            }
+            else if (mode == CardArtMode.EventImage && card != null)
+            {
+                art = card.cardImage;
+            }
 
-            speakerPortrait.gameObject.SetActive(hasPortrait);
-            speakerPortrait.sprite = hasPortrait ? speaker.portrait : null;
-            speakerPortrait.enabled = hasPortrait;
+            ApplyPartSprite(cardArtImage, art);
 
             if (speaker != null)
             {
@@ -528,25 +550,66 @@ namespace Game.Scripts.UI
         {
             CardVisualTemplate template = card != null ? card.visualTemplate : null;
 
-            if (cardBackgroundImage != null)
+            ApplyPartSprite(cardBackgroundImage, ResolveSprite(template, t => t.background));
+            ApplyPartSprite(cardBorderImage, ResolveSprite(template, t => t.backgroundBorder));
+            ApplyPartSprite(topPanelImage, ResolveSprite(template, t => t.topPanel));
+            ApplyPartSprite(topPanelBorderImage, ResolveSprite(template, t => t.topPanelBorder));
+            ApplyPartSprite(bottomPanelImage, ResolveSprite(template, t => t.bottomPanel));
+            ApplyPartSprite(bottomPanelBorderImage, ResolveSprite(template, t => t.bottomPanelBorder));
+        }
+
+        private Sprite ResolveSprite(CardVisualTemplate template, Func<CardVisualTemplate, Sprite> slot)
+        {
+            if (template != null)
             {
-                cardBackgroundImage.sprite = template != null && template.background != null
-                    ? template.background
-                    : defaultCardBackground;
+                return slot(template);
             }
 
-            if (cardBorderImage != null)
+            return defaultTemplate != null ? slot(defaultTemplate) : null;
+        }
+
+        private static void ApplyPartSprite(Image image, Sprite sprite)
+        {
+            if (image == null)
             {
-                Sprite border = template != null ? template.border : defaultCardBorder;
-                cardBorderImage.sprite = border;
-                cardBorderImage.enabled = border != null;
+                return;
             }
 
-            if (cardIllustrationImage != null)
+            image.sprite = sprite;
+            image.enabled = sprite != null;
+        }
+
+        private void ApplyEditorPreview()
+        {
+            SetPreviewSprite(cardBackgroundImage, ResolveSprite(null, t => t.background));
+            SetPreviewSprite(cardBorderImage, ResolveSprite(null, t => t.backgroundBorder));
+            SetPreviewSprite(topPanelImage, ResolveSprite(null, t => t.topPanel));
+            SetPreviewSprite(topPanelBorderImage, ResolveSprite(null, t => t.topPanelBorder));
+            SetPreviewSprite(bottomPanelImage, ResolveSprite(null, t => t.bottomPanel));
+            SetPreviewSprite(bottomPanelBorderImage, ResolveSprite(null, t => t.bottomPanelBorder));
+
+            if (cardArtImage != null && cardArtImage.sprite == null && cardArtImage.enabled)
             {
-                bool showImage = card != null && card.artMode == CardArtMode.EventImage && card.cardImage != null;
-                cardIllustrationImage.sprite = showImage ? card.cardImage : null;
-                cardIllustrationImage.enabled = showImage;
+                cardArtImage.enabled = false;
+            }
+        }
+
+        private static void SetPreviewSprite(Image image, Sprite sprite)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            if (image.sprite != sprite)
+            {
+                image.sprite = sprite;
+            }
+
+            bool enabled = sprite != null;
+            if (image.enabled != enabled)
+            {
+                image.enabled = enabled;
             }
         }
 
