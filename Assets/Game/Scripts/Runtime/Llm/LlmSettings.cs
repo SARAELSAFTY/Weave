@@ -16,8 +16,8 @@ namespace Game.Scripts.Runtime.Llm
     [CreateAssetMenu(fileName = "LlmSettings", menuName = "Weave/LLM Settings", order = 10)]
     public class LlmSettings : ScriptableObject
     {
-        [Tooltip("Groq model identifier sent in every API request (e.g. qwen/qwen3.6-27b).")]
-        public string groqModel = "qwen/qwen3.6-27b";
+        [Tooltip("Groq model identifier sent in every API request (e.g. qwen/qwen3.8-27b).")]
+        public string groqModel = "qwen/qwen3.8-27b";
 
         [Tooltip("Sampling temperature for all LLM requests; higher values increase variety at the cost of coherence.")]
         [Range(0f, 2f)]

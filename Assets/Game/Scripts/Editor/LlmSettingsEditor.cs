@@ -25,7 +25,7 @@ namespace Game.Scripts.Editor
         private static readonly ModelOption[] Models =
         {
             new ModelOption("GPT-OSS 20B", "openai/gpt-oss-20b"),
-            new ModelOption("Qwen 3.6 27B", "qwen/qwen3.6-27b")
+            new ModelOption("Qwen 3.8 27B", "qwen/qwen3.8-27b")
         };
 
         /// <summary>Draws the model popup (applying the recommended reasoning effort on change) and all settings except fields irrelevant to the current turn-limit mode.</summary>
