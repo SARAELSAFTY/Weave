@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: funny joke
+  m_EditorClassIdentifier: 
+  assetName: funny joke
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: "the jester:Look where the King\u2019s crown turns to rust,And royal
+      blood is turned to dust.\r\n"
+    arabic: "\u0627\u0644\u0645\u0647\u0631\u062C: \"\u0627\u0646\u0638\u0631 \u062D\u064A\u062B
+      \u064A\u0635\u062F\u0623 \u062A\u0627\u062C \u0627\u0644\u0645\u0644\u0643\u060C
+      \u0648\u064A\u062A\u062D\u0648\u0644 \u0627\u0644\u062F\u0645 \u0627\u0644\u0645\u0644\u0643\u064A
+      \u0625\u0644\u0649 \u062A\u0631\u0627\u0628.\""
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: the royal cemetery
+    arabic: "\u0627\u0644\u0645\u0642\u0627\u0628\u0631 \u0627\u0644\u0645\u0644\u0643\u064A\u0629 "
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -30
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 5
+  leftNextCard: {fileID: 11400000, guid: 6db1f7f60f71ed844b964df50119970e, type: 2}
+  rightChoiceLocalized:
+    english: the ruined castlel
+    arabic: "\u0627\u0644\u0642\u0644\u0639\u0629 \u0627\u0644\u0645\u062F\u0645\u0631\u0629"
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 20
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 5
+  rightNextCard: {fileID: 11400000, guid: e7acbcbbda307874db4460d068af46a4, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  continueNextCard: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 9991a13208bb4eda8e373c0a3e8b5786, type: 3}
+  visualTemplate: {fileID: 0}

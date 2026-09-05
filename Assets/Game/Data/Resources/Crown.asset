@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a3714b3e4c4278ac399d60c86fa534, type: 3}
+  m_Name: Crown
+  m_EditorClassIdentifier: 
+  assetName: Crown
+  displayNameLocalized:
+    english: Crown
+    arabic: "\u062A\u0627\u062C"
+  icon: {fileID: -1512851089295447720, guid: df8ab9ec8126d8148a4242e7d8b17249, type: 3}
+  defaultStartingValue: 50
+  collapseThreshold: 0
+  warningThresholdPercent: 20
+  warningSpeaker: {fileID: 11400000, guid: cfc48850c5968fe4f9c677c238de2346, type: 2}
+  warningCooldownCards: 5

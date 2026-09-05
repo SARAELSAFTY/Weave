@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: send the guards to catch the traitor
+  m_EditorClassIdentifier: 
+  assetName: send the guards to catch the traitor
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: they didn't find The Treasury Advisor and the pesents entered the castel
+      beheading you
+    arabic: "\u0644\u0645 \u064A\u0639\u062B\u0631\u0648\u0627 \u0639\u0644\u0649
+      \u0645\u0633\u062A\u0634\u0627\u0631 \u0627\u0644\u062E\u0632\u0627\u0646\u0629\u060C
+      \u0648\u0627\u0642\u062A\u062D\u0645 \u0627\u0644\u0641\u0644\u0627\u062D\u0648\u0646
+      \u0627\u0644\u0642\u0644\u0639\u0629 \u0648\u0642\u0637\u0639\u0648\u0627 \u0631\u0623\u0633\u0643."
+  dayAdvance: 34
+  leftChoiceLocalized:
+    english: 
+    arabic: 
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 0}
+  rightChoiceLocalized:
+    english: 
+    arabic: 
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 0}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  continueNextCard: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 4a7945b246c54ab5be0cf41a50bdb5ca, type: 3}
+  visualTemplate: {fileID: 0}

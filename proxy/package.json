@@ -1,0 +1,18 @@
+{
+  "name": "weave-groq-proxy",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker proxy for Groq API in Weave",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.50.0"
+  },
+  "allowScripts": {
+    "esbuild@0.17.19": true,
+    "sharp@0.33.5": true,
+    "workerd@1.20250718.0": true
+  }
+}

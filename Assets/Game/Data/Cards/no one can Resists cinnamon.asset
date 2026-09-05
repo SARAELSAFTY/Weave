@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: no one can Resists cinnamon
+  m_EditorClassIdentifier: 
+  assetName: no one can Resists cinnamon
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: "the General:My Lord, the Chancellor demands that you be placed on trial
+      before the High Church!.\r\nThe Seer\u2019s cryptic visions were reported to
+      the Church, allowing the Chancellor to claim you are seeking dark omens and
+      witchcraft instead of divine guidance.\r\n"
+    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644: \xAB\u064A\u0627 \u0645\u0648\u0644\u0627\u064A\u060C
+      \u064A\u0637\u0627\u0644\u0628 \u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631
+      \u0628\u0625\u062D\u0627\u0644\u062A\u0643 \u0625\u0644\u0649 \u0627\u0644\u0645\u062D\u0627\u0643\u0645\u0629
+      \u0623\u0645\u0627\u0645 \u0627\u0644\u0643\u0646\u064A\u0633\u0629 \u0627\u0644\u0639\u0644\u064A\u0627!
+      \u0644\u0642\u062F \u0631\u064F\u0641\u0639\u062A \u0631\u0624\u0649 \u0627\u0644\u0639\u0631\u0651\u0627\u0641
+      \u0627\u0644\u063A\u0627\u0645\u0636\u0629 \u0625\u0644\u0649 \u0627\u0644\u0643\u0646\u064A\u0633\u0629\u060C
+      \u0645\u0645\u0627 \u0633\u0645\u062D \u0644\u0644\u0645\u0633\u062A\u0634\u0627\u0631
+      \u0628\u0627\u0644\u0627\u062F\u0639\u0627\u0621 \u0628\u0623\u0646\u0643 \u062A\u0628\u062D\u062B
+      \u0639\u0646 \u0627\u0644\u0637\u0648\u0627\u0644\u0639 \u0627\u0644\u0645\u0638\u0644\u0645\u0629
+      \u0648\u0627\u0644\u0633\u062D\u0631 \u0628\u062F\u0644\u0627\u064B \u0645\u0646
+      \u0627\u0644\u0647\u062F\u0627\u064A\u0629 \u0627\u0644\u0625\u0644\u0647\u064A\u0629.\xBB   "
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: lie
+    arabic: "\u0627\u0643\u0630\u0628"
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 11400000, guid: 6ed0bd7e2cecc02459cadc4053e822ce, type: 2}
+  rightChoiceLocalized:
+    english: tell truth
+    arabic: "\u0642\u0648\u0644 \u0627\u0644\u062D\u0642\u064A\u0642\u0629"
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 11400000, guid: 863d592d33e83b744bf896ce6628b120, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  continueNextCard: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
+  visualTemplate: {fileID: 0}

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91350db365074dc43a68941e7a9a078c, type: 3}
+  m_Name: Tpl_MaroonSprig
+  m_EditorClassIdentifier: 
+  background: {fileID: 21300000, guid: a44b38b7f65b4474a298eb585f2ce21e, type: 3}
+  backgroundBorder: {fileID: 21300000, guid: b9c00b746f10476f957b7f018f7619f7, type: 3}
+  topPanel: {fileID: 21300000, guid: 2a1ecc25f26443338c25c8bfc86c4570, type: 3}
+  topPanelBorder: {fileID: 0}
+  bottomPanel: {fileID: 21300000, guid: 2a1ecc25f26443338c25c8bfc86c4570, type: 3}
+  bottomPanelBorder: {fileID: 0}

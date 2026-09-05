@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: bring me thier leader
+  m_EditorClassIdentifier: 
+  assetName: bring me thier leader
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: 'the General:  that is the list of the people''s demands (Lower grain
+      taxes end forced conscription, and open the royal granaries to feed the starving
+      city).
+
+      The Treasury Adviser: what a scandal.'
+    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644: \"\u0647\u0630\u0647 \u0642\u0627\u0626\u0645\u0629
+      \u0628\u0645\u0637\u0627\u0644\u0628 \u0627\u0644\u0634\u0639\u0628 (\u062E\u0641\u0636
+      \u0636\u0631\u0627\u0626\u0628 \u0627\u0644\u062D\u0628\u0648\u0628\u060C \u0625\u0646\u0647\u0627\u0621
+      \u0627\u0644\u062A\u062C\u0646\u064A\u062F \u0627\u0644\u0625\u062C\u0628\u0627\u0631\u064A\u060C
+      \u0648\u0641\u062A\u062D \u0645\u062E\u0627\u0632\u0646 \u0627\u0644\u063A\u0644\u0627\u0644
+      \u0627\u0644\u0645\u0644\u0643\u064A\u0629 \u0644\u0625\u0637\u0639\u0627\u0645
+      \u0627\u0644\u0645\u062F\u064A\u0646\u0629 \u0627\u0644\u062C\u0627\u0626\u0639\u0629).\"\n\n\u0645\u0633\u062A\u0634\u0627\u0631
+      \u0627\u0644\u062E\u0632\u0627\u0646\u0629: \"\u064A\u0627 \u0644\u0647\u0627
+      \u0645\u0646 \u0641\u0636\u064A\u062D\u0629!\""
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: the crown does not negotiate with mobs.
+    arabic: "\"\u0627\u0644\u062A\u0627\u062C \u0644\u0627 \u064A\u062A\u0641\u0627\u0648\u0636
+      \u0645\u0639 \u0627\u0644\u063A\u0648\u063A\u0627\u0621.\""
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 11400000, guid: 2b5fc4bd5427ca746be09401fb130f3e, type: 2}
+  rightChoiceLocalized:
+    english: "Open the granaries at once and grant them an audience\u2014if we do
+      not yield today, we won't have a kingdom left to rule tomorrow."
+    arabic: "\"\u0627\u0641\u062A\u062D\u0648\u0627 \u0645\u062E\u0627\u0632\u0646
+      \u0627\u0644\u063A\u0644\u0627\u0644 \u0641\u0648\u0631\u064B\u0627 \u0648\u0627\u0645\u0646\u062D\u0648\u0647\u0645
+      \u062C\u0644\u0633\u0629 \u0645\u0642\u0627\u0628\u0644\u0629\u2014\u0625\u0646
+      \u0644\u0645 \u0646\u0633\u062A\u0633\u0644\u0645 \u0627\u0644\u064A\u0648\u0645\u060C
+      \u0641\u0644\u0646 \u062A\u0628\u0642\u0649 \u0644\u062F\u064A\u0646\u0627
+      \u0645\u0645\u0644\u0643\u0629 \u0644\u0646\u062D\u0643\u0645\u0647\u0627 \u063A\u062F\u064B\u0627.\""
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 11400000, guid: d63479f0263eac84ba0052f9dafab04d, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

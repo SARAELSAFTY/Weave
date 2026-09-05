@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: too risky
+  m_EditorClassIdentifier: 
+  assetName: too risky
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: "The Treasury Advisor has escaped after stealing all the tax money!
+      The people at the gates are demanding his head\u2014or they will take yours.\r\n"
+    arabic: "\u0644\u0642\u062F \u0647\u0631\u0628 \u0645\u0633\u062A\u0634\u0627\u0631
+      \u0627\u0644\u062E\u0632\u0627\u0646\u0629 \u0628\u0639\u062F \u0623\u0646
+      \u0633\u0631\u0642 \u062C\u0645\u064A\u0639 \u0623\u0645\u0648\u0627\u0644
+      \u0627\u0644\u0636\u0631\u0627\u0626\u0628! \u0648\u0627\u0644\u0634\u0639\u0628
+      \u0639\u0646\u062F \u0627\u0644\u0623\u0633\u0648\u0627\u0631 \u064A\u0637\u0627\u0644\u0628
+      \u0628\u0631\u0623\u0633\u0647\u2014\u0648\u0625\u0644\u0627 \u0641\u0633\u064A\u0623\u062E\u0630\u0648\u0646
+      \u0631\u0623\u0633\u0643!"
+  dayAdvance: 23
+  leftChoiceLocalized:
+    english: send the guards to catch the traitor
+    arabic: "\u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062D\u0631\u0633 \u0644\u0644\u0642\u0628\u0636
+      \u0639\u0644\u0649 \u0627\u0644\u062E\u0627\u0626\u0646!"
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -24
+  leftNextCard: {fileID: 11400000, guid: 0bcb65149af112142814fb47cb958cd4, type: 2}
+  rightChoiceLocalized:
+    english: open the castel vaults to the people
+    arabic: "\u0641\u062A\u062D \u062E\u0632\u0627\u0626\u0646 \u0627\u0644\u0642\u0644\u0639\u0629
+      \u0644\u0644\u0634\u0639\u0628!"
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -30
+  rightNextCard: {fileID: 11400000, guid: 9480a74bd895ccd45a16a7288aeed491, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  continueNextCard: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 4a7945b246c54ab5be0cf41a50bdb5ca, type: 3}
+  visualTemplate: {fileID: 0}

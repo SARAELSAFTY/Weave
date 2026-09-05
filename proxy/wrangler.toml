@@ -1,0 +1,7 @@
+name = "weave-groq-proxy"
+main = "src/index.js"
+compatibility_date = "2024-04-01"
+
+# The GROQ_API_KEY secret is not committed here.
+# Set it securely using:
+#   npx wrangler secret put GROQ_API_KEY

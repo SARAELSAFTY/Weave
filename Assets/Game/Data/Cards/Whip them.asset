@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Whip them
+  m_EditorClassIdentifier: 
+  assetName: Whip them
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: 'The Genral: the people are surrounding the north and the east gates,
+      my lord, you should escape right now.
+
+'
+    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644: \"\u0627\u0644\u0634\u0639\u0628
+      \u064A\u062D\u0627\u0635\u0631 \u0627\u0644\u0628\u0648\u0627\u0628\u062A\u064A\u0646
+      \u0627\u0644\u0634\u0645\u0627\u0644\u064A\u0629 \u0648\u0627\u0644\u0634\u0631\u0642\u064A\u0629
+      \u064A\u0627 \u0645\u0648\u0644\u0627\u064A\u060C \u0639\u0644\u064A\u0643
+      \u0628\u0627\u0644\u0641\u0631\u0627\u0631 \u0627\u0644\u0622\u0646!"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: no, I won't leave my crown to punch of insurgent
+    arabic: "\u0644\u0646 \u0623\u0647\u0631\u0628... \u0644\u0646 \u0623\u062A\u0631\u0643
+      \u062A\u0627\u062C\u064A \u0644\u0639\u0635\u0628\u0629 \u0645\u0646 \u0627\u0644\u0645\u062A\u0645\u0631\u062F\u064A\u0646"
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 11400000, guid: 2b5fc4bd5427ca746be09401fb130f3e, type: 2}
+  rightChoiceLocalized:
+    english: escapes through the secret doors to the south gate
+    arabic: "\u064A\u0647\u0631\u0628 \u0639\u0628\u0631 \u0627\u0644\u0623\u0628\u0648\u0627\u0628
+      \u0627\u0644\u0633\u0631\u064A\u0629 \u0625\u0644\u0649 \u0627\u0644\u0628\u0648\u0627\u0628\u0629
+      \u0627\u0644\u062C\u0646\u0648\u0628\u064A\u0629.   "
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 11400000, guid: cb708dc05cbcffb48af0e4d038178c67, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  continueNextCard: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
+  visualTemplate: {fileID: 0}

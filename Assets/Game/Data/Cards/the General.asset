@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: the General
+  m_EditorClassIdentifier: 
+  assetName: the General
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: 'you won the game but lost your best solidar '
+    arabic: "\u0644\u0642\u062F \u0627\u0646\u062A\u0635\u0631\u062A\u064E \u0641\u064A
+      \u0627\u0644\u0644\u0639\u0628\u0629... \u0644\u0643\u0646\u0643 \u062E\u0633\u0631\u062A\u064E
+      \u0623\u0641\u0636\u0644 \u0642\u0627\u062F\u062A\u0643."
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: 
+    arabic: 
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 0}
+  rightChoiceLocalized:
+    english: 
+    arabic: 
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 0}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  continueNextCard: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
+  visualTemplate: {fileID: 0}

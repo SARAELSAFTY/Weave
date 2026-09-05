@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: the general_2
+  m_EditorClassIdentifier: 
+  assetName: the general_2
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 8cb77cb474d02454da7d8e846e1f7633, type: 2}
+  descriptionLocalized:
+    english: 
+    arabic: 
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: 
+    arabic: 
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 0}
+  rightChoiceLocalized:
+    english: 
+    arabic: 
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 0}
+  isLlmReactionCard: 1
+  reactionSeedOverride: Lie about being the king's lost brother and be nervouse about
+    it answer in between 1-3 lines
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 1
+  continueNextCard: {fileID: 11400000, guid: 6ed0bd7e2cecc02459cadc4053e822ce, type: 2}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

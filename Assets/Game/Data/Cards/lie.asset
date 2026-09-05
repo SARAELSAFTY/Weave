@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: lie
+  m_EditorClassIdentifier: 
+  assetName: lie
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: 'you were near your end and you are not safe not yet.
+
+      you hear
+      an eco comming from you chamber, you see her after all these years there she
+      is pale, you are afried thinking you gone mad
+
+      dead wife: seeking the
+      truth from a seer won''t solve your mystery my dear.'
+    arabic: "\u0643\u0646\u062A\u064E \u0639\u0644\u0649 \u0648\u0634\u0643 \u0627\u0644\u0646\u0647\u0627\u064A\u0629\u060C
+      \u0648\u0644\u0645 \u062A\u0628\u0644\u063A \u0627\u0644\u0623\u0645\u0627\u0646
+      \u0628\u0639\u062F. \r\n\u0633\u0645\u0639\u062A\u064E \u0635\u062F\u0649\u064B
+      \u064A\u062A\u0631\u062F\u062F \u0641\u064A \u062D\u062C\u0631\u062A\u0643\u060C
+      \u0644\u062A\u0631\u0627\u0647\u0627 \u0623\u0645\u0627\u0645\u0643 \u0628\u0639\u062F
+      \u0643\u0644 \u0647\u0630\u0647 \u0627\u0644\u0633\u0646\u064A\u0646... \u0634\u0627\u062D\u0628\u0629\u060C
+      \u064A\u062A\u0645\u0644\u0643\u0643 \u0627\u0644\u062E\u0648\u0641 \u0648\u0638\u0646\u0646\u062A\u064E
+      \u0623\u0646\u0643 \u0641\u0642\u062F\u062A\u064E \u0639\u0642\u0644\u0643.\r\n\u0627\u0644\u0632\u0648\u062C\u0629
+      \u0627\u0644\u0645\u064A\u062A\u0629\xAB\u0627\u0644\u0628\u062D\u062B \u0639\u0646
+      \u0627\u0644\u062D\u0642\u064A\u0642\u0629 \u0644\u062F\u0649 \u0627\u0644\u0639\u0631\u0651\u0627\u0641
+      \u0644\u0646 \u064A\u062D\u0644 \u0644\u063A\u0632\u0643 \u064A\u0627 \u0639\u0632\u064A\u0632\u064A.\xBB"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: well, maybe I went heavy with wine and walk away
+    arabic: "\xAB\u062D\u0633\u0646\u0627\u064B\u060C \u0631\u0628\u0645\u0627 \u0623\u0641\u0631\u0637\u062A\u064F
+      \u0641\u064A \u0634\u0631\u0628 \u0627\u0644\u0646\u0628\u064A\u0630...\xBB
+      \u062B\u0645 \u0627\u0628\u062A\u0639\u062F\u062A\u064E \u0645\u0627\u0634\u064A\u0627\u064B.   "
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 11400000, guid: 391d6b7e2efa13f48a714b85da528d4e, type: 2}
+  rightChoiceLocalized:
+    english: my love, it really is you!!
+    arabic: "\u062D\u0628\u064A\u0628\u062A\u064A... \u0625\u0646\u0647 \u0623\u0646\u062A\u0650
+      \u062D\u0642\u0627\u064B!!"
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 11400000, guid: 6ad76a3e2b0fe5444b4aea66cc144348, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  continueNextCard: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 418c88c1451d4d39bf920be20f82533f, type: 3}
+  visualTemplate: {fileID: 0}

@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: that was a very lucid hallucinations
+  m_EditorClassIdentifier: 
+  assetName: that was a very lucid hallucinations
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: The Chancellor been sending money and weapons to a Banditry and the
+      treasury advisor been stealing from the lower vaults and passing tariffs whenever
+      he likes on merchants
+    arabic: "\u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631 \u0643\u0627\u0646
+      \u064A\u0631\u0633\u0644 \u0627\u0644\u0623\u0645\u0648\u0627\u0644 \u0648\u0627\u0644\u0623\u0633\u0644\u062D\u0629
+      \u0625\u0644\u0649 \u0627\u0644\u0639\u0635\u0627\u0628\u0627\u062A \u0648\u0642\u0637\u0651\u0627\u0639
+      \u0627\u0644\u0637\u0631\u0642\u060C \u0628\u064A\u0646\u0645\u0627 \u0643\u0627\u0646
+      \u0645\u0633\u062A\u0634\u0627\u0631 \u0627\u0644\u062E\u0632\u0627\u0646\u0629
+      \u064A\u0633\u0631\u0642 \u0645\u0646 \u0627\u0644\u062E\u0632\u0627\u0626\u0646
+      \u0627\u0644\u0633\u0641\u0644\u0649 \u0648\u064A\u0641\u0631\u0636 \u0631\u0633\u0648\u0645\u0627\u064B
+      \u062C\u0645\u0631\u0643\u064A\u0629 \u0648\u0641\u0642 \u0623\u0647\u0648\u0627\u0626\u0647
+      \u0639\u0644\u0649 \u0627\u0644\u062A\u062C\u0627\u0631"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: What??
+    arabic: "\u0645\u0627\u0630\u0627\u061F\u061F"
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 11400000, guid: f5cd9a94c53bcc243b46e6498a3da9ba, type: 2}
+  rightChoiceLocalized:
+    english: What??
+    arabic: "\u0645\u0627\u0630\u0627\u061F\u061F"
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 11400000, guid: f5cd9a94c53bcc243b46e6498a3da9ba, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  continueNextCard: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 09f5413882d741ed938f1ac53dcab077, type: 3}
+  visualTemplate: {fileID: 0}
