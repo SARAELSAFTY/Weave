@@ -18,26 +18,26 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: what are you going to do?
-    arabic: "\u0645\u0627 \u0627\u0644\u0630\u064A \u062A\u0646\u0648\u064A \u0641\u0639\u0644\u0647\u061F   "
+    english: "The ghost's words ring like iron bells in your skull. Secrets of corruption and betrayal weigh upon your soul. What is your next move?"
+    arabic: "تدق كلمات شبح الملكة كأجراس فولاذية في رأسك. أسرار الخيانة والفساد تثقل روحك... ما هي خطوتك التالية؟"
   dayAdvance: 8
   leftChoiceLocalized:
-    english: that was a very lucid hallucinations
-    arabic: "\u0644\u0642\u062F \u0643\u0627\u0646\u062A \u062A\u0644\u0643 \u0647\u0644\u0627\u0648\u0633
-      \u0634\u062F\u064A\u062F\u0629 \u0627\u0644\u0648\u0636\u0648\u062D"
+    english: "Dismiss it as a lucid hallucination."
+    arabic: "تجاهل الأمر باعتباره هلاوس شديدة الوضوح."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: -24
+      value: -20
   leftNextCard: {fileID: 11400000, guid: 391d6b7e2efa13f48a714b85da528d4e, type: 2}
   rightChoiceLocalized:
-    english: tell the jester you knew the truth now
-    arabic: "\u0623\u062E\u0628\u0631 \u0627\u0644\u0645\u0647\u0631\u062C \u0623\u0646\u0643
-      \u0639\u0631\u0641\u062A \u0627\u0644\u062D\u0642\u064A\u0642\u0629 \u0627\u0644\u0622\u0646.   "
+    english: "Tell the Jester you know the truth."
+    arabic: "أخبر المهرج أنك عرفت الحقيقة الآن."
   rightResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
-      value: -33
+      value: -25
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 10
   rightNextCard: {fileID: 11400000, guid: 318fb76fa62573f44889abf38ef4d7a3, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -45,6 +45,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
   visualTemplate: {fileID: 0}

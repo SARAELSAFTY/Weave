@@ -18,25 +18,28 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: 'you declare war to recalim you kindom,ohh look you won.
-
-'
-    arabic: "\u0623\u0639\u0644\u0646\u062A \u0627\u0644\u062D\u0631\u0628 \u0644\u0627\u0633\u062A\u0639\u0627\u062F\u0629
-      \u0645\u0645\u0644\u0643\u062A\u0643... \u0648\u0627\u0646\u0638\u0631\u060C
-      \u0644\u0642\u062F \u0627\u0646\u062A\u0635\u0631\u062A!   "
+    english: "Your mercenary army breaches the city walls, putting the rebels to the sword. You re-enter the throne room victorious. How will you rule your reclaimed kingdom?"
+    arabic: "اقتحم جيشك أسوار المدينة وأخضع المتمردين بالقوة. دخلتَ قاعة العرش منتصراً من جديد... كيف ستحكم مملكتك المستعادة الآن؟"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: Institute public court
-    arabic: "\u062A\u0623\u0633\u064A\u0633 \u0645\u062D\u0643\u0645\u0629 \u0634\u0639\u0628\u064A\u0629
-      \u0639\u0644\u0646\u064A\u0629.   "
+    english: "Institute a public court to heal the realm."
+    arabic: "تأسيس محكمة شعبية لإنصاف المظلومين وتضميد الجراح."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 25
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -10
   leftNextCard: {fileID: 11400000, guid: d5e16d058ec960c4ab8f797bd4ed8d2a, type: 2}
   rightChoiceLocalized:
-    english: back to my old life
-    arabic: "\u0639\u062F \u0627\u0644\u064A \u062D\u064A\u0627\u062A\u0643 \u0627\u0644\u0642\u062F\u064A\u0645\u0629"
+    english: "Restore the old order and enforce royal taxes."
+    arabic: "إعادة النظام الملكي القديم وفرض الضرائب بحزم."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 20
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -15
   rightNextCard: {fileID: 11400000, guid: 342e67267faeb754cbbe2b4f86196a45, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -44,6 +47,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
   visualTemplate: {fileID: 0}

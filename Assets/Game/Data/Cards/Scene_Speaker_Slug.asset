@@ -16,10 +16,10 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 0}
+  speaker: {fileID: 11400000, guid: dfdc22d7b454b71478810c37f9f3f190, type: 2}
   descriptionLocalized:
-    english: 
-    arabic: 
+    english: "Two brothers upon one throne—one wearing the gilded crown, the other in bells and ribbons. Together, you turned court intrigue into royal harmony."
+    arabic: "أخوان على عرشٍ واحد؛ أحدهما يتوشح بالتاج الذهبي، والآخر بالأجراس والفكاهة. معاً، حولتما دسائس البلاط إلى وفاق ملكي."
   dayAdvance: 1
   leftChoiceLocalized:
     english: 
@@ -39,6 +39,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 1
+  artMode: 0
   cardImage: {fileID: 21300000, guid: 9991a13208bb4eda8e373c0a3e8b5786, type: 3}
   visualTemplate: {fileID: 0}

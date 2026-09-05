@@ -16,50 +16,30 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 0}
+  speaker: {fileID: 11400000, guid: dfdc22d7b454b71478810c37f9f3f190, type: 2}
   descriptionLocalized:
-    english: 'the jester tells you everything that was happening behind you back
-
-      -The
-      Chancellor been sending money and weapons to a Banditry
-
-      -the treasury
-      advisor been stealing from the lower vaults and passing tariffs whenever he
-      likes on merchants
-
-      -the general is facing a big comming war and your
-      advisor hidding it.
-
-'
-    arabic: "\u064A\u0643\u0634\u0641 \u0644\u0643 \u0627\u0644\u0645\u0647\u0631\u062C
-      \u0643\u0644 \u0645\u0627 \u0643\u0627\u0646 \u064A\u062C\u0631\u064A \u062E\u0644\u0641
-      \u0638\u0647\u0631\u0643:\n\n- \u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631
-      \u0643\u0627\u0646 \u064A\u0631\u0633\u0644 \u0627\u0644\u0623\u0645\u0648\u0627\u0644
-      \u0648\u0627\u0644\u0623\u0633\u0644\u062D\u0629 \u0625\u0644\u0649 \u0627\u0644\u0639\u0635\u0627\u0628\u0627\u062A
-      \u0648\u0642\u0637\u0651\u0627\u0639 \u0627\u0644\u0637\u0631\u0642.\n- \u0645\u0633\u062A\u0634\u0627\u0631
-      \u0627\u0644\u062E\u0632\u0627\u0646\u0629 \u0643\u0627\u0646 \u064A\u0633\u0631\u0642
-      \u0645\u0646 \u0627\u0644\u062E\u0632\u0627\u0626\u0646 \u0627\u0644\u0633\u0641\u0644\u0649
-      \u0648\u064A\u0641\u0631\u0636 \u0631\u0633\u0648\u0645\u0627\u064B \u062C\u0645\u0631\u0643\u064A\u0629
-      \u0648\u0641\u0642 \u0623\u0647\u0648\u0627\u0626\u0647 \u0639\u0644\u0649
-      \u0627\u0644\u062A\u062C\u0627\u0631.\n- \u0627\u0644\u062C\u0646\u0631\u0627\u0644
-      \u064A\u0648\u0627\u062C\u0647 \u062D\u0631\u0628\u0627\u064B \u0648\u0634\u064A\u0643\u0629
-      \u0648\u0643\u0628\u064A\u0631\u0629\u060C \u0628\u064A\u0646\u0645\u0627 \u064A\u062E\u0641\u064A
-      \u0645\u0633\u062A\u0634\u0627\u0631\u0643 \u0627\u0644\u062E\u0627\u0635 \u062E\u0628\u0631\u0647\u0627
-      \u0639\u0646\u0643."
+    english: "The veil drops! The Chancellor arms bandits on our borders; the Treasury Adviser bleeds the merchant vaults dry; and your ministers conceal an imminent war from the General!"
+    arabic: "سقط القناع أخيراً! المستشار يسرب السلاح للعصابات على حدودنا؛ ومستشار الخزانة يستنزف قوافل التجار لحسابه الخاص؛ وحاشيتك تخفي نذر حرب طاحنة وشيكة عن مسامع الجنرال!"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: not a fool as you claim
-    arabic: "\u0644\u0633\u062A\u064F \u0623\u062D\u0645\u0642 \u0643\u0645\u0627
-      \u062A\u062F\u0651\u0639\u064A"
+    english: "I am no fool. We purge this corruption."
+    arabic: "لستُ أحمق كما ظننتم. سنستأصل هذا الفساد."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 15
   leftNextCard: {fileID: 11400000, guid: 3dfe6bd9a94850c4f85825217bf11e82, type: 2}
   rightChoiceLocalized:
-    english: not a fool as you claim
-    arabic: "\u0644\u0633\u062A\u064F \u0623\u062D\u0645\u0642 \u0643\u0645\u0627
-      \u062A\u062F\u0651\u0639\u064A"
+    english: "Prepare the court for retribution."
+    arabic: "أعدوا البلاط للمحاسبة والانتقام."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -5
   rightNextCard: {fileID: 11400000, guid: 3dfe6bd9a94850c4f85825217bf11e82, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -67,6 +47,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 1
+  artMode: 0
   cardImage: {fileID: 21300000, guid: 9991a13208bb4eda8e373c0a3e8b5786, type: 3}
   visualTemplate: {fileID: 0}

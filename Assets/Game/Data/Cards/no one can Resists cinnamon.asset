@@ -18,33 +18,24 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: "the General:My Lord, the Chancellor demands that you be placed on trial
-      before the High Church!.\r\nThe Seer\u2019s cryptic visions were reported to
-      the Church, allowing the Chancellor to claim you are seeking dark omens and
-      witchcraft instead of divine guidance.\r\n"
-    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644: \xAB\u064A\u0627 \u0645\u0648\u0644\u0627\u064A\u060C
-      \u064A\u0637\u0627\u0644\u0628 \u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631
-      \u0628\u0625\u062D\u0627\u0644\u062A\u0643 \u0625\u0644\u0649 \u0627\u0644\u0645\u062D\u0627\u0643\u0645\u0629
-      \u0623\u0645\u0627\u0645 \u0627\u0644\u0643\u0646\u064A\u0633\u0629 \u0627\u0644\u0639\u0644\u064A\u0627!
-      \u0644\u0642\u062F \u0631\u064F\u0641\u0639\u062A \u0631\u0624\u0649 \u0627\u0644\u0639\u0631\u0651\u0627\u0641
-      \u0627\u0644\u063A\u0627\u0645\u0636\u0629 \u0625\u0644\u0649 \u0627\u0644\u0643\u0646\u064A\u0633\u0629\u060C
-      \u0645\u0645\u0627 \u0633\u0645\u062D \u0644\u0644\u0645\u0633\u062A\u0634\u0627\u0631
-      \u0628\u0627\u0644\u0627\u062F\u0639\u0627\u0621 \u0628\u0623\u0646\u0643 \u062A\u0628\u062D\u062B
-      \u0639\u0646 \u0627\u0644\u0637\u0648\u0627\u0644\u0639 \u0627\u0644\u0645\u0638\u0644\u0645\u0629
-      \u0648\u0627\u0644\u0633\u062D\u0631 \u0628\u062F\u0644\u0627\u064B \u0645\u0646
-      \u0627\u0644\u0647\u062F\u0627\u064A\u0629 \u0627\u0644\u0625\u0644\u0647\u064A\u0629.\xBB   "
+    english: "Outrage! The Chancellor reports your consultation with the Seer to the High Inquisitors, twisting your inquiries into accusations of heresy, witchcraft, and unholy omens. You are summoned to confess before the holy council."
+    arabic: "مكيدة مدبرة! رفع المستشار خبر استشارتك للعرافة إلى محاكم التفتيش العليا، متهماً إياك بممارسة الهرطقة وموالاة السحر الأسود بدلاً من المشيئة الإلهية. وأنت الآن مستدعى للمحاكمة أمام المجمع الكنسي!"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: lie
-    arabic: "\u0627\u0643\u0630\u0628"
+    english: "Lie to the Inquisitors; deny all heresy."
+    arabic: "الإنكار أمام المحققين ودحض تهمة الهرطقة."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -10
   leftNextCard: {fileID: 11400000, guid: 6ed0bd7e2cecc02459cadc4053e822ce, type: 2}
   rightChoiceLocalized:
-    english: tell truth
-    arabic: "\u0642\u0648\u0644 \u0627\u0644\u062D\u0642\u064A\u0642\u0629"
+    english: "Tell the bitter truth."
+    arabic: "قول الحقيقة كاملةً دون مواربة."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -100
   rightNextCard: {fileID: 11400000, guid: 863d592d33e83b744bf896ce6628b120, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -53,5 +44,5 @@ MonoBehaviour:
   petitionerSource: 0
   continueNextCard: {fileID: 0}
   artMode: 1
-  cardImage: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
+  cardImage: {fileID: 21300000, guid: 09f5413882d741ed938f1ac53dcab077, type: 3}
   visualTemplate: {fileID: 0}

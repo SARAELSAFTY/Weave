@@ -18,33 +18,28 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: "The Treasury Advisor has escaped after stealing all the tax money!
-      The people at the gates are demanding his head\u2014or they will take yours.\r\n"
-    arabic: "\u0644\u0642\u062F \u0647\u0631\u0628 \u0645\u0633\u062A\u0634\u0627\u0631
-      \u0627\u0644\u062E\u0632\u0627\u0646\u0629 \u0628\u0639\u062F \u0623\u0646
-      \u0633\u0631\u0642 \u062C\u0645\u064A\u0639 \u0623\u0645\u0648\u0627\u0644
-      \u0627\u0644\u0636\u0631\u0627\u0626\u0628! \u0648\u0627\u0644\u0634\u0639\u0628
-      \u0639\u0646\u062F \u0627\u0644\u0623\u0633\u0648\u0627\u0631 \u064A\u0637\u0627\u0644\u0628
-      \u0628\u0631\u0623\u0633\u0647\u2014\u0648\u0625\u0644\u0627 \u0641\u0633\u064A\u0623\u062E\u0630\u0648\u0646
-      \u0631\u0623\u0633\u0643!"
+    english: "The Treasury Adviser has fled the capital, looting the entire tax reserve! A furious mob gathers at the palace gates, demanding his head—or yours."
+    arabic: "فر مستشار الخزانة هارباً من العاصمة بعد أن نهب أموال الضرائب بالكامل! وتحتشد جموع غاضبة أمام أسوار القصر، مطالبين برأسه... أو رأسك أنت بدلاً منه!"
   dayAdvance: 23
   leftChoiceLocalized:
-    english: send the guards to catch the traitor
-    arabic: "\u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062D\u0631\u0633 \u0644\u0644\u0642\u0628\u0636
-      \u0639\u0644\u0649 \u0627\u0644\u062E\u0627\u0626\u0646!"
+    english: "Dispatch the royal guard to hunt down the thief."
+    arabic: "إرسال الحرس الملكي لملاحقة اللص واستعادة الأموال."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
-      value: -24
+      value: -20
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -10
   leftNextCard: {fileID: 11400000, guid: 0bcb65149af112142814fb47cb958cd4, type: 2}
   rightChoiceLocalized:
-    english: open the castel vaults to the people
-    arabic: "\u0641\u062A\u062D \u062E\u0632\u0627\u0626\u0646 \u0627\u0644\u0642\u0644\u0639\u0629
-      \u0644\u0644\u0634\u0639\u0628!"
+    english: "Open the remaining vaults and distribute relief to the crowd."
+    arabic: "فتح ما تبقى من الخزائن وتوزيع المعونات على الشعب."
   rightResourceChange:
     values:
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
-      value: -30
+      value: -35
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 20
   rightNextCard: {fileID: 11400000, guid: 9480a74bd895ccd45a16a7288aeed491, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 

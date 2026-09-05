@@ -40,6 +40,6 @@ MonoBehaviour:
   petitionSeedOverride: 'the seer: the Chancellor is the traitor '
   petitionerSource: 1
   continueNextCard: {fileID: 11400000, guid: 4f3c589609232a34c91604794487af28, type: 2}
-  artMode: 1
+  artMode: 0
   cardImage: {fileID: 21300000, guid: d737a477c6e94ab28bec29563bc1adcd, type: 3}
   visualTemplate: {fileID: 0}

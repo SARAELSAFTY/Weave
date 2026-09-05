@@ -18,10 +18,8 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: died in a Guerrilla war and the jester was your brother you fool
-    arabic: "\u0645\u0627\u062A \u0641\u064A \u062D\u0631\u0628 \u0639\u0635\u0627\u0628\u0627\u062A...
-      \u0648\u0643\u0627\u0646 \u0627\u0644\u0645\u0647\u0631\u062C \u0647\u0648
-      \u0623\u062E\u0648\u0643 \u0623\u064A\u0647\u0627 \u0627\u0644\u0623\u062D\u0645\u0642!   "
+    english: "Before you could strike, civil war consumed the realm. You fell in the guerrilla fighting, learning only with your dying breath that the court jester was your true-born brother."
+    arabic: "قبل أن تتمكن من التحرك، التهمت الحرب الأهلية أرجاء المملكة. سقطت صريعاً في حرب العصابات، لتدرك مع أنفاسك الأخيرة فقط أن بهلوان القصر كان أخاك وشقيقك الحقيقي."
   dayAdvance: 1
   leftChoiceLocalized:
     english: 
@@ -41,6 +39,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 9991a13208bb4eda8e373c0a3e8b5786, type: 3}
   visualTemplate: {fileID: 0}

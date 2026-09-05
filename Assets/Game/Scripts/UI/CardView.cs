@@ -523,7 +523,11 @@ namespace Game.Scripts.UI
         {
             CardArtMode mode = card != null ? card.artMode : CardArtMode.SpeakerPortrait;
             Sprite art = null;
-            if (mode == CardArtMode.SpeakerPortrait && speaker != null)
+            if (isPetitionCard || (card != null && card.isPetitionCard))
+            {
+                art = null;
+            }
+            else if (mode == CardArtMode.SpeakerPortrait && speaker != null)
             {
                 art = speaker.portrait;
             }

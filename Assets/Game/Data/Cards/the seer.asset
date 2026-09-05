@@ -16,28 +16,30 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 0}
+  speaker: {fileID: 11400000, guid: cfc48850c5968fe4f9c677c238de2346, type: 2}
   descriptionLocalized:
-    english: 'the seer: your crown will fade leaving no youth in you, I hear the
-      voice of liars and the laughter of shadows waiting to feast upon your name.'
-    arabic: "\u0627\u0644\u0639\u0631\u0627\u0641\u0629: \u0633\u064A\u0628\u0647\u062A
-      \u062A\u0627\u062C\u0643 \u0648\u0644\u0646 \u064A\u062A\u0628\u0642\u0649
-      \u0641\u064A\u0643 \u0623\u064A \u0634\u0628\u0627\u0628\u060C \u0623\u0633\u0645\u0639
-      \u0635\u0648\u062A \u0627\u0644\u0643\u0630\u0627\u0628\u064A\u0646 \u0648\u0636\u062D\u0643\u0627\u062A
-      \u0627\u0644\u0638\u0644\u0627\u0644 \u0627\u0644\u062A\u064A \u062A\u0646\u062A\u0638\u0631
-      \u0644\u062A\u062A\u063A\u0630\u0649 \u0639\u0644\u0649 \u0627\u0633\u0645\u0643."
+    english: "Your crown will fade, leaving no youth in you. I hear the whispers of liars and the laughter of shadows waiting to feast upon your name."
+    arabic: "سيبهتُ تاجك ولن يتبقى فيك شيءٌ من شبابك... إني أسمع همسات الكاذبين وضحكات الظلال، تتربص لتتغذى على اسمك ومجدك."
   dayAdvance: 1
   leftChoiceLocalized:
-    english: demand to jail the seer
-    arabic: "\u0623\u0627\u0645\u0631 \u0628\u0633\u062C\u0646 \u0627\u0644\u0639\u0631\u0627\u0641\u0629"
+    english: "Guards, seize the Seer! Throw her in chains."
+    arabic: "أيها الحرس، اقبضوا على العرافة وزجوها في الأغلال!"
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -5
   leftNextCard: {fileID: 11400000, guid: e09d4709b6396ce43960fe3b4004e066, type: 2}
   rightChoiceLocalized:
-    english: Who are they
-    arabic: "\u0645\u0646 \u0647\u0645\u061F"
+    english: "Speak plainly! Who are these traitors?"
+    arabic: "تحدثي بوضوح! من هم هؤلاء الخونة؟"
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -5
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 5
   rightNextCard: {fileID: 11400000, guid: 342e67267faeb754cbbe2b4f86196a45, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -45,6 +47,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 1
+  artMode: 0
   cardImage: {fileID: 21300000, guid: d737a477c6e94ab28bec29563bc1adcd, type: 3}
   visualTemplate: {fileID: 0}

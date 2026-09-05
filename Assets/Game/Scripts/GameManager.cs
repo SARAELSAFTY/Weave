@@ -208,6 +208,13 @@ namespace Game.Scripts
                 return;
             }
 
+            // Auto-enable StartPanel if it's currently disabled
+            Transform startPanelTransform = startScreenView?.transform?.Find("StartPanel");
+            if (startPanelTransform != null && !startPanelTransform.gameObject.activeSelf)
+            {
+                startPanelTransform.gameObject.SetActive(true);
+            }
+
             startScreenView.Hide();
             runInProgress = true;
             showingResourceWarning = false;

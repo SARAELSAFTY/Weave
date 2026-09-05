@@ -18,39 +18,28 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: 'the General:  that is the list of the people''s demands (Lower grain
-      taxes end forced conscription, and open the royal granaries to feed the starving
-      city).
-
-      The Treasury Adviser: what a scandal.'
-    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644: \"\u0647\u0630\u0647 \u0642\u0627\u0626\u0645\u0629
-      \u0628\u0645\u0637\u0627\u0644\u0628 \u0627\u0644\u0634\u0639\u0628 (\u062E\u0641\u0636
-      \u0636\u0631\u0627\u0626\u0628 \u0627\u0644\u062D\u0628\u0648\u0628\u060C \u0625\u0646\u0647\u0627\u0621
-      \u0627\u0644\u062A\u062C\u0646\u064A\u062F \u0627\u0644\u0625\u062C\u0628\u0627\u0631\u064A\u060C
-      \u0648\u0641\u062A\u062D \u0645\u062E\u0627\u0632\u0646 \u0627\u0644\u063A\u0644\u0627\u0644
-      \u0627\u0644\u0645\u0644\u0643\u064A\u0629 \u0644\u0625\u0637\u0639\u0627\u0645
-      \u0627\u0644\u0645\u062F\u064A\u0646\u0629 \u0627\u0644\u062C\u0627\u0626\u0639\u0629).\"\n\n\u0645\u0633\u062A\u0634\u0627\u0631
-      \u0627\u0644\u062E\u0632\u0627\u0646\u0629: \"\u064A\u0627 \u0644\u0647\u0627
-      \u0645\u0646 \u0641\u0636\u064A\u062D\u0629!\""
+    english: "The peasant leader stands before the throne in chains, eyes unyielding: 'Lower our taxes and open the royal granaries, or the realm burns. We will starve no longer!'"
+    arabic: "يقف زعيم الفلاحين أمام العرش مقيداً بالأغلال دون أن تنكسر عيناه: «اخفض الضرائب وافتح صوامع الحبوب الملكية، وإلا احترقت المملكة عن بكرة أبيها. لن نموت جوعاً بعد اليوم!»"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: the crown does not negotiate with mobs.
-    arabic: "\"\u0627\u0644\u062A\u0627\u062C \u0644\u0627 \u064A\u062A\u0641\u0627\u0648\u0636
-      \u0645\u0639 \u0627\u0644\u063A\u0648\u063A\u0627\u0621.\""
+    english: "Attempt to negotiate concessions."
+    arabic: "محاولة التفاوض لتقديم تنازلات سلمية."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 15
   leftNextCard: {fileID: 11400000, guid: 2b5fc4bd5427ca746be09401fb130f3e, type: 2}
   rightChoiceLocalized:
-    english: "Open the granaries at once and grant them an audience\u2014if we do
-      not yield today, we won't have a kingdom left to rule tomorrow."
-    arabic: "\"\u0627\u0641\u062A\u062D\u0648\u0627 \u0645\u062E\u0627\u0632\u0646
-      \u0627\u0644\u063A\u0644\u0627\u0644 \u0641\u0648\u0631\u064B\u0627 \u0648\u0627\u0645\u0646\u062D\u0648\u0647\u0645
-      \u062C\u0644\u0633\u0629 \u0645\u0642\u0627\u0628\u0644\u0629\u2014\u0625\u0646
-      \u0644\u0645 \u0646\u0633\u062A\u0633\u0644\u0645 \u0627\u0644\u064A\u0648\u0645\u060C
-      \u0641\u0644\u0646 \u062A\u0628\u0642\u0649 \u0644\u062F\u064A\u0646\u0627
-      \u0645\u0645\u0644\u0643\u0629 \u0644\u0646\u062D\u0643\u0645\u0647\u0627 \u063A\u062F\u064B\u0627.\""
+    english: "Open the granaries and feed the starving."
+    arabic: "فتح صوامع الغلال وإطعام الجائعين فوراً."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 20
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -20
   rightNextCard: {fileID: 11400000, guid: d63479f0263eac84ba0052f9dafab04d, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -58,6 +47,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
   visualTemplate: {fileID: 0}

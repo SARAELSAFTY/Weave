@@ -18,25 +18,26 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: your friend hides and gives you money in exchange be one of your advisor 
-      in the castel
-    arabic: 
+    english: "An old aristocratic ally offers you sanctuary in his estate. He offers to finance a mercenary host to reclaim your capital—if you grant his house absolute stewardship over the realm's trade."
+    arabic: "يمنحك نبيل قديم ملاذاً في قصره الريفي. ويعرض تمويل جيش من المرتزقة لاستعادة عرشك—بشرط أن تمنح عائلته حق الوصاية الكاملة على تجارة المملكة وموانئها."
   dayAdvance: 304
   leftChoiceLocalized:
-    english: refuse the offer
-    arabic: "\u0627\u0631\u0641\u0636"
+    english: "Refuse the bargain; live in humble peace."
+    arabic: "رفض الصفقة؛ والعيش في سلام متواضع."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
       value: -100
   leftNextCard: {fileID: 11400000, guid: c4fa9fe42c3ac21499bf0e19c274bbdf, type: 2}
   rightChoiceLocalized:
-    english: accept ther offer
-    arabic: "\u0648\u0627\u0641\u0642"
+    english: "Accept the offer and march on the throne."
+    arabic: "قبول الصفقة والزحف لاستعادة العرش."
   rightResourceChange:
     values:
-    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: 5
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: 50
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -20
   rightNextCard: {fileID: 11400000, guid: 5cb450f5837a06343baf104e857be5ba, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -44,6 +45,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 09f5413882d741ed938f1ac53dcab077, type: 3}
   visualTemplate: {fileID: 0}

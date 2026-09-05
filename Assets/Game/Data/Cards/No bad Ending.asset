@@ -18,8 +18,8 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: Not bad Ending
-    arabic: "\u0644\u064A\u0633\u062A \u0646\u0647\u0627\u064A\u0629 \u0633\u064A\u0626\u0629"
+    english: "With the corrupt ministers dismantled and the border pacified, peace returns to the realm. Your wisdom preserved both the treasury and the trust of your people."
+    arabic: "باستئصال الفساد وتأمين الحدود، حل السلام والرخاء في أرجاء المملكة. حفظتَ بحكمتك خزينة الدولة، واستعدتَ ولاء شعبك ومحبتهم الصادقة."
   dayAdvance: 1
   leftChoiceLocalized:
     english: 
@@ -39,6 +39,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
   visualTemplate: {fileID: 0}

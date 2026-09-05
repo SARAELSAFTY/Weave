@@ -16,32 +16,30 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 0}
+  speaker: {fileID: 11400000, guid: 8cb77cb474d02454da7d8e846e1f7633, type: 2}
   descriptionLocalized:
-    english: 'The General: there is a romar around the kindom some pesents are planing
-      a reviolation agenst you, my lord we got the names of the rebels that we suspect,
-      what should we do with them.'
-    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644: \"\u0647\u0646\u0627\u0643
-      \u0634\u0627\u0626\u0639\u0627\u062A \u062A\u062F\u0648\u0631 \u0641\u064A
-      \u062C\u0645\u064A\u0639 \u0623\u0646\u062D\u0627\u0621 \u0627\u0644\u0645\u0645\u0644\u0643\u0629\u060C
-      \u0628\u0639\u0636 \u0627\u0644\u0641\u0644\u0627\u062D\u064A\u0646 \u064A\u062E\u0637\u0637\u0648\u0646
-      \u0644\u0644\u062B\u0648\u0631\u0629 \u0636\u062F\u0643 \u064A\u0627 \u0645\u0648\u0644\u0627\u064A.
-      \u0644\u0642\u062F \u062D\u0635\u0644\u0646\u0627 \u0639\u0644\u0649 \u0623\u0633\u0645\u0627\u0621
-      \u0627\u0644\u0645\u062A\u0645\u0631\u062F\u064A\u0646 \u0627\u0644\u0645\u0634\u062A\u0628\u0647
-      \u0628\u0647\u0645\u060C \u0645\u0627\u0630\u0627 \u0646\u0641\u0639\u0644
-      \u0628\u0647\u0645\u061F\""
+    english: "Sire, rumors of rebellion spread through the districts like wildfire. The peasants arm themselves with scythes and torches. Give me the word—shall we crush them before they march, or hear their demands?"
+    arabic: "يا مولاي، شائعات التمرد تنتشر في الأحياء كالنار في الهشيم. الفلاحون يتسلحون بالمناجل والمشاعل. أعطني الأمر—أنسحقهم بقوة الحديد، أم نستمع إلى مطالبهم؟"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: Whip them
-    arabic: "\u0639\u0630\u0628\u0647\u0645"
+    english: "Whip them! Teach them what treason costs."
+    arabic: "اجلدوهم! علّموهم ثمن الخيانة والعصيان."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -20
   leftNextCard: {fileID: 11400000, guid: 2130c932794c1db4c91c3c4eb1d247f5, type: 2}
   rightChoiceLocalized:
-    english: bring me thier leader
-    arabic: "\u0627\u062D\u0636\u0631 \u0642\u0627\u0626\u062F\u0647\u0645"
+    english: "Bring me their leader. I will hear their grievances."
+    arabic: "أحضروا إليّ زعيمهم؛ سأستمع إلى مطالبهم."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -5
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 15
   rightNextCard: {fileID: 11400000, guid: 3af559cb78b8a3045a8790650eed20b2, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -49,6 +47,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 1
+  artMode: 0
   cardImage: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
   visualTemplate: {fileID: 0}

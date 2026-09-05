@@ -18,9 +18,8 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: Stripping you of your crown, branding you a heretic
-    arabic: "\u062A\u062C\u0631\u064A\u062F\u0643 \u0645\u0646 \u062A\u0627\u062C\u0643\u060C
-      \u0648\u0648\u0633\u0645\u0643 \u0628\u0627\u0644\u0647\u0631\u0637\u0642\u0629.   "
+    english: "Your confession seals your doom. Condemned by the High Church, you are stripped of your crown, excommunicated, and locked in a monastic cell for the remainder of your days."
+    arabic: "كان اعترافك الصريح مسماراً في نعش ملكك. أدانك المجمع الكنسي، فجُردت من تاجك ورُميت بالحرمان الكنسي، لتُسجن في زنزانة معتمة طوال ما تبقى من أيامك."
   dayAdvance: 1
   leftChoiceLocalized:
     english: 
@@ -40,6 +39,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
   visualTemplate: {fileID: 0}

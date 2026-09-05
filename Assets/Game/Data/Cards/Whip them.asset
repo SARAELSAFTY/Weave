@@ -16,32 +16,30 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 0}
+  speaker: {fileID: 11400000, guid: 8cb77cb474d02454da7d8e846e1f7633, type: 2}
   descriptionLocalized:
-    english: 'The Genral: the people are surrounding the north and the east gates,
-      my lord, you should escape right now.
-
-'
-    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644: \"\u0627\u0644\u0634\u0639\u0628
-      \u064A\u062D\u0627\u0635\u0631 \u0627\u0644\u0628\u0648\u0627\u0628\u062A\u064A\u0646
-      \u0627\u0644\u0634\u0645\u0627\u0644\u064A\u0629 \u0648\u0627\u0644\u0634\u0631\u0642\u064A\u0629
-      \u064A\u0627 \u0645\u0648\u0644\u0627\u064A\u060C \u0639\u0644\u064A\u0643
-      \u0628\u0627\u0644\u0641\u0631\u0627\u0631 \u0627\u0644\u0622\u0646!"
+    english: "The lashes only fueled their rage, Sire! A mob of five thousand has surrounded the palace walls, battering at the gates. My guards cannot hold the perimeter for long!"
+    arabic: "السياط زادتهم اشتعالاً يا مولاي! خمسة آلاف من العوام يحاصرون أسوار القصر ويدكّون البوابات بعنف. لن يستطيع حرسي صد الطوفان طويلاً!"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: no, I won't leave my crown to punch of insurgent
-    arabic: "\u0644\u0646 \u0623\u0647\u0631\u0628... \u0644\u0646 \u0623\u062A\u0631\u0643
-      \u062A\u0627\u062C\u064A \u0644\u0639\u0635\u0628\u0629 \u0645\u0646 \u0627\u0644\u0645\u062A\u0645\u0631\u062F\u064A\u0646"
+    english: "Step out and negotiate with the mob."
+    arabic: "الخروج للتفاوض مع الحشود الغاضبة."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -25
   leftNextCard: {fileID: 11400000, guid: 2b5fc4bd5427ca746be09401fb130f3e, type: 2}
   rightChoiceLocalized:
-    english: escapes through the secret doors to the south gate
-    arabic: "\u064A\u0647\u0631\u0628 \u0639\u0628\u0631 \u0627\u0644\u0623\u0628\u0648\u0627\u0628
-      \u0627\u0644\u0633\u0631\u064A\u0629 \u0625\u0644\u0649 \u0627\u0644\u0628\u0648\u0627\u0628\u0629
-      \u0627\u0644\u062C\u0646\u0648\u0628\u064A\u0629.   "
+    english: "Escape through the secret catacombs."
+    arabic: "الفرار عبر الممرات السرية أسفل القصر."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -50
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -20
   rightNextCard: {fileID: 11400000, guid: cb708dc05cbcffb48af0e4d038178c67, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -49,6 +47,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 1
+  artMode: 0
   cardImage: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
   visualTemplate: {fileID: 0}

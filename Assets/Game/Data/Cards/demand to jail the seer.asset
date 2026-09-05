@@ -16,37 +16,30 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 0}
+  speaker: {fileID: 11400000, guid: dfdc22d7b454b71478810c37f9f3f190, type: 2}
   descriptionLocalized:
-    english: 'The Jester playfully  proposes a wild idea: hold public court where
-      ANY citizen can appeal to you
-
-      directly. The Chancellor calls it chaos.'
-    arabic: "\u064A\u064E\u0637\u0631\u062D \u0627\u0644\u0645\u0647\u0631\u062C
-      \u0628\u0623\u0633\u0644\u0648\u0628\u0647 \u0627\u0644\u0645\u0627\u0643\u0631
-      \u0648\u0627\u0644\u0645\u0631\u062D \u0641\u0643\u0631\u0629\u064B \u062C\u0627\u0645\u062D\u0629:
-      \u0639\u0642\u062F \u062C\u0644\u0633\u0629 \u0628\u0644\u0627\u0637 \u0639\u0644\u0646\u064A\u0629
-      \u0648\u0645\u0641\u062A\u0648\u062D\u0629 \u064A\u064F\u0633\u0645\u062D \u0641\u064A\u0647\u0627
-      \u0644\u0623\u064A \u0645\u0648\u0627\u0637\u0646 \u0628\u062A\u0642\u062F\u064A\u0645
-      \u0645\u0638\u0644\u0645\u062A\u0647 \u0625\u0644\u064A\u0643 \u0645\u0628\u0627\u0634\u0631\u0629\u064B.
-      \u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631 \u064A\u0635\u0641 \u0627\u0644\u0641\u0643\u0631\u0629
-      \u0641\u0648\u0631\u0627\u064B \u0628\u0623\u0646\u0647\u0627 \xAB\u0641\u0648\u0636\u0649
-      \u0639\u0627\u0631\u0645\u0629\xBB."
+    english: "Why lock up the prophet when you can unlock the gates? Hold an open court where any beggar or butcher can appeal to the crown directly! The Chancellor calls it madness, but think of the spectacle!"
+    arabic: "لماذا تحبس العرافة بينما يمكنك فتح الأبواب؟ اعقد بلاطاً مفتوحاً يحق فيه لأي متسول أو جزار أن يرفع مظلمته إليك مباشرة! يصف المستشار ذلك بالجنون، لكن فكّر في عظمة المشهد!"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: Institute public court
-    arabic: "\u062A\u0623\u0633\u064A\u0633 \u0645\u062D\u0643\u0645\u0629 \u0634\u0639\u0628\u064A\u0629
-      \u0639\u0644\u0646\u064A\u0629."
+    english: "Institute a public court."
+    arabic: "تأسيس محكمة شعبية علنية."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 15
   leftNextCard: {fileID: 11400000, guid: d5e16d058ec960c4ab8f797bd4ed8d2a, type: 2}
   rightChoiceLocalized:
-    english: "Reject the idea\u2014maintain hierarchy"
-    arabic: "\u0631\u0641\u0636 \u0627\u0644\u0641\u0643\u0631\u0629\u2014\u0648\u0627\u0644\u062A\u0645\u0633\u0643
-      \u0628\u0627\u0644\u062A\u0631\u0627\u062A\u0628\u064A\u0629 \u0627\u0644\u0647\u0631\u0645\u064A\u0629
-      \u0648\u0646\u0638\u0627\u0645 \u0627\u0644\u062D\u0643\u0645.   "
+    english: "Reject the idea—maintain hierarchy."
+    arabic: "رفض الفكرة—والتمسك بالتراتبية الملكية."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -10
   rightNextCard: {fileID: 11400000, guid: 43cbc78b13bf742459a6d578f06e7364, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -55,5 +48,5 @@ MonoBehaviour:
   petitionerSource: 0
   continueNextCard: {fileID: 0}
   artMode: 0
-  cardImage: {fileID: 0}
+  cardImage: {fileID: 21300000, guid: 9991a13208bb4eda8e373c0a3e8b5786, type: 3}
   visualTemplate: {fileID: 0}

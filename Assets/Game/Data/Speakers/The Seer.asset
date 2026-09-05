@@ -16,7 +16,7 @@ MonoBehaviour:
   displayNameLocalized:
     english: The Seer
     arabic: "\u0627\u0644\u0639\u0631\u0627\u0641\u0629"
-  portrait: {fileID: 0}
+  portrait: {fileID: 21300000, guid: d737a477c6e94ab28bec29563bc1adcd, type: 3}
   llmPersonaPrompt: 'You are a truly gifted mystic whose visions of the future are
     impeccably accurate, though you care nothing for politics, justice, or the realm''s
     survival. Your loyalty belongs entirely to the highest bidder, and you reveal

@@ -18,26 +18,28 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: 'you annouse a system redemption a war against corruption, choose your
-      taktic soldier.
-
-'
-    arabic: "\u062A\u0639\u0644\u0646 \u0639\u0646 \u0646\u0638\u0627\u0645 \u0641\u062F\u0627\u0621
-      \u0648\u0625\u0635\u0644\u0627\u062D \u0634\u0627\u0645\u0644\u061B \u062D\u0631\u0628
-      \u0636\u062F \u0627\u0644\u0641\u0633\u0627\u062F\u060C \u0627\u062E\u062A\u0631
-      \u062C\u0646\u062F\u064A\u0643"
+    english: "You declare a grand purge against treason. To lead this campaign against the corrupt council, you must place your absolute trust in one champion:"
+    arabic: "تعلن تطهيراً شاملاً ضد الخيانة وحرباً لا هوادة فيها على الفساد. لقيادة هذه الحملة ضد المتآمرين، لا بد أن تضع ثقتك المطلقة في حليفٍ واحد:"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: jester
-    arabic: "\u0627\u0644\u0628\u0647\u0644\u0648\u0627\u0646"
+    english: "Trust the Jester's wits."
+    arabic: "الثقة في دهاء المهرج."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 20
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -10
   leftNextCard: {fileID: 11400000, guid: 8375d5a778d3c6a428f701a195e30109, type: 2}
   rightChoiceLocalized:
-    english: the General
-    arabic: "\u0627\u0644\u062C\u064A\u0646\u0631\u0627\u0644"
+    english: "Rely on the General's steel."
+    arabic: "الاعتماد على سيف الجنرال."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 20
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -10
   rightNextCard: {fileID: 11400000, guid: 43fe31c3fc2c84244b8f8464bd77b5c9, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -45,6 +47,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
   visualTemplate: {fileID: 0}

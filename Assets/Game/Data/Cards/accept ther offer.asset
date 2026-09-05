@@ -18,28 +18,26 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: 'you found the General gave him money to buy wepeons and loyal from
-      other kindoms.
-
-      the general: '
-    arabic: "\u0648\u062C\u062F\u062A \u0627\u0644\u062C\u0646\u0631\u0627\u0644
-      \u0648\u0623\u0639\u0637\u064A\u062A\u0647 \u0627\u0644\u0645\u0627\u0644 \u0644\u0634\u0631\u0627\u0621
-      \u0627\u0644\u0623\u0633\u0644\u062D\u0629 \u0648\u062A\u062C\u0646\u064A\u062F
-      \u0627\u0644\u0648\u0644\u0627\u0621\u0627\u062A \u0645\u0646 \u0627\u0644\u0645\u0645\u0627\u0644\u0643
-      \u0627\u0644\u0623\u062E\u0631\u0649. \r\n\r\n\u0627\u0644\u062C\u0646\u0631\u0627\u0644:"
+    english: "With the noble's gold in hand, sellswords assemble in the northern foothills. A thousand banners flutter in the wind, ready for your command."
+    arabic: "بذهب النبيل، تجمعت كتائب المرتزقة في التلال الشمالية. ألف راية تخفق في الرياح بانتظار إشارتك لاسترداد التاج."
   dayAdvance: 1
   leftChoiceLocalized:
-    english: accept the idea
-    arabic: "\u0648\u0627\u0641\u0642 \u0639\u0644\u064A \u0641\u0643\u0631\u0647
-      \u0627\u0644\u0645\u0644\u0643"
+    english: "Declare war! Reclaim the throne!"
+    arabic: "إعلان الحرب! واستعادة العرش بقوة السلاح!"
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -40
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 30
   leftNextCard: {fileID: 11400000, guid: 00ce2ca15dfe56a44bb7aa75f306f9b6, type: 2}
   rightChoiceLocalized:
-    english: escape again
-    arabic: "\u0627\u0647\u0631\u0628 \u0645\u062C\u062F\u062F\u0627"
+    english: "The cost in blood is too high; walk away."
+    arabic: "ثمن الدماء فادح؛ الانسحاب في صمت."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -100
   rightNextCard: {fileID: 11400000, guid: c4fa9fe42c3ac21499bf0e19c274bbdf, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -47,6 +45,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
   visualTemplate: {fileID: 0}

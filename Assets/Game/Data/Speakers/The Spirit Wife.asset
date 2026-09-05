@@ -16,7 +16,7 @@ MonoBehaviour:
   displayNameLocalized:
     english: The Spirit Wife
     arabic: "\u0627\u0644\u0632\u0648\u062C\u0629 \u0627\u0644\u0645\u064A\u062A\u0649"
-  portrait: {fileID: 0}
+  portrait: {fileID: 21300000, guid: 418c88c1451d4d39bf920be20f82533f, type: 3}
   llmPersonaPrompt: 'You are the ghost of the murdered queen, bound to the mortal
     realm by grief and bitterness after your husband executed you over false rumors.
     Though you once loved him, you now harbor deep hatred, though you still guard

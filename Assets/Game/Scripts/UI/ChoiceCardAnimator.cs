@@ -7,9 +7,9 @@ namespace Game.Scripts.UI
     /// <remarks>Left and right cards use mirrored, hand-tuned motion sets so each side joins and throws differently.</remarks>
     public class ChoiceCardAnimator : MonoBehaviour
     {
-        [Tooltip("Drag progress (0-1) beyond which the card counts as revealed and eases fully into its join pose.")]
-        [SerializeField, Range(0.05f, 0.5f)]
-        private float revealThreshold = 0.15f;
+        [Tooltip("Minimum drag progress (0-1) before the choice card begins to reveal (deadzone).")]
+        [SerializeField, Range(0f, 0.3f)]
+        private float revealThreshold = 0.05f;
 
         [Tooltip("Time in seconds the card takes to ease between its parked and revealed poses.")]
         [SerializeField, Min(0.05f)]
@@ -17,7 +17,7 @@ namespace Game.Scripts.UI
 
         [Tooltip("Total time in seconds of the confirm animation: dip, then throw off-screen.")]
         [SerializeField, Min(0.05f)]
-        private float confirmDuration = 0.8f;
+        private float confirmDuration = 0.65f;
 
         [Tooltip("Fraction of Confirm Duration spent dipping before the card is thrown.")]
         [SerializeField, Range(0.1f, 0.9f)]
@@ -33,23 +33,23 @@ namespace Game.Scripts.UI
             public float dismissTilt;
         }
 
-        // Hand-tuned motion values reproducing the original card feel; the two sides are intentionally asymmetric.
+        // Hand-tuned mirrored motion sets so left and right choices feel balanced and symmetrical.
         private static readonly SideMotion LeftMotion = new SideMotion
         {
-            joinOffset = new Vector2(482f, -125f),
+            joinOffset = new Vector2(480f, -120f),
             joinTilt = -30f,
-            dipOffset = new Vector2(-20f, -71f),
-            dismissOffset = new Vector2(1534f, 1650f),
-            dismissTilt = -42f
+            dipOffset = new Vector2(-20f, -60f),
+            dismissOffset = new Vector2(1500f, 1600f),
+            dismissTilt = -40f
         };
 
         private static readonly SideMotion RightMotion = new SideMotion
         {
-            joinOffset = new Vector2(-483f, -116f),
+            joinOffset = new Vector2(-480f, -120f),
             joinTilt = 30f,
-            dipOffset = new Vector2(22f, -49f),
-            dismissOffset = new Vector2(-809f, 1333f),
-            dismissTilt = 31f
+            dipOffset = new Vector2(20f, -60f),
+            dismissOffset = new Vector2(-1500f, 1600f),
+            dismissTilt = 40f
         };
 
         private RectTransform cardTransform;
@@ -77,7 +77,7 @@ namespace Game.Scripts.UI
             ApplyReveal(0f);
         }
 
-        /// <summary>Marks the card revealed (eases to the join pose) once drag progress passes the reveal threshold, parked otherwise.</summary>
+        /// <summary>Updates the card reveal pose proportionally with the drag progress.</summary>
         /// <param name="progress">Drag progress from 0 (parked) to 1 (fully dragged).</param>
         public void SetRevealProgress(float progress)
         {
@@ -86,7 +86,18 @@ namespace Game.Scripts.UI
                 return;
             }
 
-            target = Mathf.Clamp01(progress) > revealThreshold ? 1f : 0f;
+            float clamped = Mathf.Clamp01(progress);
+            if (clamped <= revealThreshold)
+            {
+                target = 0f;
+            }
+            else
+            {
+                target = revealThreshold < 1f ? (clamped - revealThreshold) / (1f - revealThreshold) : 0f;
+            }
+
+            reveal = target;
+            ApplyReveal(reveal);
         }
 
         /// <summary>Eases the card back to its parked pose after an unconfirmed drag.</summary>
@@ -135,10 +146,7 @@ namespace Game.Scripts.UI
                 return;
             }
 
-            float direction = Mathf.Sign(target - reveal);
-            reveal = direction > 0f
-                ? Mathf.Min(target, reveal + Time.deltaTime / joinDuration)
-                : Mathf.Max(target, reveal - Time.deltaTime / joinDuration);
+            reveal = Mathf.MoveTowards(reveal, target, Time.deltaTime / joinDuration);
             ApplyReveal(reveal);
         }
 
@@ -177,6 +185,9 @@ namespace Game.Scripts.UI
             canvasGroup.alpha = 0f;
             dismissing = false;
             dismissRoutine = null;
+            reveal = 0f;
+            target = 0f;
+            ApplyReveal(0f);
         }
 
         private void ApplyReveal(float value)

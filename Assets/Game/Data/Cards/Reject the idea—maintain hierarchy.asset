@@ -18,33 +18,28 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: "A merchant brings a shipment of exotic goods and offers you first selection
-      at no cost\u2014clearly a bribe,Wiping clean unpaid back-taxes.\r\nthe Treasury
-      tells you to accept and get spices as payment .\r\n"
-    arabic: "\u064A\u0642\u062F\u0645 \u0623\u062D\u062F \u0627\u0644\u062A\u062C\u0627\u0631
-      \u0634\u062D\u0646\u0629 \u0645\u0646 \u0627\u0644\u0628\u0636\u0627\u0626\u0639
-      \u0627\u0644\u0646\u0627\u062F\u0631\u0629 \u0648\u064A\u0645\u0646\u062D\u0643
-      \u062D\u0642 \u0627\u0644\u0627\u062E\u062A\u064A\u0627\u0631 \u0627\u0644\u0623\u0648\u0644
-      \u062F\u0648\u0646 \u0645\u0642\u0627\u0628\u0644\u2014\u0648\u0647\u064A \u0631\u0634\u0648\u0629
-      \u0648\u0627\u0636\u062D\u0629 \u0644\u0625\u0644\u063A\u0627\u0621 \u0636\u0631\u0627\u0626\u0628\u0647
-      \u0627\u0644\u0645\u062A\u0623\u062E\u0631\u0629 \u0648\u063A\u064A\u0631 \u0627\u0644\u0645\u062F\u0641\u0648\u0639\u0629.
-      \u064A\u064F\u0646\u0635\u062D\u0643 \u0623\u0645\u064A\u0646 \u0627\u0644\u062E\u0632\u0627\u0646\u0629
-      \u0628\u0642\u0628\u0648\u0644 \u0627\u0644\u0639\u0631\u0636 \u0648\u0623\u062E\u0630
-      \u0627\u0644\u062A\u0648\u0627\u0628\u0644 \u0643\u0628\u062F\u064A\u0644 \u0644\u0644\u062F\u0641\u0648\u0639\u0627\u062A.   "
+    english: "A wealthy merchant presents a shipment of rare silks and spices, offering you first choice at no cost—a blatant bribe to wipe away his delinquent taxes. The Treasury Adviser eagerly urges you to accept."
+    arabic: "يعرض تاجر ثري شحنة من الحرير النادر والتوابل النفيسة، مانحاً إياك حق الاختيار الأول دون مقابل—وهي رشوة صريحة لإسقاط ضرائبه المتراكمة. ويحثك مستشار الخزانة بحماس على قبول العرض."
   dayAdvance: 1
   leftChoiceLocalized:
-    english: no one can Resists cinnamon
-    arabic: "\u0644\u0627 \u0623\u062D\u062F \u064A\u0633\u062A\u0637\u064A\u0639
-      \u0645\u0642\u0627\u0648\u0645\u0629 \u0627\u0644\u0642\u0631\u0641\u0629!   "
+    english: "Accept the tribute; no one can resist cinnamon."
+    arabic: "قبول الجزية؛ فلا أحد يقاوم سحر القرفة والتوابل."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: 25
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -15
   leftNextCard: {fileID: 11400000, guid: e0356b69f3e0bcb4aa9c1b635499ac94, type: 2}
   rightChoiceLocalized:
-    english: are you bribing your king?!
-    arabic: "\u0647\u0644 \u062A\u062D\u0627\u0648\u0644 \u0631\u0634\u0648\u0629
-      \u0645\u0644\u0643\u0643\u061F!"
+    english: "Arrest him! How dare you attempt to bribe your King?"
+    arabic: "اقبضوا عليه! أتجرؤ على محاولة رشوة ملكك؟"
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 10
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -10
   rightNextCard: {fileID: 11400000, guid: 3def12be6eb950a49bbcd2b9b3699d1f, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -52,6 +47,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 4a7945b246c54ab5be0cf41a50bdb5ca, type: 3}
   visualTemplate: {fileID: 0}

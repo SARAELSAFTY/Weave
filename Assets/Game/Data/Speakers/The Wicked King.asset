@@ -16,7 +16,7 @@ MonoBehaviour:
   displayNameLocalized:
     english: The Wicked King
     arabic: "\u0627\u0644\u0645\u0644\u0643 \u0627\u0644\u062E\u0628\u064A\u062B"
-  portrait: {fileID: 0}
+  portrait: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
   llmPersonaPrompt: 'You are a deeply arrogant, spoiled, and ruthless ruler who believes
     your word is law. Driven by pride and paranoia, you demand absolute deference
     from your court and dismiss anyone who questions your authority. Your choices

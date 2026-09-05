@@ -18,31 +18,28 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: "The Chancellor proposes a law that taxes the peasants more . The Treasury
-      Adviser\r\napplauds\u2014the gold will fill your vaults"
-    arabic: "\u064A\u0642\u062A\u0631\u062D \u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631
-      \u0627\u0644\u0627\u0639\u0644\u064A \u064A\u0641\u0631\u0636 \u0627\u0644\u0645\u0632\u064A\u062F
-      \u0645\u0646 \u0627\u0644\u0636\u0631\u0627\u0626\u0628 \u0639\u0644\u0649
-      \u0627\u0644\u0641\u0644\u0627\u062D\u064A\u0646. \u064A\u0624\u064A\u062F
-      \u0645\u0633\u062A\u0634\u0627\u0631 \u0627\u0644\u062E\u0632\u0627\u0646\u0629\u2014\u0641\u0627\u0644\u0630\u0647\u0628
-      \u0633\u064A\u0645\u0644\u0623 \u062E\u0632\u0627\u0626\u0646\u0643."
+    english: "The Chancellor proposes a new tax decree upon the peasants. The Treasury Adviser gleefully applauds—promising royal vaults overflowing with gold, though unrest brews in the streets."
+    arabic: "يقترح المستشار مرسوماً بفرض ضرائب إضافية على الفلاحين. ويصفق مستشار الخزانة بحماس—مؤكداً أن الذهب سيملاً خزائنك، رغم بوادر التململ في الشوارع."
   dayAdvance: 1
   leftChoiceLocalized:
-    english: listen to the Chancellor and Treasury Adviser
-    arabic: "\u0627\u0633\u062A\u0645\u0639 \u0644\u0644\u0645\u0633\u062A\u0634\u0627\u0631
-      \u0648\u0645\u0633\u062A\u0634\u0627\u0631 \u0627\u0644\u062E\u0632\u0627\u0646\u0629"
+    english: "Approve the decree; fill the treasury."
+    arabic: "الموافقة على المرسوم؛ لملء الخزينة بالذهب."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
-      value: 10
+      value: 20
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -15
   leftNextCard: {fileID: 11400000, guid: 855112f01e7e4444ea4e97526c76e9de, type: 2}
   rightChoiceLocalized:
-    english: refuse
-    arabic: "\u0627\u0631\u0641\u0636"
+    english: "Refuse; the people carry enough burdens."
+    arabic: "الرفض؛ فالشعب يحمل ما يكفي من الأعباء."
   rightResourceChange:
     values:
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
-      value: 5
+      value: -5
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 15
   rightNextCard: {fileID: 11400000, guid: 6544cb08e167f8f4fb65072e6323621a, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 

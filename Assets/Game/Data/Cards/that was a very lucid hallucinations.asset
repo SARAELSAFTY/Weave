@@ -18,30 +18,28 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: The Chancellor been sending money and weapons to a Banditry and the
-      treasury advisor been stealing from the lower vaults and passing tariffs whenever
-      he likes on merchants
-    arabic: "\u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631 \u0643\u0627\u0646
-      \u064A\u0631\u0633\u0644 \u0627\u0644\u0623\u0645\u0648\u0627\u0644 \u0648\u0627\u0644\u0623\u0633\u0644\u062D\u0629
-      \u0625\u0644\u0649 \u0627\u0644\u0639\u0635\u0627\u0628\u0627\u062A \u0648\u0642\u0637\u0651\u0627\u0639
-      \u0627\u0644\u0637\u0631\u0642\u060C \u0628\u064A\u0646\u0645\u0627 \u0643\u0627\u0646
-      \u0645\u0633\u062A\u0634\u0627\u0631 \u0627\u0644\u062E\u0632\u0627\u0646\u0629
-      \u064A\u0633\u0631\u0642 \u0645\u0646 \u0627\u0644\u062E\u0632\u0627\u0626\u0646
-      \u0627\u0644\u0633\u0641\u0644\u0649 \u0648\u064A\u0641\u0631\u0636 \u0631\u0633\u0648\u0645\u0627\u064B
-      \u062C\u0645\u0631\u0643\u064A\u0629 \u0648\u0641\u0642 \u0623\u0647\u0648\u0627\u0626\u0647
-      \u0639\u0644\u0649 \u0627\u0644\u062A\u062C\u0627\u0631"
+    english: "You shake off the vision, but cold reports confirm the nightmare: the Chancellor has been arming rebel bandits, while the Treasury Adviser plunders the lower vaults with extortionate tariffs."
+    arabic: "تنفض عنك رؤيا الشبح، لكن التقارير السرية تؤكد الكابوس: المستشار كان يسلح العصابات وقطاع الطرق، بينما ينهب مستشار الخزانة الخزائن الملكية بضرائب جائرة."
   dayAdvance: 1
   leftChoiceLocalized:
-    english: What??
-    arabic: "\u0645\u0627\u0630\u0627\u061F\u061F"
+    english: "What madness is this?!"
+    arabic: "أي جنون هذا؟!"
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -20
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -20
   leftNextCard: {fileID: 11400000, guid: f5cd9a94c53bcc243b46e6498a3da9ba, type: 2}
   rightChoiceLocalized:
-    english: What??
-    arabic: "\u0645\u0627\u0630\u0627\u061F\u061F"
+    english: "Confront the council!"
+    arabic: "مواجهة المجلس فوراً!"
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -20
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -20
   rightNextCard: {fileID: 11400000, guid: f5cd9a94c53bcc243b46e6498a3da9ba, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 

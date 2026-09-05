@@ -18,9 +18,8 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: the revelotion grew and they beheaded you
-    arabic: "\u0627\u062A\u0633\u0639\u062A \u0631\u0642\u0639\u0629 \u0627\u0644\u062B\u0648\u0631\u0629...
-      \u0648\u0642\u0637\u0639\u0648\u0627 \u0631\u0623\u0633\u0643!"
+    english: "You stepped out to appease them, but words could not quench their fury. The mob overwhelmed your guard, tore down your banners, and beheaded you upon the palace steps."
+    arabic: "خرجتَ لتخاطبهم، لكن الكلمات لم تطفئ غضب السنين. اجتاح الحشد حرسك، ومزقوا راياتك الملكية، وقطعوا رأسك عند درجات القصر."
   dayAdvance: 1
   leftChoiceLocalized:
     english: 
@@ -40,6 +39,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
   visualTemplate: {fileID: 0}

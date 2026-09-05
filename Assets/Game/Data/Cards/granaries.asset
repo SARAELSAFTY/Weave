@@ -18,47 +18,28 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: 'the Chancellor proposes spreading your military power in the city to
-      establish control.
-
-      
-
-      The General: Against my judgment. Keeping
-      our bases along the city limits maintains stability without overextending us.
-      Spreading our soldiers thin only exposes weak points for an enemy to exploit.
-
-      mmh
-      tough decision
-
-'
-    arabic: "\u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631 \u064A\u0642\u062A\u0631\u062D
-      \u0646\u0634\u0631 \u0642\u0648\u0627\u062A\u0643 \u0627\u0644\u0639\u0633\u0643\u0631\u064A\u0629
-      \u0641\u064A \u062C\u0645\u064A\u0639 \u0623\u0646\u062D\u0627\u0621 \u0627\u0644\u0645\u062F\u064A\u0646\u0629
-      \u0644\u0641\u0631\u0636 \u0627\u0644\u0633\u064A\u0637\u0631\u0629.\n\n\u0627\u0644\u062C\u0646\u0631\u0627\u0644:
-      \"\u0647\u0630\u0627 \u064A\u062E\u0627\u0644\u0641 \u0631\u0623\u064A\u064A.
-      \u0625\u0646 \u0625\u0628\u0642\u0627\u0621 \u0642\u0648\u0627\u0639\u062F\u0646\u0627
-      \u0639\u0644\u0649 \u062D\u062F\u0648\u062F \u0627\u0644\u0645\u062F\u064A\u0646\u0629
-      \u064A\u062D\u0627\u0641\u0638 \u0639\u0644\u0649 \u0627\u0644\u0627\u0633\u062A\u0642\u0631\u0627\u0631
-      \u062F\u0648\u0646 \u0623\u0646 \u064A\u0646\u0647\u0643 \u0642\u0648\u0627\u062A\u0646\u0627.
-      \u0625\u0646 \u062A\u0648\u0632\u064A\u0639 \u062C\u0646\u0648\u062F\u0646\u0627
-      \u0628\u0634\u0643\u0644 \u0645\u062A\u0641\u0631\u0642 \u0644\u0646 \u064A\u0624\u062F\u064A
-      \u0625\u0644\u0627 \u0625\u0644\u0649 \u0643\u0634\u0641 \u0646\u0642\u0627\u0637
-      \u0636\u0639\u0641 \u064A\u0645\u0643\u0646 \u0644\u0644\u0639\u062F\u0648
-      \u0627\u0633\u062A\u063A\u0644\u0627\u0644\u0647\u0627.\"\n\n\u0645\u0645\u0645\u060C
-      \u0642\u0631\u0627\u0631 \u0635\u0639\u0628..."
+    english: "The council erupts! The Chancellor demands troops garrison every granary, calling the crowd mere insurgents. The General pushes back: 'Starving citizens are not invaders—feed them, or face a revolution you cannot win!'"
+    arabic: "ينفجر المجلس غضباً! يطالب المستشار بنشر فيالق الجيش داخل كل صومعة وتصنيف الحشود كمتمردين. بينما يحذر الجنرال: «الجائعون ليسوا غزاة أجانب—أطعموهم، وإلا واجهتم ثورة لا قبل لكم بصدها!»"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: the General is right
-    arabic: "\u0627\u0644\u062C\u064A\u0646\u0631\u0627\u0644 \u0645\u062D\u0642"
+    english: "The General is right; protect the citizens."
+    arabic: "الجنرال على حق؛ حماية المواطنين وإطعامهم."
   leftResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 15
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 5
   leftNextCard: {fileID: 11400000, guid: 1f8d57d4c33c97842ac5f4f48ca89ec6, type: 2}
   rightChoiceLocalized:
-    english: the Chancell have a good point
-    arabic: "\u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631 \u0627\u0644\u0627\u0639\u0644\u064A
-      \u0644\u062F\u064A\u0647 \u0648\u062C\u0647\u0647 \u0646\u0638\u0631"
+    english: "The Chancellor is right; crush insubordination."
+    arabic: "المستشار على حق؛ إخضاع العصيان بالقوة."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -30
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 10
   rightNextCard: {fileID: 11400000, guid: bd8e1cdf48298b1488c169bc1abb9b32, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -67,5 +48,5 @@ MonoBehaviour:
   petitionerSource: 0
   continueNextCard: {fileID: 0}
   artMode: 1
-  cardImage: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
+  cardImage: {fileID: 21300000, guid: 09f5413882d741ed938f1ac53dcab077, type: 3}
   visualTemplate: {fileID: 0}

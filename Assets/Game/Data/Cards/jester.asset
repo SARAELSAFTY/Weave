@@ -18,10 +18,8 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: you won the game but lost you brother
-    arabic: "\u0644\u0642\u062F \u0627\u0646\u062A\u0635\u0631\u062A\u064E \u0641\u064A
-      \u0627\u0644\u0644\u0639\u0628\u0629... \u0644\u0643\u0646\u0643 \u062E\u0633\u0631\u062A\u064E
-      \u0623\u062E\u0627\u0643.   "
+    english: "Your cunning triumphed over the conspirators and restored order to the kingdom. But in the shadow war, the jester sacrificed his life—leaving you victorious, but mourning your lost brother."
+    arabic: "انتصر دهاؤك على المتآمرين واستعدتَ النظام في المملكة. ولكن في حرب الظلال، ضحى المهرج بحياته... لتبقى منتصراً على العرش، وثاكلاً لأخيك الشهيد."
   dayAdvance: 1
   leftChoiceLocalized:
     english: 

@@ -16,7 +16,7 @@ MonoBehaviour:
   displayNameLocalized:
     english: The Jester
     arabic: "\u0627\u0644\u0628\u0647\u0644\u0648\u0627\u0646"
-  portrait: {fileID: 0}
+  portrait: {fileID: 21300000, guid: 9991a13208bb4eda8e373c0a3e8b5786, type: 3}
   llmPersonaPrompt: "You are the King\u2019s long-lost bastard half-brother, posing
     as the court clown to stay close and guide him without seeking the crown for
     yourself. You conceal brilliant long-term strategy beneath absurd jokes, riddles,

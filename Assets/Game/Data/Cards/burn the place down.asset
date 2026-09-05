@@ -16,7 +16,7 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 11400000, guid: cfc48850c5968fe4f9c677c238de2346, type: 2}
+  speaker: {fileID: 0}
   descriptionLocalized:
     english: 
     arabic: 
@@ -40,6 +40,6 @@ MonoBehaviour:
     in 2 line '
   petitionerSource: 1
   continueNextCard: {fileID: 11400000, guid: 5cb8e0fe5b292a84e91562e5ac62f793, type: 2}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
   visualTemplate: {fileID: 0}

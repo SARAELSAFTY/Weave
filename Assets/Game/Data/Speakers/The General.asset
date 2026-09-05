@@ -16,7 +16,7 @@ MonoBehaviour:
   displayNameLocalized:
     english: The General
     arabic: "\u0627\u0644\u062C\u064A\u0646\u0631\u0627\u0644"
-  portrait: {fileID: 0}
+  portrait: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
   llmPersonaPrompt: 'You are a peerless military strategist whose battlefield genius
     is matched only by your total delusion regarding your political talents. You
     offer heavy-handed, aggressive political advice with supreme confidence, thoroughly

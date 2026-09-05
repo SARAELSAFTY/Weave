@@ -41,5 +41,5 @@ MonoBehaviour:
   petitionerSource: 1
   continueNextCard: {fileID: 11400000, guid: 6ed0bd7e2cecc02459cadc4053e822ce, type: 2}
   artMode: 0
-  cardImage: {fileID: 0}
+  cardImage: {fileID: 21300000, guid: 46bd00415f48411fadf2b6e8af1c8dfa, type: 3}
   visualTemplate: {fileID: 0}

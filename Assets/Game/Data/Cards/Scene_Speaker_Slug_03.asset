@@ -18,8 +18,8 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: Lost your brother
-    arabic: "\u062E\u0633\u0631\u062A \u0627\u062E\u0648\u0643"
+    english: "The castle burns, and with it, the evidence of your rightful bloodline. You preserved your throne, but destroyed your only brother."
+    arabic: "احترقت القلعة، ومعها تلاشت كل أدلة نسبك وسلالتك الحقيقية. حفظتَ عرشك من الضياع، لكنك أهلكتَ أخاك الوحيد."
   dayAdvance: 1
   leftChoiceLocalized:
     english: 
@@ -39,6 +39,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 0
-  cardImage: {fileID: 0}
+  artMode: 1
+  cardImage: {fileID: 21300000, guid: 6e2de2e7e11943a892be096f719367d9, type: 3}
   visualTemplate: {fileID: 0}

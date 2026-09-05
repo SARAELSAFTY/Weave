@@ -16,44 +16,28 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 0}
+  speaker: {fileID: 11400000, guid: cfc48850c5968fe4f9c677c238de2346, type: 2}
   descriptionLocalized:
-    english: 'you send the general to look for the Treasury Adviser, get him dead
-      or alive.
-
-      you decide to go to the seer.
-
-      the seer: you keep surounding 
-      youself with enemy and jailing away your allies.
-
-      you :who are they
-
-      the
-      seer :no pay no vision'
-    arabic: "\u062A\u0631\u0633\u0644 \u0627\u0644\u062C\u0646\u0631\u0627\u0644
-      \u0644\u0644\u0628\u062D\u062B \u0639\u0646 \u0645\u0633\u062A\u0634\u0627\u0631
-      \u0627\u0644\u062E\u0632\u0627\u0646\u0629\u060C \u0644\u064A\u062D\u0636\u0631\u0647
-      \u062D\u064A\u064B\u0627 \u0623\u0648 \u0645\u064A\u062A\u064B\u0627.\n\u062A\u064F\u0642\u0631\u0631
-      \u0627\u0644\u0630\u0647\u0627\u0628 \u0625\u0644\u0649 \u0627\u0644\u0631\u0627\u0626\u064A.\n\u0627\u0644\u0631\u0627\u0626\u064A:
-      \"\u062A\u0633\u062A\u0645\u0631 \u0641\u064A \u0625\u062D\u0627\u0637\u0629
-      \u0646\u0641\u0633\u0643 \u0628\u0627\u0644\u0623\u0639\u062F\u0627\u0621 \u0648\u0633\u062C\u0646
-      \u062D\u0644\u0641\u0627\u0626\u0643.\"\n\u0623\u0646\u062A: \"\u0645\u0646
-      \u0647\u0645\u061F\"\n\u0627\u0644\u0631\u0627\u0626\u064A: \"\u0644\u0627
-      \u0631\u0624\u064A\u0629 \u062F\u0648\u0646 \u0645\u0642\u0627\u0628\u0644.\""
+    english: "You surround yourself with enemies while casting your truest allies into chains. You want the truth? No gold, no vision, my Lord."
+    arabic: "«تحيط نفسك بالأعداء، وتزج بأخلص حلفائك في الأغلال! أتريد الحقيقة؟ لا رؤيا دون ثمن يا مولاي.»"
   dayAdvance: 15
   leftChoiceLocalized:
-    english: pay
-    arabic: "\u0627\u062F\u0641\u0639 \u0627\u0644\u0645\u0627\u0644 \u0644\u0644\u0639\u0631\u0627\u0641\u0629"
+    english: "Pay the gold for the vision."
+    arabic: "دفع الذهب لرؤية النبوءة."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
       value: -15
   leftNextCard: {fileID: 11400000, guid: f1ccc51d36652ef43b3cf5fb464e164f, type: 2}
   rightChoiceLocalized:
-    english: ' you will investagate your self '
-    arabic: "\u0633\u062A\u0628\u062D\u062B \u0628\u0646\u0641\u0633\u0643"
+    english: "Keep your riddles. I will investigate myself."
+    arabic: "احتفظي بألغازك؛ سأبحث عن الحقيقة بنفسي."
   rightResourceChange:
-    values: []
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -5
   rightNextCard: {fileID: 11400000, guid: e7acbcbbda307874db4460d068af46a4, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
@@ -61,6 +45,6 @@ MonoBehaviour:
   petitionSeedOverride: 
   petitionerSource: 0
   continueNextCard: {fileID: 0}
-  artMode: 1
+  artMode: 0
   cardImage: {fileID: 21300000, guid: d737a477c6e94ab28bec29563bc1adcd, type: 3}
   visualTemplate: {fileID: 0}

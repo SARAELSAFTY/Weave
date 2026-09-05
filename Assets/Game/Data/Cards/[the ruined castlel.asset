@@ -18,34 +18,26 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 0}
   descriptionLocalized:
-    english: 'you found an old painting of your father and a nobel woman witha child,
-      and it not you...
-
-'
-    arabic: "\u0639\u062B\u0631\u062A\u064E \u0639\u0644\u0649 \u0644\u0648\u062D\u0629
-      \u0642\u062F\u064A\u0645\u0629 \u0644\u0648\u0627\u0644\u062F\u0643 \u0628\u0631\u0641\u0642\u0629
-      \u0627\u0645\u0631\u0623\u0629 \u0645\u0646 \u0627\u0644\u0646\u0628\u0644\u0627\u0621
-      \u0648\u0645\u0639\u0647\u0645\u0627 \u0637\u0641\u0644... \u0648\u0644\u0645
-      \u062A\u0643\u0646 \u0623\u0646\u062A \u0630\u0644\u0643 \u0627\u0644\u0637\u0641\u0644."
+    english: "In the crumbling ruins, you discover a hidden portrait: your late father standing beside a noblewoman and an infant boy. Staring at the child's features, you realize in horror—that child is not you."
+    arabic: "في أطلال القلعة المهدمة، تعثر على لوحة سرية: والدك الراحل يقف إلى جانب امرأة من النبلاء ومعهما طفل رضيع. تحدق في ملامح الطفل برعب شديد... ذلك الصبي لم يكن أنت."
   dayAdvance: 15
   leftChoiceLocalized:
-    english: burn the place down
-    arabic: "\u0627\u062D\u0631\u0642 \u0627\u0644\u0645\u0643\u0627\u0646 \u0628\u0627\u0644\u0643\u0627\u0645\u0644"
+    english: "Burn the place down to ashes."
+    arabic: "إحراق المكان وتسويته بالرماد."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: -13
+      value: -15
   leftNextCard: {fileID: 11400000, guid: 2645733732e5e434d9705df88dee41db, type: 2}
   rightChoiceLocalized:
-    english: declare the jester as one of your advisor
-    arabic: "\u062A\u0639\u0644\u0646 \u0627\u0644\u0645\u0647\u0631\u062C \u0645\u0633\u062A\u0634\u0627\u0631\u064B\u0627
-      \u0644\u0643."
+    english: "Name the Jester as your royal advisor."
+    arabic: "تعيين المهرج مستشاراً رسمياً للعرش."
   rightResourceChange:
     values:
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
       value: 15
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
-      value: -6
+      value: -10
   rightNextCard: {fileID: 11400000, guid: ea02f5adccd8c964dbe9af092264d203, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
