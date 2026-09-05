@@ -1,5 +1,4 @@
 using Game.Scripts.Definitions;
-using Game.Scripts.Localization;
 using UnityEditor;
 using UnityEngine;
 
@@ -100,16 +99,9 @@ namespace Game.Scripts.Editor
 
             if (isLlmProp.boolValue)
             {
-                LocalizedTextGui.Clear(descriptionLocalizedProp);
-
                 SerializedProperty reactionSeedOverrideProp = serializedObject.FindProperty("reactionSeedOverride");
                 EditorGUILayout.PropertyField(reactionSeedOverrideProp, new GUIContent(
                     "Reaction Seed Override"));
-
-                SpeakerData speaker = speakerProp.objectReferenceValue as SpeakerData;
-                if (speaker != null && string.IsNullOrWhiteSpace(speaker.llmPersonaPrompt))
-                {
-                }
 
                 EditorGUILayout.Space(6);
                 SerializedProperty continueNextCardProp = serializedObject.FindProperty("continueNextCard");
@@ -120,19 +112,9 @@ namespace Game.Scripts.Editor
                 EditorGUILayout.PropertyField(petitionerSourceProp, new GUIContent(
                     "Petitioner Source"));
 
-                if (usesGeneratedCommoner)
-                {
-                }
-                else
+                if (!usesGeneratedCommoner)
                 {
                     EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker"));
-                    SpeakerData definedSpeaker = speakerProp.objectReferenceValue as SpeakerData;
-                    if (definedSpeaker == null)
-                    {
-                    }
-                    else if (string.IsNullOrWhiteSpace(definedSpeaker.llmPersonaPrompt))
-                    {
-                    }
                 }
 
                 SerializedProperty petitionSeedOverrideProp = serializedObject.FindProperty("petitionSeedOverride");
@@ -143,10 +125,7 @@ namespace Game.Scripts.Editor
                 SerializedProperty continueNextCardProp = serializedObject.FindProperty("continueNextCard");
                 EditorGUILayout.PropertyField(continueNextCardProp, new GUIContent("Continue Next Card"));
             }
-            else if (card.IsEnding)
-            {
-            }
-            else
+            else if (!card.IsEnding)
             {
                 EditorGUILayout.Space(6);
                 LocalizedTextGui.Draw(leftChoiceLocalizedProp, "Left Choice");
@@ -171,10 +150,6 @@ namespace Game.Scripts.Editor
 
                 SerializedProperty rightNextCardProp = serializedObject.FindProperty("rightNextCard");
                 EditorGUILayout.PropertyField(rightNextCardProp, new GUIContent("Right Next Card"));
-
-                if (card.HasBrokenBranch)
-                {
-                }
             }
 
             if (GUI.changed)

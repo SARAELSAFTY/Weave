@@ -27,6 +27,9 @@ namespace Game.Scripts.Localization
         /// <summary>The currently active language.</summary>
         public GameLanguage CurrentLanguage => currentLanguage;
 
+        /// <summary>The active language, or English when no LanguageManager exists (edit mode or pre-bootstrap).</summary>
+        public static GameLanguage CurrentLanguageOrDefault => Instance != null ? Instance.CurrentLanguage : GameLanguage.English;
+
         /// <summary>The loaded font settings, lazily falling back to Resources if not assigned in the Inspector.</summary>
         public FontSettings FontSettings
         {

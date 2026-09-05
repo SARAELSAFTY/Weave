@@ -28,11 +28,6 @@ namespace Game.Scripts.Editor
 
             LocalizedTextGui.Draw(displayNameLocalizedProp, "Display Name");
 
-            if (displayNameLocalizedProp.FindPropertyRelative("english").stringValue.Trim().Length == 0 &&
-                displayNameLocalizedProp.FindPropertyRelative("arabic").stringValue.Trim().Length == 0)
-            {
-            }
-
             EditorGUILayout.PropertyField(portraitProp, new GUIContent("Portrait"));
 
             EditorGUILayout.Space(10);

@@ -1,3 +1,4 @@
+using Game.Scripts.Localization;
 using UnityEngine;
 
 namespace Game.Scripts.Definitions
@@ -22,11 +23,34 @@ namespace Game.Scripts.Definitions
         [Tooltip("Percentage of max at which a low-value warning triggers (0–100%).")]
         public int warningThresholdPercent = 30;
 
-        [Tooltip("Speaker who delivers the low-value warning message.")]
-        public SpeakerData warningSpeaker;
-
         [Min(0)]
         [Tooltip("Minimum number of cards between consecutive warnings for this resource.")]
         public int warningCooldownCards = 5;
+
+        [Header("Speaker")]
+        [UnityEngine.Serialization.FormerlySerializedAs("warningSpeaker")]
+        [UnityEngine.Serialization.FormerlySerializedAs("visualSpeaker")]
+        [Tooltip("The speaker associated with this resource. Provides the portrait for warning and collapse cards, as well as the LLM persona prompt.")]
+        public SpeakerData speaker;
+
+        [Header("Collapse Ending Fallback")]
+        [Tooltip("Shown when LLM collapse generation fails or is unavailable (English).")]
+        [TextArea(3, 6)]
+        public string collapseEndingFallbackEnglish;
+
+        [Tooltip("Shown when LLM collapse generation fails or is unavailable (Arabic).")]
+        [TextArea(3, 6)]
+        public string collapseEndingFallbackArabic;
+
+
+        /// <summary>Returns the localized collapse fallback text for the given language.</summary>
+        public string GetCollapseFallbackText(GameLanguage language)
+        {
+            if (language == GameLanguage.Arabic && !string.IsNullOrWhiteSpace(collapseEndingFallbackArabic))
+                return collapseEndingFallbackArabic;
+            return string.IsNullOrWhiteSpace(collapseEndingFallbackEnglish)
+                ? string.Empty
+                : collapseEndingFallbackEnglish;
+        }
     }
 }

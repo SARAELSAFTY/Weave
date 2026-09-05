@@ -138,13 +138,11 @@ namespace Game.Scripts.Localization
             }
 
             // In edit mode there is no LanguageManager; default to English for preview.
-            GameLanguage language = Application.isPlaying && LanguageManager.Instance != null
-                ? LanguageManager.Instance.CurrentLanguage
+            GameLanguage language = Application.isPlaying
+                ? LanguageManager.CurrentLanguageOrDefault
                 : GameLanguage.English;
 
-            string content = language == GameLanguage.Arabic && !string.IsNullOrWhiteSpace(arabic)
-                ? arabic
-                : (english ?? string.Empty);
+            string content = new LocalizedText { english = english, arabic = arabic }.Get(language);
 
             RtlTextHelper.SetText(textComponent, content, language, fontCategory);
         }

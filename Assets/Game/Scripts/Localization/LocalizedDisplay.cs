@@ -29,10 +29,7 @@ namespace Game.Scripts.Localization
         /// <summary>Reads the current language from LanguageManager and delegates to <see cref="RefreshContent"/>.</summary>
         protected void Refresh()
         {
-            GameLanguage lang = LanguageManager.Instance != null
-                ? LanguageManager.Instance.CurrentLanguage
-                : GameLanguage.English;
-            RefreshContent(lang);
+            RefreshContent(LanguageManager.CurrentLanguageOrDefault);
         }
 
         /// <summary>Updates the display content for the given language.</summary>

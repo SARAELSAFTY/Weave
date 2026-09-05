@@ -12,11 +12,11 @@ using UnityEngine.SceneManagement;
 
 namespace Game.Scripts
 {
-    /// <summary>Orchestrates the core game flow: card presentation, player choices, petitions, resource warnings, and LLM-driven narrative.</summary>
+    /// <summary>Orchestrates the core game flow: card presentation, player choices, resource warnings, and run endings.</summary>
     /// <remarks>
-    /// Coordinates CardView, NarrativeRunner, ResourceWarningMonitor, PlayerHistoryTracker, and LlmReactionClient
-    /// to drive a day-based card game where each choice advances a branching narrative. Supports LLM-generated
-    /// speaker reactions, petition dialogues with turn limits, and collapse-ending epilogues.
+    /// Coordinates CardView, NarrativeRunner, ResourceWarningMonitor, PlayerHistoryTracker, PetitionFlowController,
+    /// and CollapseEndingBuilder to drive a day-based card game where each choice advances a branching narrative.
+    /// Supports LLM-generated speaker reactions and petition dialogues with turn limits.
     /// </remarks>
     public class GameManager : MonoBehaviour
     {
@@ -54,16 +54,12 @@ namespace Game.Scripts
         private ResourceWarningMonitor resourceWarningMonitor;
         private bool showingResourceWarning;
         private CardData warningCardInstance;
-        private CardData generatedCollapseEndingCard;
-        private PetitionSession currentPetitionSession;
-        private SpeakerData currentPetitionSpeaker;
-        private bool currentPetitionSpeakerIsTemp;
+        private PetitionFlowController petitionFlow;
+        private CollapseEndingBuilder collapseEndingBuilder;
 
         private LlmPromptTemplates Templates => narrativeDatabase != null ? narrativeDatabase.promptTemplates : null;
 
-        private GameLanguage CurrentLanguage => LanguageManager.Instance != null
-            ? LanguageManager.Instance.CurrentLanguage
-            : GameLanguage.English;
+        private GameLanguage CurrentLanguage => LanguageManager.CurrentLanguageOrDefault;
 
         /// <summary>True when the game is accepting left/right choice input (not paused, not mid-animation).</summary>
         public bool AcceptsChoiceInput => inputEnabled && !isPaused;
@@ -114,12 +110,37 @@ namespace Game.Scripts
             narrativeRunner.DayChanged += HandleDayChanged;
             historyTracker = new PlayerHistoryTracker(resourceState, narrativeRunner, narrativeDatabase.resourceCatalog);
             resourceWarningMonitor = new ResourceWarningMonitor(narrativeDatabase.resourceCatalog, resourceState);
+            petitionFlow = new PetitionFlowController(
+                cardView,
+                llmReactionClient,
+                llmSettings,
+                narrativeDatabase,
+                narrativeRunner,
+                resourceState,
+                historyTracker,
+                () => CurrentLanguage,
+                value => inputEnabled = value,
+                BeginPetitionConfirmAdvance,
+                delay => StartCoroutine(ReenablePetitionSubmitAfterDelay(delay)));
+            collapseEndingBuilder = new CollapseEndingBuilder(
+                cardView,
+                llmReactionClient,
+                historyTracker,
+                narrativeDatabase,
+                narrativeRunner,
+                llmSettings,
+                () => CurrentLanguage);
 
             if (!narrativeRunner.StartRun(out string error))
             {
                 Debug.LogError(error, this);
                 enabled = false;
+                return;
             }
+
+            // Fresh boot (first load or after a restart): show the start screen until the player presses Play.
+            // The scene saves StartPanel inactive, so activation must happen here rather than rely on authoring.
+            startScreenView.Show();
         }
 
         // Runtime-created ScriptableObjects (warning cards, generated endings, temp speakers) are not
@@ -137,13 +158,8 @@ namespace Game.Scripts
                 warningCardInstance = null;
             }
 
-            if (generatedCollapseEndingCard != null)
-            {
-                Destroy(generatedCollapseEndingCard);
-                generatedCollapseEndingCard = null;
-            }
-
-            CleanupPetitionSpeaker();
+            petitionFlow?.CleanupPetitionSpeaker();
+            collapseEndingBuilder?.Cleanup();
         }
 
         private void Update()
@@ -208,14 +224,8 @@ namespace Game.Scripts
                 return;
             }
 
-            // Auto-enable StartPanel if it's currently disabled
-            Transform startPanelTransform = startScreenView?.transform?.Find("StartPanel");
-            if (startPanelTransform != null && !startPanelTransform.gameObject.activeSelf)
-            {
-                startPanelTransform.gameObject.SetActive(true);
-            }
+            startScreenView?.Hide();
 
-            startScreenView.Hide();
             runInProgress = true;
             showingResourceWarning = false;
             resourceWarningMonitor?.Reset();
@@ -321,9 +331,23 @@ namespace Game.Scripts
             inputEnabled = false;
             runInProgress = false;
 
-            SpeakerData speaker = isCollapseEnding && collapsedResource != null
-                ? collapsedResource.warningSpeaker
-                : (endingCard != null ? endingCard.speaker : null);
+            // If no valid ending card exists, fall back to a generic run ended state
+            if (endingCard == null && !isCollapseEnding)
+            {
+                Debug.LogError("[GameManager] Ending card is null and not a collapse ending. Show generic end.", this);
+                cardView.ShowEnding(null, null);
+                return;
+            }
+
+            SpeakerData speaker;
+            if (isCollapseEnding)
+            {
+                speaker = collapsedResource != null ? collapsedResource.speaker : null;
+            }
+            else
+            {
+                speaker = endingCard != null ? endingCard.speaker : null;
+            }
 
             if (!isCollapseEnding)
             {
@@ -331,97 +355,18 @@ namespace Game.Scripts
                 return;
             }
 
-            if (endingCard == null || llmReactionClient == null || historyTracker == null ||
-                narrativeDatabase.resourceCatalog == null || collapsedResource == null)
-            {
-                ShowCollapseFallback(endingCard, speaker);
-                return;
-            }
-
-            // Show the generated card immediately with a "generating..." placeholder;
-            // the LLM callback will overwrite the description when the response arrives.
-            CardData generatedCard = CreateGeneratedCollapseEndingCard(endingCard, speaker);
-            cardView.ShowEnding(generatedCard, speaker);
-
-            LlmPromptTemplates templates = Templates;
-            string collapsedResourceName = collapsedResource.GetDisplayName(CurrentLanguage);
-            string finalResourceSummary = historyTracker.GetResourceSummary(CurrentLanguage);
-            string fullChoiceHistory = historyTracker.GetFullHistorySummary();
-
-            string epiloguePrompt = SpeakerPromptBuilder.BuildEpiloguePrompt(
-                narrativeRunner.Day, collapsedResourceName, finalResourceSummary, fullChoiceHistory, templates, CurrentLanguage);
-
-            int? epilogueMaxTokens = llmSettings != null ? llmSettings.epilogueMaxTokens : 80;
-
-            llmReactionClient.RequestReaction(
-                epiloguePrompt,
-                SpeakerPromptBuilder.SingleTurnUserMessage,
-                CurrentLanguage,
-                line =>
-                {
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        generatedCard.descriptionLocalized = new LocalizedText { english = line, arabic = line };
-                        cardView.ShowEnding(generatedCard, speaker);
-                        return;
-                    }
-
-                    Debug.LogWarning("[GameManager] Epilogue generation returned an empty response; using the fallback ending card.");
-                    ShowCollapseFallback(endingCard, speaker);
-                },
-                error =>
-                {
-                    Debug.LogWarning($"[GameManager] Epilogue generation failed: {error}");
-                    ShowCollapseFallback(endingCard, speaker);
-                },
-                maxTokensOverride: epilogueMaxTokens);
-        }
-
-        private CardData CreateGeneratedCollapseEndingCard(CardData fallbackCard, SpeakerData speaker)
-        {
-            if (generatedCollapseEndingCard == null)
-            {
-                generatedCollapseEndingCard = ScriptableObject.CreateInstance<CardData>();
-            }
-
-            generatedCollapseEndingCard.assetName = fallbackCard.AssetName + "_Generated";
-            generatedCollapseEndingCard.speaker = speaker != null ? speaker : fallbackCard.speaker;
-            generatedCollapseEndingCard.descriptionLocalized = new LocalizedText
-            {
-                english = FallbackStrings.GeneratingFinalRecord(GameLanguage.English),
-                arabic = FallbackStrings.GeneratingFinalRecord(GameLanguage.Arabic)
-            };
-            generatedCollapseEndingCard.dayAdvance = fallbackCard.dayAdvance;
-            generatedCollapseEndingCard.leftChoiceLocalized = default;
-            generatedCollapseEndingCard.rightChoiceLocalized = default;
-            generatedCollapseEndingCard.leftNextCard = null;
-            generatedCollapseEndingCard.rightNextCard = null;
-            generatedCollapseEndingCard.continueNextCard = null;
-            generatedCollapseEndingCard.isLlmReactionCard = false;
-            generatedCollapseEndingCard.isPetitionCard = false;
-            return generatedCollapseEndingCard;
-        }
-
-        private void ShowCollapseFallback(CardData fallbackCard, SpeakerData speaker)
-        {
-            if (fallbackCard == null)
-            {
-                Debug.LogError("[GameManager] Collapse ending generation failed and no fallback CardData is assigned.", this);
-                return;
-            }
-
-            cardView.ShowEnding(fallbackCard, speaker != null ? speaker : fallbackCard.speaker);
+            collapseEndingBuilder.Show(speaker, collapsedResource, endingCard);
         }
 
         private void ShowResourceWarning(ResourceData resource)
         {
-            if (resource == null || resource.warningSpeaker == null)
+            if (resource == null || resource.speaker == null)
             {
                 ShowCurrentCard();
                 return;
             }
 
-            SpeakerData speaker = resource.warningSpeaker;
+            SpeakerData speaker = resource.speaker;
             if (string.IsNullOrWhiteSpace(speaker.llmPersonaPrompt))
             {
                 ShowCurrentCard();
@@ -438,7 +383,7 @@ namespace Game.Scripts
                 warningCardInstance = ScriptableObject.CreateInstance<CardData>();
             }
             warningCardInstance.isLlmReactionCard = true;
-            warningCardInstance.speaker = resource.warningSpeaker;
+            warningCardInstance.speaker = resource.speaker;
             warningCardInstance.leftChoiceLocalized = default;
             warningCardInstance.rightChoiceLocalized = default;
 
@@ -455,22 +400,11 @@ namespace Game.Scripts
                 templates != null ? templates.defaultWarningSeedPrompt : string.Empty,
                 "resourceName", resource.GetDisplayName(CurrentLanguage));
 
-            RequestSpeakerReaction(speaker, gameStateSnapshot, seed,
+            RequestSpeakerReactionWithFallback(speaker, gameStateSnapshot, seed,
+                FallbackStrings.WarningUnavailable(CurrentLanguage),
                 line =>
                 {
                     cardView.SetDescriptionText(line);
-                    inputEnabled = true;
-                },
-                error =>
-                {
-                    Debug.LogWarning($"[GameManager] Resource warning LLM reaction failed: {error}");
-                    cardView.SetDescriptionText(FallbackStrings.WarningUnavailable(CurrentLanguage));
-                    inputEnabled = true;
-                },
-                () =>
-                {
-                    Debug.LogWarning("[GameManager] llmReactionClient is missing; showing fallback resource warning.", this);
-                    cardView.SetDescriptionText(FallbackStrings.WarningUnavailable(CurrentLanguage));
                     inputEnabled = true;
                 });
         }
@@ -486,8 +420,7 @@ namespace Game.Scripts
             SpeakerData speaker = card.speaker;
             if (card.isPetitionCard)
             {
-                currentPetitionSpeaker = ResolvePetitioner(card);
-                ShowPetitionCard(card, currentPetitionSpeaker);
+                petitionFlow.ShowPetitionCard(card);
                 return;
             }
 
@@ -498,25 +431,13 @@ namespace Game.Scripts
                 inputEnabled = false;
 
                 string gameStateSnapshot = GetReactionSnapshotOrDefault();
-
                 string seed = card.EffectiveReactionSeed(templates);
 
-                RequestSpeakerReaction(speaker, gameStateSnapshot, seed,
+                RequestSpeakerReactionWithFallback(speaker, gameStateSnapshot, seed,
+                    FallbackStrings.ReactionUnavailable(CurrentLanguage),
                     line =>
                     {
                         cardView.SetDescriptionText(line);
-                        inputEnabled = !card.IsEnding;
-                    },
-                    error =>
-                    {
-                        Debug.LogWarning($"[GameManager] LLM reaction failed: {error}");
-                        cardView.SetDescriptionText(FallbackStrings.ReactionUnavailable(CurrentLanguage));
-                        inputEnabled = !card.IsEnding;
-                    },
-                    () =>
-                    {
-                        Debug.LogWarning("[GameManager] llmReactionClient is missing; showing fallback reaction text.", this);
-                        cardView.SetDescriptionText(FallbackStrings.ReactionUnavailable(CurrentLanguage));
                         inputEnabled = !card.IsEnding;
                     });
 
@@ -527,208 +448,21 @@ namespace Game.Scripts
             inputEnabled = !card.IsEnding;
         }
 
-        private SpeakerData ResolvePetitioner(CardData card)
-        {
-            if (card.petitionerSource == PetitionerSource.DefinedSpeaker && card.speaker != null)
-            {
-                currentPetitionSpeakerIsTemp = false;
-                return card.speaker;
-            }
-
-            currentPetitionSpeakerIsTemp = true;
-            return BuildCommonerSpeaker();
-        }
-
-        // Creates a runtime-only SpeakerData; caller must track currentPetitionSpeakerIsTemp
-        // so CleanupPetitionSpeaker can destroy it later.
-        private SpeakerData BuildCommonerSpeaker()
-        {
-            SpeakerData commoner = ScriptableObject.CreateInstance<SpeakerData>();
-            commoner.displayNameLocalized = new LocalizedText { english = "A Common Subject", arabic = "أحد رعايا التاج" };
-            commoner.llmPersonaPrompt = Templates != null ? Templates.defaultCommonerPersona : string.Empty;
-            return commoner;
-        }
-
-        private void CleanupPetitionSpeaker()
-        {
-            if (currentPetitionSpeakerIsTemp && currentPetitionSpeaker != null)
-            {
-                Destroy(currentPetitionSpeaker);
-            }
-
-            currentPetitionSpeaker = null;
-            currentPetitionSpeakerIsTemp = false;
-        }
-
-        private void ShowPetitionCard(CardData card, SpeakerData speaker)
-        {
-            LlmPromptTemplates templates = Templates;
-            cardView.ShowPetition(card, speaker);
-            inputEnabled = false;
-            currentPetitionSession = new PetitionSession(llmSettings != null ? llmSettings.ResolvePetitionTurnLimit() : 3);
-
-            string gameStateSnapshot = GetPetitionSnapshotOrDefault();
-            string seed = card.EffectivePetitionSeed(templates);
-
-            RequestSpeakerReaction(speaker, gameStateSnapshot, seed,
-                line =>
-                {
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        Debug.LogWarning("[GameManager] Petition situation generation returned empty; using fallback opening.", this);
-                        line = FallbackStrings.PetitionOpeningUnavailable(CurrentLanguage);
-                    }
-
-                    cardView.SetDescriptionText(line);
-                    cardView.ShowPetitionInput();
-                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
-                },
-                error =>
-                {
-                    Debug.LogWarning($"[GameManager] Petition situation generation failed: {error}");
-                    cardView.SetDescriptionText(FallbackStrings.PetitionOpeningUnavailable(CurrentLanguage));
-                    cardView.ShowPetitionInput();
-                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
-                },
-                () =>
-                {
-                    Debug.LogWarning("[GameManager] llmReactionClient is missing; showing fallback petition opening.", this);
-                    cardView.SetDescriptionText(FallbackStrings.PetitionOpeningUnavailable(CurrentLanguage));
-                    cardView.ShowPetitionInput();
-                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
-                });
-        }
-
+        // Thin forwarders to the petition flow controller; the card view can raise these events
+        // before Start() has constructed the controller.
         private void HandlePetitionSubmitted(string playerInput)
         {
-            CardData card = narrativeRunner.CurrentCard;
-            if (card == null || !card.isPetitionCard || currentPetitionSession == null || currentPetitionSession.TurnsExhausted)
-            {
-                return;
-            }
-
-            cardView.SetPetitionSubmitting(true);
-
-            SpeakerData speaker = currentPetitionSpeaker != null ? currentPetitionSpeaker : card.speaker;
-            string snapshot = GetPetitionSnapshotOrDefault();
-
-            LlmPromptTemplates templates = Templates;
-            string seed = card.EffectivePetitionSeed(templates);
-
-            IReadOnlyList<ResourceData> validResources = narrativeDatabase != null && narrativeDatabase.resourceCatalog != null
-                ? narrativeDatabase.resourceCatalog.resources
-                : null;
-
-            int clamp = llmSettings != null ? llmSettings.petitionResourceClampMagnitude : 20;
-
-            if (llmReactionClient == null)
-            {
-                Debug.LogWarning("[GameManager] llmReactionClient is missing; petition turn cannot be sent.", this);
-                OnPetitionFailed(LlmRequestError.NotConfigured);
-                return;
-            }
-
-            List<GroqApiMessage> messages = currentPetitionSession.BuildMessagesForSubmission(
-                playerInput, speaker, snapshot, seed, validResources, clamp, templates, CurrentLanguage);
-
-            llmReactionClient.RequestPetitionTurn(
-                messages,
-                CurrentLanguage,
-                OnPetitionTurnResolved,
-                OnPetitionFailed);
-        }
-
-        private void OnPetitionTurnResolved(PetitionResolution result, string rawContent)
-        {
-            if (result == null || string.IsNullOrWhiteSpace(result.reaction))
-            {
-                OnPetitionFailed(LlmRequestError.EmptyResponse);
-                return;
-            }
-
-            currentPetitionSession?.RecordReply(result, rawContent);
-            cardView.SetPetitionSubmitting(false);
-
-            if (result.IsProposal)
-            {
-                cardView.ShowPetitionProposal(result.reaction);
-                if (currentPetitionSession != null && currentPetitionSession.TurnsExhausted)
-                {
-                    cardView.DisablePetitionFurtherInput();
-                    cardView.UpdatePetitionDots(0);
-                }
-                else
-                {
-                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
-                }
-                return;
-            }
-
-            if (currentPetitionSession != null && currentPetitionSession.TurnsExhausted)
-            {
-                CardData currentCard = narrativeRunner.CurrentCard;
-                SpeakerData speaker = currentPetitionSpeaker != null ? currentPetitionSpeaker : (currentCard != null ? currentCard.speaker : null);
-                HandlePetitionTurnsExhausted(currentCard, speaker);
-                return;
-            }
-
-            cardView.ShowPetitionDeliberation(result.reaction);
-            cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
-        }
-
-        private void HandlePetitionTurnsExhausted(CardData card, SpeakerData speaker)
-        {
-            cardView.UpdatePetitionDots(0);
-            cardView.SetPetitionSubmitting(true);
-
-            string seed = Templates != null ? Templates.petitionClosingSeedPrompt : string.Empty;
-            string snapshot = GetPetitionSnapshotOrDefault();
-
-            RequestSpeakerReaction(speaker, snapshot, seed,
-                closingLine => FinalizePetitionExhaustion(card, string.IsNullOrWhiteSpace(closingLine) ? FallbackStrings.PetitionClosingLine(CurrentLanguage) : closingLine),
-                error => FinalizePetitionExhaustion(card, FallbackStrings.PetitionClosingLine(CurrentLanguage)),
-                () => FinalizePetitionExhaustion(card, FallbackStrings.PetitionClosingLine(CurrentLanguage)));
-        }
-
-        private void FinalizePetitionExhaustion(CardData card, string closingLine)
-        {
-            historyTracker?.RecordPetitionTranscript(currentPetitionSession?.GetTranscript());
-            currentPetitionSession = null;
-            CleanupPetitionSpeaker();
-            cardView.SetPetitionSubmitting(false);
-            cardView.ConvertPetitionToNormalChoices(card, closingLine);
-            inputEnabled = true;
+            petitionFlow?.HandlePetitionSubmitted(playerInput);
         }
 
         private void HandlePetitionConfirmed()
         {
-            if (currentPetitionSession == null || !currentPetitionSession.AwaitingConfirmation)
-            {
-                return;
-            }
+            petitionFlow?.HandlePetitionConfirmed();
+        }
 
-            PetitionResolution proposal = currentPetitionSession.LastProposal;
-            int clampMagnitude = llmSettings != null ? llmSettings.petitionResourceClampMagnitude : 20;
-            PetitionApplyResult applyResult = PetitionResolutionApplier.Apply(proposal, narrativeDatabase?.resourceCatalog, clampMagnitude);
-
-            if (applyResult.resourceChange.HasValue)
-            {
-                resourceState.Apply(applyResult.resourceChange.Value);
-            }
-
-            if (applyResult.historyTag != null && historyTracker != null)
-            {
-                historyTracker.RecordHistoryTag(applyResult.historyTag);
-            }
-
-            if (historyTracker != null)
-            {
-                historyTracker.RecordPetitionTranscript(currentPetitionSession.GetTranscript());
-            }
-
-            currentPetitionSession = null;
-            CleanupPetitionSpeaker();
-            cardView.SetPetitionSubmitting(true);
+        // Invoked by the petition flow after a confirmed proposal; advances the narrative like a normal choice.
+        private void BeginPetitionConfirmAdvance()
+        {
             StartCoroutine(ConfirmPetitionAdvanceRoutine());
         }
 
@@ -750,19 +484,6 @@ namespace Game.Scripts
 
         // Applies a brief cooldown before re-enabling the submit button to prevent rapid-fire retries
         // that could compound rate-limiting or error states.
-        private void OnPetitionFailed(LlmRequestError error)
-        {
-            Debug.LogWarning($"[GameManager] Petition resolution failed: {error}");
-            bool isRateLimited = error == LlmRequestError.RateLimited;
-            string message = isRateLimited
-                ? FallbackStrings.PetitionRateLimited(CurrentLanguage)
-                : FallbackStrings.PetitionSendFailed(CurrentLanguage);
-
-            cardView.ShowPetitionSubmitFailed(message);
-            float cooldown = llmSettings != null ? llmSettings.petitionRetryCooldownSeconds : 2f;
-            StartCoroutine(ReenablePetitionSubmitAfterDelay(cooldown));
-        }
-
         private IEnumerator ReenablePetitionSubmitAfterDelay(float delaySeconds)
         {
             if (delaySeconds > 0f)
@@ -777,13 +498,6 @@ namespace Game.Scripts
         {
             return GetSnapshotOrDefault(
                 llmSettings != null ? llmSettings.reactionHistoryCount : 0,
-                llmSettings != null ? llmSettings.pastPetitionChatCount : 0);
-        }
-
-        private string GetPetitionSnapshotOrDefault()
-        {
-            return GetSnapshotOrDefault(
-                llmSettings != null ? llmSettings.petitionHistoryCount : 0,
                 llmSettings != null ? llmSettings.pastPetitionChatCount : 0);
         }
 
@@ -815,8 +529,27 @@ namespace Game.Scripts
             ShowCurrentCard();
         }
 
+        // Requests a single-turn speaker reaction, routing request failures and a missing client to the
+        // same continuation with a fallback line so callers handle one success path instead of three callbacks.
+        private void RequestSpeakerReactionWithFallback(SpeakerData speaker, string gameStateSnapshot, string seed,
+            string fallbackText, Action<string> onLine)
+        {
+            RequestSpeakerReaction(speaker, gameStateSnapshot, seed,
+                onLine,
+                error =>
+                {
+                    Debug.LogWarning($"[GameManager] Speaker reaction failed: {error}");
+                    onLine(fallbackText);
+                },
+                () =>
+                {
+                    Debug.LogWarning("[GameManager] llmReactionClient is missing; showing fallback text.", this);
+                    onLine(fallbackText);
+                });
+        }
+
         private void RequestSpeakerReaction(SpeakerData speaker, string gameStateSnapshot, string seed,
-            Action<string> onSuccess, Action<LlmRequestError> onFailure, Action onMissingClient, int? maxTokensOverride = null)
+            Action<string> onSuccess, Action<LlmRequestError> onFailure, Action onMissingClient)
         {
             if (llmReactionClient == null)
             {
@@ -832,7 +565,7 @@ namespace Game.Scripts
             string fullSystemPrompt = SpeakerPromptBuilder.BuildPersonaPrompt(
                 speaker, gameStateSnapshot, seed, templates, CurrentLanguage, resources);
 
-            llmReactionClient.RequestReaction(fullSystemPrompt, SpeakerPromptBuilder.SingleTurnUserMessage, CurrentLanguage, onSuccess, onFailure, maxTokensOverride);
+            llmReactionClient.RequestReaction(fullSystemPrompt, SpeakerPromptBuilder.SingleTurnUserMessage, CurrentLanguage, onSuccess, onFailure);
         }
 
         private void HandleDayChanged()

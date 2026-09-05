@@ -23,8 +23,9 @@ namespace Game.Scripts.Narrative
         /// <summary>True when <see cref="error"/> contains a non-empty message.</summary>
         public bool HasError => !string.IsNullOrEmpty(error);
 
-        /// <summary>True when an ending card is present and should be displayed.</summary>
-        public bool HasEnded => endingCard != null;
+        /// <summary>True when the run has concluded: an authored ending card is present, or a resource collapsed
+        /// and the ending card is generated at runtime from the collapsed resource.</summary>
+        public bool HasEnded => endingCard != null || isCollapseEnding;
 
         /// <summary>Constructs a step result with optional collapse-ending metadata.</summary>
         /// <param name="endingCard">The ending card, or null if the run continues.</param>
@@ -68,7 +69,7 @@ namespace Game.Scripts.Narrative
         }
 
         /// <summary>Validates the database and sets <see cref="CurrentCard"/> to the starting card.</summary>
-        /// <param name="error">Receives a validation error message on failure; null on success.</param>
+        /// <param name="error">Receives a validation error message on failure; null on success.</summary>
         /// <returns>True if the run started successfully.</returns>
         public bool StartRun(out string error)
         {
@@ -110,21 +111,19 @@ namespace Game.Scripts.Narrative
             }
 
             bool usesContinueExit = CurrentCard.UsesContinueExit;
-
             CardData nextCard = usesContinueExit
                 ? CurrentCard.continueNextCard
                 : (choseRight ? CurrentCard.rightNextCard : CurrentCard.leftNextCard);
 
             if (!usesContinueExit)
             {
-                ResourceChange change = choseRight ? CurrentCard.rightResourceChange : CurrentCard.leftResourceChange;
-                resourceState.Apply(change);
+                resourceState.Apply(choseRight ? CurrentCard.rightResourceChange : CurrentCard.leftResourceChange);
             }
 
-            if (TryGetCollapsedResourceEnding(out CardData collapseCard, out ResourceData collapsedResource))
+            if (TryGetCollapsedResource(out ResourceData collapsedResource))
             {
                 AdvanceDay(CurrentCard.dayAdvance);
-                return new NarrativeStepResult(collapseCard, null, isCollapseEnding: true, collapsedResource);
+                return new NarrativeStepResult(null, null, isCollapseEnding: true, collapsedResource);
             }
 
             AdvanceDay(CurrentCard.dayAdvance);
@@ -143,25 +142,27 @@ namespace Game.Scripts.Narrative
             return new NarrativeStepResult(null, null);
         }
 
-        private bool TryGetCollapsedResourceEnding(out CardData collapseCard, out ResourceData collapsedResource)
+        private bool TryGetCollapsedResource(out ResourceData collapsedResource)
         {
-            collapseCard = null;
             collapsedResource = null;
             if (resourceCatalog?.resources == null)
             {
+                Debug.LogWarning("[NarrativeRunner] TryGetCollapsedResource called with null resource catalog.");
                 return false;
             }
 
             foreach (ResourceData resource in resourceCatalog.resources)
             {
-                if (resource != null && resourceState.Get(resource) <= resource.collapseThreshold)
+                if (resource == null)
                 {
+                    continue;
+                }
+
+                if (resourceState.Get(resource) <= resource.collapseThreshold)
+                {
+                    // Always trigger the collapse path; GameManager generates the ending at runtime
+                    // or falls back to the text stored on the resource.
                     collapsedResource = resource;
-                    collapseCard = resourceCatalog.GetCollapseEndingCard(resource);
-                    if (collapseCard == null)
-                    {
-                        Debug.LogWarning($"[NarrativeRunner] '{resource.AssetName}' reached its collapse threshold but has no fallback collapse-ending CardData assigned. Add an entry to ResourceCatalog.collapseEndings.");
-                    }
                     return true;
                 }
             }

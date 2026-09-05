@@ -68,9 +68,7 @@ namespace Game.Scripts.UI
 
                 if (restartButtonText != null)
                 {
-                    restartButtonText.text = restartButtonLocalized.Get(
-                        LanguageManager.Instance != null ? LanguageManager.Instance.CurrentLanguage : GameLanguage.English
-                    );
+                    restartButtonText.text = restartButtonLocalized.Get(LanguageManager.CurrentLanguageOrDefault);
                 }
             }
         }

@@ -82,6 +82,7 @@ namespace Game.Scripts.Llm
         /// <param name="fullChoiceHistory">Ordered list of ruler decisions throughout the reign.</param>
         /// <param name="templates">Prompt templates providing epilogue system instructions and language strings.</param>
         /// <param name="language">Target language controlling which language instruction is selected.</param>
+        /// <param name="speaker">Optional speaker providing persona instructions for the epilogue tone and voice.</param>
         /// <returns>The assembled system prompt string.</returns>
         public static string BuildEpiloguePrompt(
             int dayCount,
@@ -89,7 +90,8 @@ namespace Game.Scripts.Llm
             string finalResourceSummary,
             string fullChoiceHistory,
             LlmPromptTemplates templates,
-            GameLanguage language = GameLanguage.English)
+            GameLanguage language = GameLanguage.English,
+            SpeakerData speaker = null)
         {
             string reignRecord =
                 $"Reign Length: {dayCount} day{(dayCount == 1 ? "" : "s")}\n" +
@@ -100,6 +102,7 @@ namespace Game.Scripts.Llm
             return new PromptComposer()
                 .AddRaw(templates != null ? templates.epilogueSystemInstructions : null)
                 .AddSection("Language Requirement", GetLanguageInstruction(templates, language))
+                .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
                 .AddSection("REIGN RECORD", reignRecord)
                 .ToString();
         }

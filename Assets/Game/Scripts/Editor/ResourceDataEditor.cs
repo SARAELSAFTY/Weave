@@ -28,11 +28,6 @@ namespace Game.Scripts.Editor
 
             LocalizedTextGui.Draw(displayNameLocalizedProp, "Display Name");
 
-            if (displayNameLocalizedProp.FindPropertyRelative("english").stringValue.Trim().Length == 0 &&
-                displayNameLocalizedProp.FindPropertyRelative("arabic").stringValue.Trim().Length == 0)
-            {
-            }
-
             EditorGUILayout.PropertyField(iconProp, new GUIContent("Icon"));
             EditorGUILayout.PropertyField(startingValProp, new GUIContent("Starting Value"));
 
@@ -44,11 +39,25 @@ namespace Game.Scripts.Editor
             EditorGUILayout.PropertyField(warningThresholdProp, new GUIContent("Warning Threshold (%)"));
 
             EditorGUILayout.Space(10);
-            SerializedProperty warningSpeakerProp = serializedObject.FindProperty("warningSpeaker");
+            EditorGUILayout.LabelField("Speaker & Warning", EditorStyles.boldLabel);
+
+            SerializedProperty speakerProp = serializedObject.FindProperty("speaker");
             SerializedProperty cooldownProp = serializedObject.FindProperty("warningCooldownCards");
 
-            EditorGUILayout.PropertyField(warningSpeakerProp, new GUIContent("Warning Speaker"));
+            EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker",
+                "Speaker providing both the portrait for cards and the LLM persona prompt for collapse."));
             EditorGUILayout.PropertyField(cooldownProp, new GUIContent("Warning Cooldown (Cards)"));
+
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("Collapse Ending Fallback", EditorStyles.boldLabel);
+
+            SerializedProperty fallbackEnProp = serializedObject.FindProperty("collapseEndingFallbackEnglish");
+            SerializedProperty fallbackArProp = serializedObject.FindProperty("collapseEndingFallbackArabic");
+
+            EditorGUILayout.PropertyField(fallbackEnProp, new GUIContent("Fallback Text (English)",
+                "Shown when LLM collapse generation fails or is offline."));
+            EditorGUILayout.PropertyField(fallbackArProp, new GUIContent("Fallback Text (Arabic)",
+                "Shown when LLM collapse generation fails or is offline."));
 
             if (GUI.changed)
             {

@@ -78,6 +78,24 @@ namespace Game.Scripts.Editor
             return data;
         }
 
+        // Shared creation flow for narrative ScriptableObject assets: create in the target folder and verify.
+        private static T CreateAsset<T>(string folder, string assetName) where T : ScriptableObject
+        {
+            EnsureFolderExists(folder);
+            string assetPath = Path.Combine(folder, assetName + ".asset");
+
+            T asset = ScriptableObject.CreateInstance<T>();
+            AssetDatabase.CreateAsset(asset, assetPath);
+
+            if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(asset)))
+            {
+                Debug.LogError($"[CardGraphEditor] Failed to create {typeof(T).Name} asset at '{assetPath}'.");
+                return null;
+            }
+
+            return asset;
+        }
+
         /// <summary>
         /// Creates a new <see cref="CardData"/> ScriptableObject asset at the specified folder path and returns it.
         /// </summary>
@@ -86,20 +104,14 @@ namespace Game.Scripts.Editor
         /// <returns>The newly created card, or null if creation failed.</returns>
         public static CardData CreateCard(string folder, string cardName)
         {
-            EnsureFolderExists(folder);
-            string assetPath = Path.Combine(folder, cardName + ".asset");
-
-            CardData newCard = ScriptableObject.CreateInstance<CardData>();
-            newCard.name = cardName;
-            newCard.assetName = cardName;
-            AssetDatabase.CreateAsset(newCard, assetPath);
-
-            if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newCard)))
+            CardData newCard = CreateAsset<CardData>(folder, cardName);
+            if (newCard == null)
             {
-                Debug.LogError($"[CardGraphEditor] Failed to create card asset at '{assetPath}'.");
                 return null;
             }
 
+            newCard.name = cardName;
+            newCard.assetName = cardName;
             return newCard;
         }
 
@@ -111,20 +123,14 @@ namespace Game.Scripts.Editor
         /// <returns>The newly created speaker, or null if creation failed.</returns>
         public static SpeakerData CreateSpeaker(string folder, string speakerName)
         {
-            EnsureFolderExists(folder);
-            string assetPath = Path.Combine(folder, speakerName + ".asset");
-
-            SpeakerData newSpeaker = ScriptableObject.CreateInstance<SpeakerData>();
-            newSpeaker.name = speakerName;
-            newSpeaker.assetName = speakerName;
-            AssetDatabase.CreateAsset(newSpeaker, assetPath);
-
-            if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newSpeaker)))
+            SpeakerData newSpeaker = CreateAsset<SpeakerData>(folder, speakerName);
+            if (newSpeaker == null)
             {
-                Debug.LogError($"[CardGraphEditor] Failed to create speaker asset at '{assetPath}'.");
                 return null;
             }
 
+            newSpeaker.name = speakerName;
+            newSpeaker.assetName = speakerName;
             return newSpeaker;
         }
 
@@ -136,19 +142,13 @@ namespace Game.Scripts.Editor
         /// <returns>The newly created database, or null if creation failed.</returns>
         public static NarrativeDatabase CreateDatabase(string folder, string databaseName)
         {
-            EnsureFolderExists(folder);
-            string assetPath = Path.Combine(folder, databaseName + ".asset");
-
-            NarrativeDatabase newDatabase = ScriptableObject.CreateInstance<NarrativeDatabase>();
-            newDatabase.name = databaseName;
-            AssetDatabase.CreateAsset(newDatabase, assetPath);
-
-            if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newDatabase)))
+            NarrativeDatabase newDatabase = CreateAsset<NarrativeDatabase>(folder, databaseName);
+            if (newDatabase == null)
             {
-                Debug.LogError($"[CardGraphEditor] Failed to create database asset at '{assetPath}'.");
                 return null;
             }
 
+            newDatabase.name = databaseName;
             return newDatabase;
         }
 
@@ -160,19 +160,13 @@ namespace Game.Scripts.Editor
         /// <returns>The newly created catalog, or null if creation failed.</returns>
         public static ResourceCatalog CreateCatalog(string folder, string catalogName)
         {
-            EnsureFolderExists(folder);
-            string assetPath = Path.Combine(folder, catalogName + ".asset");
-
-            ResourceCatalog newCatalog = ScriptableObject.CreateInstance<ResourceCatalog>();
-            newCatalog.name = catalogName;
-            AssetDatabase.CreateAsset(newCatalog, assetPath);
-
-            if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(newCatalog)))
+            ResourceCatalog newCatalog = CreateAsset<ResourceCatalog>(folder, catalogName);
+            if (newCatalog == null)
             {
-                Debug.LogError($"[CardGraphEditor] Failed to create resource catalog asset at '{assetPath}'.");
                 return null;
             }
 
+            newCatalog.name = catalogName;
             return newCatalog;
         }
 

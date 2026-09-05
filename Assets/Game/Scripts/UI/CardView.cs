@@ -113,9 +113,11 @@ namespace Game.Scripts.UI
         /// <summary>True when the card accepts drag gestures (not an ending or petition card).</summary>
         public bool AcceptsDrag => !isEndingCard && !isPetitionCard;
 
-        private GameLanguage CurrentLanguage => LanguageManager.Instance != null
-            ? LanguageManager.Instance.CurrentLanguage
-            : GameLanguage.English;
+        private GameLanguage CurrentLanguage => LanguageManager.CurrentLanguageOrDefault;
+
+        // currentDynamicDescription convention: null means the description comes from currentCardData;
+        // a string (possibly empty) means dynamic content (LLM/petition) that overrides the card data.
+        private bool HasDynamicDescription => currentDynamicDescription != null;
 
         private void Awake()
         {
@@ -210,15 +212,7 @@ namespace Game.Scripts.UI
         /// <param name="speaker">The speaker whose portrait and name are displayed; may be null.</param>
         public void Show(CardData cardData, SpeakerData speaker)
         {
-            isEndingCard = false;
-            isPetitionCard = false;
-            isLlmReactionPresentation = false;
-            currentDynamicDescription = null;
-            currentCardData = cardData;
-            currentSpeaker = speaker;
-            ResetCardPosition();
-            restartButton.gameObject.SetActive(false);
-            HidePetitionInput();
+            ResetPresentation(cardData, speaker, ending: false, petition: false, llmReaction: false, dynamicDescription: null);
 
             ApplySpeaker(speaker, cardData);
             ApplyCardVisuals(cardData);
@@ -230,15 +224,7 @@ namespace Game.Scripts.UI
         /// <param name="speaker">The speaker whose portrait and name are displayed; may be null.</param>
         public void ShowLlmReaction(CardData cardData, SpeakerData speaker)
         {
-            isEndingCard = false;
-            isPetitionCard = false;
-            isLlmReactionPresentation = true;
-            currentDynamicDescription = string.Empty;
-            currentCardData = cardData;
-            currentSpeaker = speaker;
-            ResetCardPosition();
-            restartButton.gameObject.SetActive(false);
-            HidePetitionInput();
+            ResetPresentation(cardData, speaker, ending: false, petition: false, llmReaction: true, dynamicDescription: string.Empty);
 
             ApplySpeaker(speaker, cardData);
             ApplyCardVisuals(cardData);
@@ -251,15 +237,7 @@ namespace Game.Scripts.UI
         /// <param name="speaker">The speaker whose portrait and name are displayed; may be null.</param>
         public void ShowPetition(CardData cardData, SpeakerData speaker)
         {
-            isEndingCard = false;
-            isPetitionCard = true;
-            isLlmReactionPresentation = false;
-            currentDynamicDescription = string.Empty;
-            currentCardData = cardData;
-            currentSpeaker = speaker;
-            ResetCardPosition();
-            restartButton.gameObject.SetActive(false);
-            HidePetitionInput();
+            ResetPresentation(cardData, speaker, ending: false, petition: true, llmReaction: false, dynamicDescription: string.Empty);
 
             SetLabel(descriptionText, string.Empty);
             SetLabel(leftChoiceText, string.Empty);
@@ -324,14 +302,7 @@ namespace Game.Scripts.UI
         /// <param name="speaker">The speaker whose portrait and name are displayed; may be null.</param>
         public void ShowEnding(CardData cardData, SpeakerData speaker)
         {
-            isEndingCard = true;
-            isPetitionCard = false;
-            isLlmReactionPresentation = false;
-            currentCardData = cardData;
-            currentSpeaker = speaker;
-            currentDynamicDescription = null;
-            ResetCardPosition();
-            HidePetitionInput();
+            ResetPresentation(cardData, speaker, ending: true, petition: false, llmReaction: false, dynamicDescription: null);
 
             string description = cardData != null
                 ? cardData.GetDescription(CurrentLanguage)
@@ -343,6 +314,21 @@ namespace Game.Scripts.UI
             ApplySpeaker(speaker, cardData);
             ApplyCardVisuals(cardData);
             restartButton.gameObject.SetActive(true);
+        }
+
+        // Shared preamble for every presentation entry point: resets the mode flags, cached content,
+        // card pose, restart button, and petition UI before the caller applies new content.
+        private void ResetPresentation(CardData cardData, SpeakerData speaker, bool ending, bool petition, bool llmReaction, string dynamicDescription)
+        {
+            isEndingCard = ending;
+            isPetitionCard = petition;
+            isLlmReactionPresentation = llmReaction;
+            currentDynamicDescription = dynamicDescription;
+            currentCardData = cardData;
+            currentSpeaker = speaker;
+            ResetCardPosition();
+            restartButton.gameObject.SetActive(false);
+            HidePetitionInput();
         }
 
         /// <summary>Updates card position, rotation, and choice sub-card reveal based on horizontal drag progress.</summary>
@@ -579,41 +565,22 @@ namespace Game.Scripts.UI
                 return;
             }
 
-            image.sprite = sprite;
-            image.enabled = sprite != null;
-        }
-
-        private void ApplyEditorPreview()
-        {
-            SetPreviewSprite(cardBackgroundImage, ResolveSprite(null, t => t.background));
-            SetPreviewSprite(cardBorderImage, ResolveSprite(null, t => t.backgroundBorder));
-            SetPreviewSprite(topPanelImage, ResolveSprite(null, t => t.topPanel));
-            SetPreviewSprite(topPanelBorderImage, ResolveSprite(null, t => t.topPanelBorder));
-            SetPreviewSprite(bottomPanelImage, ResolveSprite(null, t => t.bottomPanel));
-            SetPreviewSprite(bottomPanelBorderImage, ResolveSprite(null, t => t.bottomPanelBorder));
-
-            if (cardArtImage != null && cardArtImage.sprite == null && cardArtImage.enabled)
-            {
-                cardArtImage.enabled = false;
-            }
-        }
-
-        private static void SetPreviewSprite(Image image, Sprite sprite)
-        {
-            if (image == null)
-            {
-                return;
-            }
-
             if (image.sprite != sprite)
             {
                 image.sprite = sprite;
             }
 
-            bool enabled = sprite != null;
-            if (image.enabled != enabled)
+            image.enabled = sprite != null;
+        }
+
+        private void ApplyEditorPreview()
+        {
+            // Editor preview always shows the default template; per-card templates are runtime data.
+            ApplyCardVisuals(null);
+
+            if (cardArtImage != null && cardArtImage.sprite == null && cardArtImage.enabled)
             {
-                image.enabled = enabled;
+                cardArtImage.enabled = false;
             }
         }
 
@@ -682,7 +649,7 @@ namespace Game.Scripts.UI
 
             if (isPetitionCard)
             {
-                if (currentDynamicDescription != null)
+                if (HasDynamicDescription)
                 {
                     SetLabel(descriptionText, currentDynamicDescription);
                 }
@@ -701,6 +668,7 @@ namespace Game.Scripts.UI
                 return;
             }
 
+            // Note: an EMPTY dynamic description (distinct from null) falls through to the card's own text.
             if (!string.IsNullOrEmpty(currentDynamicDescription))
             {
                 SetLabel(descriptionText, currentDynamicDescription);

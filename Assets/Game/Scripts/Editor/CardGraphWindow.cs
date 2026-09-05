@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Game.Scripts.Definitions;
@@ -90,14 +91,8 @@ namespace Game.Scripts.Editor
             });
             toolbar.Add(databaseField);
 
-            newDatabaseButton = new Button(OnCreateNewDatabaseClicked) { text = "+ New DB" };
-            newDatabaseButton.style.height = 24;
-            newDatabaseButton.style.paddingLeft = 8;
-            newDatabaseButton.style.paddingRight = 8;
+            newDatabaseButton = MakeToolbarButton("+ New DB", new Color(0.20f, 0.55f, 0.35f), OnCreateNewDatabaseClicked);
             newDatabaseButton.style.marginRight = 12;
-            newDatabaseButton.style.backgroundColor = new StyleColor(new Color(0.20f, 0.55f, 0.35f));
-            newDatabaseButton.style.color = new StyleColor(Color.white);
-            newDatabaseButton.style.unityFontStyleAndWeight = FontStyle.Bold;
             toolbar.Add(newDatabaseButton);
 
             startingCardDropdown = new PopupField<string>("Starting Card:", new List<string> { "(None)" }, 0);
@@ -110,47 +105,35 @@ namespace Game.Scripts.Editor
             spacer.style.flexGrow = 1;
             toolbar.Add(spacer);
 
-            newCardButton = new Button(OnCreateNewCardClicked) { text = "+ New Card" };
-            newCardButton.style.height = 24;
+            newCardButton = MakeToolbarButton("+ New Card", new Color(0.10f, 0.45f, 0.65f), OnCreateNewCardClicked);
             newCardButton.style.paddingLeft = 12;
             newCardButton.style.paddingRight = 12;
-            newCardButton.style.marginRight = 6;
-            newCardButton.style.backgroundColor = new StyleColor(new Color(0.10f, 0.45f, 0.65f));
-            newCardButton.style.color = new StyleColor(Color.white);
-            newCardButton.style.unityFontStyleAndWeight = FontStyle.Bold;
             toolbar.Add(newCardButton);
 
-            newSpeakerButton = new Button(OnCreateNewSpeakerClicked) { text = "+ New Speaker" };
-            newSpeakerButton.style.height = 24;
-            newSpeakerButton.style.paddingLeft = 8;
-            newSpeakerButton.style.paddingRight = 8;
-            newSpeakerButton.style.marginRight = 6;
-            newSpeakerButton.style.backgroundColor = new StyleColor(new Color(0.10f, 0.45f, 0.65f));
-            newSpeakerButton.style.color = new StyleColor(Color.white);
-            newSpeakerButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+            newSpeakerButton = MakeToolbarButton("+ New Speaker", new Color(0.10f, 0.45f, 0.65f), OnCreateNewSpeakerClicked);
             toolbar.Add(newSpeakerButton);
 
-            newCatalogButton = new Button(OnCreateNewCatalogClicked) { text = "+ New Catalog" };
-            newCatalogButton.style.height = 24;
-            newCatalogButton.style.paddingLeft = 8;
-            newCatalogButton.style.paddingRight = 8;
-            newCatalogButton.style.marginRight = 6;
-            newCatalogButton.style.backgroundColor = new StyleColor(new Color(0.15f, 0.50f, 0.40f));
-            newCatalogButton.style.color = new StyleColor(Color.white);
-            newCatalogButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+            newCatalogButton = MakeToolbarButton("+ New Catalog", new Color(0.15f, 0.50f, 0.40f), OnCreateNewCatalogClicked);
             toolbar.Add(newCatalogButton);
 
-            newResourceButton = new Button(() => CreateResourceAt(null)) { text = "+ New Resource" };
-            newResourceButton.style.height = 24;
-            newResourceButton.style.paddingLeft = 8;
-            newResourceButton.style.paddingRight = 8;
-            newResourceButton.style.marginRight = 6;
-            newResourceButton.style.backgroundColor = new StyleColor(new Color(0.15f, 0.50f, 0.40f));
-            newResourceButton.style.color = new StyleColor(Color.white);
-            newResourceButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+            newResourceButton = MakeToolbarButton("+ New Resource", new Color(0.15f, 0.50f, 0.40f), () => CreateResourceAt(null));
             toolbar.Add(newResourceButton);
 
             return toolbar;
+        }
+
+        // Builds a toolbar button with the shared compact chrome; label and fill color are the only per-button differences.
+        private static Button MakeToolbarButton(string text, Color background, Action onClick)
+        {
+            Button button = new Button(onClick) { text = text };
+            button.style.height = 24;
+            button.style.paddingLeft = 8;
+            button.style.paddingRight = 8;
+            button.style.marginRight = 6;
+            button.style.backgroundColor = new StyleColor(background);
+            button.style.color = new StyleColor(Color.white);
+            button.style.unityFontStyleAndWeight = FontStyle.Bold;
+            return button;
         }
 
         private void SetStartingCardFromDropdown(string selected)

@@ -74,7 +74,7 @@ namespace Game.Scripts.Localization
         /// <param name="value">The raw Arabic text to shape.</param>
         /// <param name="language">If not Arabic, returns the value unchanged.</param>
         /// <returns>The shaped string ready for display on a non-RTL TMP_Text component.</returns>
-        public static string Shape(string value, GameLanguage language)
+        private static string Shape(string value, GameLanguage language)
         {
             if (language != GameLanguage.Arabic || string.IsNullOrEmpty(value))
             {

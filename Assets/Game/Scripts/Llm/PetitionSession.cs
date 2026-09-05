@@ -17,7 +17,7 @@ namespace Game.Scripts.Llm
         private string pendingPlayerInput;
 
         /// <summary>Total number of turns allocated for this audience at construction time.</summary>
-        public int TurnBudget { get; }
+        private int TurnBudget { get; }
         /// <summary>Number of turns still available before the audience ends.</summary>
         public int TurnsRemaining { get; private set; }
         /// <summary>True when no turns remain and the petitioner should deliver a closing statement.</summary>

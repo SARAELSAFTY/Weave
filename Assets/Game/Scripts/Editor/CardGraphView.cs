@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Scripts.Definitions;
-using Game.Scripts.Narrative;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -158,8 +157,7 @@ namespace Game.Scripts.Editor
             List<CardNode> nodeList = CreateNodes(nodesByCard);
             DrawEdges(nodeList, nodesByCard);
             CreateSpeakerNodes();
-            Dictionary<ResourceData, ResourceNode> nodesByResource = CreateResourceNodes();
-            DrawCollapseEdges(nodesByResource, nodesByCard);
+            CreateResourceNodes();
 
             // Defer clearing the guard so that any layout callbacks fired during element addition are also suppressed.
             EditorApplication.delayCall += () => isPopulating = false;
@@ -343,13 +341,12 @@ namespace Game.Scripts.Editor
             return ResolveNewOrSavedPosition(speaker, positionsBySpeaker, SaveSpeakerPositionToDatabase, defaultPosition);
         }
 
-        private static readonly Vector2 DefaultResourceNodeSize = new Vector2(200, 150);
+        private static readonly Vector2 DefaultResourceNodeSize = new Vector2(240, 320);
 
-        /// <summary>Creates and adds a <see cref="ResourceNode"/> for each resource in the catalog, returning a lookup dictionary.</summary>
-        private Dictionary<ResourceData, ResourceNode> CreateResourceNodes()
+        /// <summary>Creates and adds a <see cref="ResourceNode"/> for each resource in the catalog.</summary>
+        private void CreateResourceNodes()
         {
-            Dictionary<ResourceData, ResourceNode> nodesByResource = new Dictionary<ResourceData, ResourceNode>();
-            if (database?.resourceCatalog?.resources == null) return nodesByResource;
+            if (database?.resourceCatalog?.resources == null) return;
 
             int i = 0;
             foreach (ResourceData resource in database.resourceCatalog.resources)
@@ -360,34 +357,14 @@ namespace Game.Scripts.Editor
                 Vector2 pos = ResolveResourceNodePosition(resource, i);
                 resourceNode.SetPosition(new Rect(pos, DefaultResourceNodeSize));
                 AddElement(resourceNode);
-                nodesByResource[resource] = resourceNode;
                 i++;
-            }
-
-            return nodesByResource;
-        }
-
-        /// <summary>Draws non-deletable edges from resource collapse ports to their configured ending card nodes.</summary>
-        private void DrawCollapseEdges(Dictionary<ResourceData, ResourceNode> nodesByResource, Dictionary<CardData, CardNode> nodesByCard)
-        {
-            if (database?.resourceCatalog?.collapseEndings == null) return;
-
-            foreach (ResourceCollapseEnding entry in database.resourceCatalog.collapseEndings)
-            {
-                if (entry?.resource == null || entry.endingCard == null) continue;
-                if (!nodesByResource.TryGetValue(entry.resource, out ResourceNode resourceNode)) continue;
-                if (!nodesByCard.TryGetValue(entry.endingCard, out CardNode endingNode)) continue;
-
-                Edge edge = resourceNode.CollapsePort.ConnectTo(endingNode.InputPort);
-                edge.capabilities &= ~Capabilities.Deletable;
-                AddElement(edge);
             }
         }
 
         /// <summary>Returns the saved position for a resource, or a default far-left-column position based on list index.</summary>
         private Vector2 ResolveResourceNodePosition(ResourceData resource, int indexInList)
         {
-            Vector2 defaultPosition = new Vector2(-520, indexInList * 190 + 60);
+            Vector2 defaultPosition = new Vector2(-540, indexInList * 340 + 60);
             return ResolveNewOrSavedPosition(resource, positionsByResource, SaveResourcePositionToDatabase, defaultPosition);
         }
 

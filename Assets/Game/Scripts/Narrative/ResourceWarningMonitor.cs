@@ -83,7 +83,7 @@ namespace Game.Scripts.Narrative
                 }
 
                 cooldownCardsRemaining.TryGetValue(resource, out int cooldown);
-                if (warnedResources.Contains(resource) || cooldown > 0 || resource.warningSpeaker == null)
+                if (warnedResources.Contains(resource) || cooldown > 0 || resource.speaker == null)
                 {
                     continue;
                 }
