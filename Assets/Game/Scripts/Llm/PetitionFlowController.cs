@@ -68,8 +68,9 @@ namespace Game.Scripts.Llm
             string snapshot = GetPetitionSnapshotOrDefault();
             string seed = card.EffectivePetitionSeed(templates);
 
-            RequestSpeakerLineWithFallback(currentPetitionSpeaker, snapshot, seed,
-                FallbackStrings.PetitionOpeningUnavailable(currentLanguage()),
+            LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
+                currentPetitionSpeaker, snapshot, seed, currentLanguage(),
+                LlmFallbackText.PetitionOpening(templates, currentLanguage()),
                 line =>
                 {
                     cardView.SetDescriptionText(line);
@@ -94,9 +95,7 @@ namespace Game.Scripts.Llm
             LlmPromptTemplates templates = database != null ? database.promptTemplates : null;
             string seed = card.EffectivePetitionSeed(templates);
 
-            IReadOnlyList<ResourceData> validResources = database != null && database.resourceCatalog != null
-                ? database.resourceCatalog.resources
-                : null;
+            IReadOnlyList<ResourceData> validResources = GetResourceCatalog();
 
             int clamp = llmSettings != null ? llmSettings.petitionResourceClampMagnitude : 20;
 
@@ -204,8 +203,9 @@ namespace Game.Scripts.Llm
             LlmPromptTemplates templates = database != null ? database.promptTemplates : null;
             string seed = templates != null ? templates.petitionClosingSeedPrompt : string.Empty;
 
-            RequestSpeakerLineWithFallback(speaker, GetPetitionSnapshotOrDefault(), seed,
-                FallbackStrings.PetitionClosingLine(currentLanguage()),
+            LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
+                speaker, GetPetitionSnapshotOrDefault(), seed, currentLanguage(),
+                LlmFallbackText.PetitionClosing(templates, currentLanguage()),
                 closingLine => FinalizePetitionExhaustion(card, closingLine));
         }
 
@@ -225,9 +225,10 @@ namespace Game.Scripts.Llm
         {
             Debug.LogWarning($"[PetitionFlowController] Petition resolution failed: {error}");
             bool isRateLimited = error == LlmRequestError.RateLimited;
+            LlmPromptTemplates templates = database != null ? database.promptTemplates : null;
             string message = isRateLimited
-                ? FallbackStrings.PetitionRateLimited(currentLanguage())
-                : FallbackStrings.PetitionSendFailed(currentLanguage());
+                ? LlmFallbackText.PetitionRateLimited(templates, currentLanguage())
+                : LlmFallbackText.PetitionSendFailed(templates, currentLanguage());
 
             cardView.ShowPetitionSubmitFailed(message);
             float cooldown = llmSettings != null ? llmSettings.petitionRetryCooldownSeconds : 2f;
@@ -266,33 +267,12 @@ namespace Game.Scripts.Llm
                 : FallbackStrings.KingdomStatusUnknown(currentLanguage());
         }
 
-        // Requests a single-turn speaker line, routing request failures and a missing client to the same
-        // continuation with a fallback line so each caller handles one success path instead of three callbacks.
-        private void RequestSpeakerLineWithFallback(SpeakerData speaker, string gameStateSnapshot, string seed,
-            string fallbackText, Action<string> onLine)
+        // Resource catalog used by prompt building; null when the database or catalog is unassigned.
+        private IReadOnlyList<ResourceData> GetResourceCatalog()
         {
-            if (llmReactionClient == null)
-            {
-                Debug.LogWarning("[PetitionFlowController] llmReactionClient is missing; showing fallback line.", cardView);
-                onLine(fallbackText);
-                return;
-            }
-
-            LlmPromptTemplates templates = database != null ? database.promptTemplates : null;
-            IReadOnlyList<ResourceData> resources = database != null && database.resourceCatalog != null
+            return database != null && database.resourceCatalog != null
                 ? database.resourceCatalog.resources
                 : null;
-
-            GameLanguage language = currentLanguage();
-            string fullSystemPrompt = SpeakerPromptBuilder.BuildPersonaPrompt(speaker, gameStateSnapshot, seed, templates, language, resources);
-
-            llmReactionClient.RequestReaction(fullSystemPrompt, SpeakerPromptBuilder.SingleTurnUserMessage, language,
-                onLine,
-                error =>
-                {
-                    Debug.LogWarning($"[PetitionFlowController] Petition speaker line request failed: {error}");
-                    onLine(fallbackText);
-                });
         }
     }
 }

@@ -34,8 +34,7 @@ MonoBehaviour:
     values: []
   rightNextCard: {fileID: 0}
   isLlmReactionCard: 1
-  reactionSeedOverride: the Chancellor is the traitor the king already paied, answer
-    in 2 lines
+  reactionSeedOverride: "The ruler has paid your fee; deliver the vision now - the traitor plotting against the crown is the Chancellor himself. Reveal it in one line, in character."
   isPetitionCard: 0
   petitionSeedOverride: 'the seer: the Chancellor is the traitor '
   petitionerSource: 1

@@ -20,6 +20,10 @@ namespace Game.Scripts.Llm
         [SerializeField]
         private string proxyUrl = "https://your-proxy.workers.dev";
 
+        /// <summary>User message used when a caller has no message of its own and no template provides one;
+        /// keeps single-turn requests to a valid system+user shape even on a misconfigured project.</summary>
+        internal const string DefaultSingleTurnUserMessage = "Respond to the situation above.";
+
         /// <summary>Sends a single-turn reaction request and returns the cleaned response text via callback.</summary>
         /// <param name="systemPrompt">System message defining character voice and format constraints.</param>
         /// <param name="singleTurnUserMessage">User message describing the situation to react to; may be null or empty.</param>
@@ -74,10 +78,18 @@ namespace Game.Scripts.Llm
 
         private IEnumerator RequestPetitionRoutine(List<GroqApiMessage> messages, GameLanguage language, Action<PetitionResolution, string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
+            yield return SendPetitionTurn(messages, language, onSuccess, onFailure, maxTokensOverride, strictSchema: true);
+        }
+
+        // Sends one petition turn. Strict json_schema is tried first; if the request shape is ever
+        // rejected (HTTP 400, e.g. after a Groq API change), it retries once without response_format so
+        // petitions degrade to the prompt-only JSON contract instead of failing permanently.
+        private IEnumerator SendPetitionTurn(List<GroqApiMessage> messages, GameLanguage language, Action<PetitionResolution, string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride, bool strictSchema)
+        {
             string jsonPayload;
             try
             {
-                jsonPayload = BuildPetitionJsonPayload(messages, maxTokensOverride);
+                jsonPayload = BuildPetitionJsonPayload(messages, maxTokensOverride, strictSchema);
             }
             catch (Exception exception)
             {
@@ -86,22 +98,48 @@ namespace Game.Scripts.Llm
                 yield break;
             }
 
+            string responseText = null;
+            LlmRequestError? failure = null;
+            bool badRequest = false;
+
             yield return SendProxyRequest(
                 jsonPayload,
-                responseText =>
-                {
-                    PetitionResolution result = ParsePetitionResponse(responseText, language, out string rawContent);
-                    if (result != null)
-                    {
-                        onSuccess?.Invoke(result, rawContent);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[LlmReactionClient] Petition request succeeded but no resolution was parsed. Response body: {responseText}");
-                        onFailure?.Invoke(LlmRequestError.EmptyResponse);
-                    }
-                },
-                onFailure);
+                body => responseText = body,
+                error => failure = error,
+                () => badRequest = true);
+
+            if (badRequest && strictSchema)
+            {
+                Debug.LogWarning("[LlmReactionClient] json_schema petition request was rejected (400). Retrying once without response_format (prompt-only JSON contract).");
+                yield return SendPetitionTurn(messages, language, onSuccess, onFailure, maxTokensOverride, strictSchema: false);
+                yield break;
+            }
+
+            if (failure.HasValue)
+            {
+                onFailure?.Invoke(failure.Value);
+                yield break;
+            }
+
+            if (badRequest)
+            {
+                // Both the strict-schema and prompt-only shapes were rejected; report a transport-level
+                // failure rather than attempting to parse an empty response body.
+                Debug.LogWarning("[LlmReactionClient] Petition request was rejected (400) even without response_format.");
+                onFailure?.Invoke(LlmRequestError.NetworkError);
+                yield break;
+            }
+
+            PetitionResolution result = ParsePetitionResponse(responseText, language, out string rawContent);
+            if (result != null)
+            {
+                onSuccess?.Invoke(result, rawContent);
+            }
+            else
+            {
+                Debug.LogWarning($"[LlmReactionClient] Petition request succeeded but no resolution was parsed. Response body: {responseText}");
+                onFailure?.Invoke(LlmRequestError.EmptyResponse);
+            }
         }
 
         private IEnumerator RequestRoutine(string systemPrompt, string singleTurnUserMessage, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
@@ -136,7 +174,7 @@ namespace Game.Scripts.Llm
                 onFailure);
         }
 
-        private IEnumerator SendProxyRequest(string jsonPayload, Action<string> onSuccess, Action<LlmRequestError> onFailure)
+        private IEnumerator SendProxyRequest(string jsonPayload, Action<string> onSuccess, Action<LlmRequestError> onFailure, Action onBadRequest = null)
         {
             using (UnityWebRequest request = new UnityWebRequest(proxyUrl, "POST"))
             {
@@ -154,8 +192,16 @@ namespace Game.Scripts.Llm
                 }
                 else if (request.responseCode == 429)
                 {
-                    Debug.LogWarning("[LlmReactionClient] Rate limited (429).");
+                    string retryAfter = request.GetResponseHeader("Retry-After");
+                    Debug.LogWarning($"[LlmReactionClient] Rate limited (429). Retry-After: {retryAfter ?? "not provided"}.");
                     onFailure?.Invoke(LlmRequestError.RateLimited);
+                }
+                else if (request.responseCode == 400 && onBadRequest != null)
+                {
+                    // Only petition callers pass onBadRequest; reaction/epilogue callers keep the
+                    // generic failure path so a 400 never silently swallows their callback.
+                    Debug.LogWarning($"[LlmReactionClient] Request rejected (HTTP 400), body: {request.downloadHandler?.text}.");
+                    onBadRequest?.Invoke();
                 }
                 else
                 {
@@ -173,32 +219,53 @@ namespace Game.Scripts.Llm
                 model = settings.groqModel,
                 max_completion_tokens = tokens,
                 temperature = settings.temperature,
-                reasoning_effort = string.IsNullOrWhiteSpace(settings.reasoningEffort) ? "none" : settings.reasoningEffort
+                reasoning_effort = ResolveReasoningEffort()
             };
 
             request.messages.Add(new GroqApiMessage { role = "system", content = systemPrompt });
-            if (!string.IsNullOrWhiteSpace(singleTurnUserMessage))
+            request.messages.Add(new GroqApiMessage
             {
-                request.messages.Add(new GroqApiMessage { role = "user", content = singleTurnUserMessage });
-            }
+                role = "user",
+                content = string.IsNullOrWhiteSpace(singleTurnUserMessage) ? DefaultSingleTurnUserMessage : singleTurnUserMessage
+            });
 
             return JsonUtility.ToJson(request);
         }
 
-        private string BuildPetitionJsonPayload(List<GroqApiMessage> messages, int? maxTokensOverride = null)
+        private string BuildPetitionJsonPayload(List<GroqApiMessage> messages, int? maxTokensOverride = null, bool strictSchema = true)
         {
             int tokens = maxTokensOverride.HasValue ? maxTokensOverride.Value : settings.maxTokensPerResponse;
+
+            if (!strictSchema)
+            {
+                // Fallback shape: no response_format at all; the prompt's JSON contract does the work.
+                GroqApiRequest plain = new GroqApiRequest
+                {
+                    model = settings.groqModel,
+                    max_completion_tokens = tokens,
+                    temperature = settings.temperature,
+                    reasoning_effort = ResolveReasoningEffort(),
+                    messages = messages
+                };
+                return JsonUtility.ToJson(plain);
+            }
+
             GroqPetitionApiRequest request = new GroqPetitionApiRequest
             {
                 model = settings.groqModel,
                 max_completion_tokens = tokens,
                 temperature = settings.temperature,
                 messages = messages,
-                reasoning_effort = string.IsNullOrWhiteSpace(settings.reasoningEffort) ? "none" : settings.reasoningEffort
+                reasoning_effort = ResolveReasoningEffort()
             };
 
             return JsonUtility.ToJson(request);
         }
+
+        // Empty settings fall back to "none" (supported by the default Qwen model); models that only
+        // accept low/medium/high, such as GPT-OSS, need the value changed on LlmSettings instead.
+        private string ResolveReasoningEffort() =>
+            string.IsNullOrWhiteSpace(settings.reasoningEffort) ? "none" : settings.reasoningEffort;
 
         // Strips <think>...</think> blocks emitted by reasoning models that leak chain-of-thought into visible output.
         private static string StripThoughtBlocks(string text)
@@ -298,6 +365,10 @@ namespace Game.Scripts.Llm
                     PetitionResolution resolution = JsonUtility.FromJson<PetitionResolution>(content);
                     if (resolution != null && !string.IsNullOrWhiteSpace(resolution.reaction))
                     {
+                        // Same display cleanup as single-turn reactions: the reaction field is spoken dialogue,
+                        // so strip stage directions and normalize whitespace regardless of the language.
+                        resolution.reaction = NormalizeWhitespaceAndQuotes(StripStageDirections(resolution.reaction));
+
                         if (language == GameLanguage.Arabic)
                         {
                             resolution.reaction = LlmTextSanitizer.StripNonArabic(resolution.reaction);

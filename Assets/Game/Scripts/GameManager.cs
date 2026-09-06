@@ -349,13 +349,13 @@ namespace Game.Scripts
                 speaker = endingCard != null ? endingCard.speaker : null;
             }
 
-            if (!isCollapseEnding)
+            if (isCollapseEnding)
             {
-                cardView.ShowEnding(endingCard, speaker);
+                collapseEndingBuilder.Show(speaker, collapsedResource, endingCard);
                 return;
             }
 
-            collapseEndingBuilder.Show(speaker, collapsedResource, endingCard);
+            cardView.ShowEnding(endingCard, speaker);
         }
 
         private void ShowResourceWarning(ResourceData resource)
@@ -400,8 +400,9 @@ namespace Game.Scripts
                 templates != null ? templates.defaultWarningSeedPrompt : string.Empty,
                 "resourceName", resource.GetDisplayName(CurrentLanguage));
 
-            RequestSpeakerReactionWithFallback(speaker, gameStateSnapshot, seed,
-                FallbackStrings.WarningUnavailable(CurrentLanguage),
+            LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
+                speaker, gameStateSnapshot, seed, CurrentLanguage,
+                LlmFallbackText.Warning(templates, CurrentLanguage),
                 line =>
                 {
                     cardView.SetDescriptionText(line);
@@ -431,10 +432,17 @@ namespace Game.Scripts
                 inputEnabled = false;
 
                 string gameStateSnapshot = GetReactionSnapshotOrDefault();
-                string seed = card.EffectiveReactionSeed(templates);
+                // The model never sees the card text the player just read; prepend it so the generated
+                // reaction cannot contradict the on-card reveal.
+                string sceneDescription = card.GetDescription(CurrentLanguage);
+                string reactionSeed = card.EffectiveReactionSeed(templates);
+                string seed = string.IsNullOrWhiteSpace(sceneDescription)
+                    ? reactionSeed
+                    : $"Scene just shown to the ruler: {sceneDescription.Trim()}\n{reactionSeed}";
 
-                RequestSpeakerReactionWithFallback(speaker, gameStateSnapshot, seed,
-                    FallbackStrings.ReactionUnavailable(CurrentLanguage),
+                LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
+                    speaker, gameStateSnapshot, seed, CurrentLanguage,
+                    LlmFallbackText.Reaction(templates, CurrentLanguage),
                     line =>
                     {
                         cardView.SetDescriptionText(line);
@@ -529,43 +537,12 @@ namespace Game.Scripts
             ShowCurrentCard();
         }
 
-        // Requests a single-turn speaker reaction, routing request failures and a missing client to the
-        // same continuation with a fallback line so callers handle one success path instead of three callbacks.
-        private void RequestSpeakerReactionWithFallback(SpeakerData speaker, string gameStateSnapshot, string seed,
-            string fallbackText, Action<string> onLine)
+        // Resource catalog used by prompt building; null when the database or catalog is unassigned.
+        private IReadOnlyList<ResourceData> GetResourceCatalog()
         {
-            RequestSpeakerReaction(speaker, gameStateSnapshot, seed,
-                onLine,
-                error =>
-                {
-                    Debug.LogWarning($"[GameManager] Speaker reaction failed: {error}");
-                    onLine(fallbackText);
-                },
-                () =>
-                {
-                    Debug.LogWarning("[GameManager] llmReactionClient is missing; showing fallback text.", this);
-                    onLine(fallbackText);
-                });
-        }
-
-        private void RequestSpeakerReaction(SpeakerData speaker, string gameStateSnapshot, string seed,
-            Action<string> onSuccess, Action<LlmRequestError> onFailure, Action onMissingClient)
-        {
-            if (llmReactionClient == null)
-            {
-                onMissingClient?.Invoke();
-                return;
-            }
-
-            IReadOnlyList<ResourceData> resources = narrativeDatabase != null && narrativeDatabase.resourceCatalog != null
+            return narrativeDatabase != null && narrativeDatabase.resourceCatalog != null
                 ? narrativeDatabase.resourceCatalog.resources
                 : null;
-
-            LlmPromptTemplates templates = Templates;
-            string fullSystemPrompt = SpeakerPromptBuilder.BuildPersonaPrompt(
-                speaker, gameStateSnapshot, seed, templates, CurrentLanguage, resources);
-
-            llmReactionClient.RequestReaction(fullSystemPrompt, SpeakerPromptBuilder.SingleTurnUserMessage, CurrentLanguage, onSuccess, onFailure);
         }
 
         private void HandleDayChanged()

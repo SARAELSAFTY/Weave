@@ -34,8 +34,7 @@ MonoBehaviour:
     values: []
   rightNextCard: {fileID: 0}
   isLlmReactionCard: 1
-  reactionSeedOverride: Lie about being the king's lost brother and be nervouse about
-    it answer in between 1-3 lines
+  reactionSeedOverride: "The ruler suspects you carry royal blood. Lie - claim you are his lost bastard half-brother, but let your nervousness show, for you fear being exposed. One or two lines, in character."
   isPetitionCard: 0
   petitionSeedOverride: 
   petitionerSource: 1

@@ -36,9 +36,7 @@ MonoBehaviour:
   isLlmReactionCard: 0
   reactionSeedOverride: 
   isPetitionCard: 1
-  petitionSeedOverride: 'dead wife: the jester is your illegitimate brother, they
-    killed for knowing the truth and you believed that I betraied you.answer in between
-    1-3 lines'
+  petitionSeedOverride: "Speak as the ruler's dead wife, returned for one night. Confirm it is truly you, then reveal that the jester is his illegitimate half-brother, hiding in plain sight to protect him."
   petitionerSource: 1
   continueNextCard: {fileID: 11400000, guid: a800a915e786a8c47b650a7f11274b82, type: 2}
   artMode: 0

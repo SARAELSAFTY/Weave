@@ -1,6 +1,9 @@
 namespace Game.Scripts.Localization
 {
-    /// <summary>Hardcoded bilingual fallback strings used when dynamic or LLM-generated content is unavailable.</summary>
+    /// <summary>Hardcoded bilingual last-resort strings used when dynamic or LLM-generated content is unavailable.</summary>
+    /// <remarks>Narrative fallback lines have editable copies on LlmPromptTemplates; these constants are
+    /// only reached when that asset (or a field on it) is missing. UI status labels (dismiss, continue,
+    /// run ended) have no template copies and come from here directly.</remarks>
     public static class FallbackStrings
     {
         /// <summary>Returns the rate-limit message shown when petition submissions are throttled.</summary>

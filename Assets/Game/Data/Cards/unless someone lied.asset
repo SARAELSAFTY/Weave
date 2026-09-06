@@ -28,7 +28,7 @@ MonoBehaviour:
     values:
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
       value: -5
-  leftNextCard: {fileID: 11400000, guid: 0ed93b960ea9fda41bf49cf9de8834bb, type: 2}
+  leftNextCard: {fileID: 11400000, guid: 84952471b0297024dadcd2a450fe291d, type: 2}
   rightChoiceLocalized:
     english: "Confront the Jester."
     arabic: "مواجهة المهرج."
@@ -36,7 +36,7 @@ MonoBehaviour:
     values:
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
       value: -5
-  rightNextCard: {fileID: 11400000, guid: 84952471b0297024dadcd2a450fe291d, type: 2}
+  rightNextCard: {fileID: 11400000, guid: 0ed93b960ea9fda41bf49cf9de8834bb, type: 2}
   isLlmReactionCard: 0
   reactionSeedOverride: 
   isPetitionCard: 0

@@ -36,8 +36,7 @@ MonoBehaviour:
   isLlmReactionCard: 0
   reactionSeedOverride: 
   isPetitionCard: 1
-  petitionSeedOverride: 'say how fool the king was(the user) for lost his last anchor
-    in 2 line '
+  petitionSeedOverride: "You are a castle servant granted audience. You saw the portrait the ruler found in the ruined castle; beg him not to burn his family's last memory of his half-brother, and ask what that memory is worth to him."
   petitionerSource: 1
   continueNextCard: {fileID: 11400000, guid: 5cb8e0fe5b292a84e91562e5ac62f793, type: 2}
   artMode: 1

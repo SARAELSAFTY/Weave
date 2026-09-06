@@ -5,13 +5,9 @@ using Game.Scripts.Localization;
 namespace Game.Scripts.Llm
 {
     /// <summary>Assembles complete system prompts for persona, petition, and epilogue LLM requests from templates and runtime data.</summary>
-    /// <remarks>All static prompt text comes from <see cref="LlmPromptTemplates"/>; this class only composes sections.
-    /// The sole exception is <see cref="SingleTurnUserMessage"/>, which is the only hardcoded prompt string in the codebase.</remarks>
+    /// <remarks>All static prompt text comes from <see cref="LlmPromptTemplates"/>; this class only composes sections.</remarks>
     public static class SpeakerPromptBuilder
     {
-        /// <summary>Hardcoded user message sent with single-turn reaction requests; the only prompt string not stored on LlmPromptTemplates.</summary>
-        public const string SingleTurnUserMessage = "Respond to the situation above.";
-
         /// <summary>Builds a complete system prompt for a persona/reaction request combining voice, situation, state, and terminology.</summary>
         /// <param name="speaker">Speaker data providing the persona prompt section.</param>
         /// <param name="gameStateSnapshot">Serialized kingdom state injected as the State section.</param>
@@ -77,16 +73,17 @@ namespace Game.Scripts.Llm
 
         /// <summary>Builds a complete system prompt for the end-of-reign epilogue narration.</summary>
         /// <param name="dayCount">Length of the reign in days.</param>
-        /// <param name="collapsedResourceName">Name of the resource that reached zero and ended the reign.</param>
-        /// <param name="finalResourceSummary">Formatted summary of all resource values at collapse.</param>
+        /// <param name="endingCauseLine">Full record line stating how the reign ended,
+        /// e.g. "Cause of Collapse: Crown collapsed".</param>
+        /// <param name="finalResourceSummary">Formatted summary of all resource values at the reign's end.</param>
         /// <param name="fullChoiceHistory">Ordered list of ruler decisions throughout the reign.</param>
         /// <param name="templates">Prompt templates providing epilogue system instructions and language strings.</param>
         /// <param name="language">Target language controlling which language instruction is selected.</param>
-        /// <param name="speaker">Optional speaker providing persona instructions for the epilogue tone and voice.</param>
+        /// <param name="speaker">Optional speaker whose persona supplies the epilogue's voice; may be null.</param>
         /// <returns>The assembled system prompt string.</returns>
         public static string BuildEpiloguePrompt(
             int dayCount,
-            string collapsedResourceName,
+            string endingCauseLine,
             string finalResourceSummary,
             string fullChoiceHistory,
             LlmPromptTemplates templates,
@@ -95,7 +92,7 @@ namespace Game.Scripts.Llm
         {
             string reignRecord =
                 $"Reign Length: {dayCount} day{(dayCount == 1 ? "" : "s")}\n" +
-                $"Cause of Collapse: {collapsedResourceName} fell to zero\n" +
+                $"{endingCauseLine}\n" +
                 $"Final Kingdom State: {finalResourceSummary}\n" +
                 $"Full Decision History (in order): {fullChoiceHistory}";
 

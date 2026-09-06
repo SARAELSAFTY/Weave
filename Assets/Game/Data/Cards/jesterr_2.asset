@@ -34,11 +34,9 @@ MonoBehaviour:
     values: []
   rightNextCard: {fileID: 0}
   isLlmReactionCard: 1
-  reactionSeedOverride: tell the truth that you are his brother and you know what
-    your advisors been up to.answer in between 1-3 lines
+  reactionSeedOverride: "Confess to the ruler that you are his long-lost half-brother hiding behind the fool's bells, and that you know who truly plots against the crown. One or two lines, in character."
   isPetitionCard: 0
-  petitionSeedOverride: tell the truth that you are his brother and you know what
-    your advisors been up to.
+  petitionSeedOverride: "Confess to the ruler that you are his long-lost half-brother hiding behind the fool's bells, and that you know who truly plots against the crown. One or two lines, in character."
   petitionerSource: 1
   continueNextCard: {fileID: 11400000, guid: 338e4a24e64bbac48b16ab53e483dab5, type: 2}
   artMode: 0

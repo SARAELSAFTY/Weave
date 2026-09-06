@@ -70,16 +70,20 @@ namespace Game.Scripts.Narrative
             GameLanguage language = currentLanguage();
             string collapsedResourceName = collapsedResource.GetDisplayName(language);
             string finalResourceSummary = historyTracker.GetResourceSummary(language);
-            string fullChoiceHistory = historyTracker.GetFullHistorySummary();
+            string fullChoiceSummary = historyTracker.GetFullHistorySummary();
 
+            // The collapse threshold is buffered below zero, so "collapsed" is accurate where
+            // "fell to zero" would overstate the trigger.
             string epiloguePrompt = SpeakerPromptBuilder.BuildEpiloguePrompt(
-                narrativeRunner.Day, collapsedResourceName, finalResourceSummary, fullChoiceHistory, templates, language, speaker);
+                narrativeRunner.Day,
+                $"Cause of Collapse: {collapsedResourceName} collapsed",
+                finalResourceSummary, fullChoiceSummary, templates, language, speaker);
 
             int? epilogueMaxTokens = llmSettings != null ? llmSettings.epilogueMaxTokens : 80;
 
             llmReactionClient.RequestReaction(
                 epiloguePrompt,
-                SpeakerPromptBuilder.SingleTurnUserMessage,
+                templates != null ? templates.singleTurnUserMessage : null,
                 language,
                 line =>
                 {

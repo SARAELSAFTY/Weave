@@ -161,6 +161,7 @@ namespace Game.Scripts.UI
             restartButton.onClick.AddListener(RequestRestart);
 
             petitionInputRoot.SetActive(false);
+            petitionInputField.characterLimit = PetitionInputCharacterLimit;
             petitionSubmitButton.onClick.AddListener(RequestPetitionSubmit);
             petitionInputField.onValueChanged.AddListener(OnPetitionInputChanged);
             petitionInputField.onSubmit.AddListener(_ => RequestPetitionSubmit());
@@ -477,6 +478,10 @@ namespace Game.Scripts.UI
             }
         }
 
+        // Caps free-text petitions at the source: bounds proxy payload size, keeps token spend predictable
+        // on the Groq free tier, and limits what a player can inject into the LLM conversation.
+        private const int PetitionInputCharacterLimit = 300;
+
         private void RequestPetitionSubmit()
         {
             if (petitionInputField == null || string.IsNullOrWhiteSpace(petitionInputField.text))
@@ -489,7 +494,20 @@ namespace Game.Scripts.UI
                 petitionConfirmButton.gameObject.SetActive(false);
             }
 
-            PetitionCommandSubmitted?.Invoke(petitionInputField.text.Trim());
+            PetitionCommandSubmitted?.Invoke(SanitizePetitionInput(petitionInputField.text));
+        }
+
+        // Flattens newlines and control characters to spaces so pasted multi-line text cannot
+        // smuggle fake [Section] headers or message boundaries into the LLM prompt.
+        private static string SanitizePetitionInput(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return string.Empty;
+            }
+
+            string flattened = System.Text.RegularExpressions.Regex.Replace(text, @"[\p{Cc}\p{Cf}]+", " ");
+            return flattened.Trim();
         }
 
         private void OnPetitionInputChanged(string text)

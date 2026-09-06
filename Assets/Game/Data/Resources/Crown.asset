@@ -18,7 +18,7 @@ MonoBehaviour:
     arabic: "\u062A\u0627\u062C"
   icon: {fileID: -1512851089295447720, guid: df8ab9ec8126d8148a4242e7d8b17249, type: 3}
   defaultStartingValue: 50
-  collapseThreshold: 0
+  collapseThreshold: -20
   warningThresholdPercent: 20
   warningCooldownCards: 5
   speaker: {fileID: 11400000, guid: cfc48850c5968fe4f9c677c238de2346, type: 2}

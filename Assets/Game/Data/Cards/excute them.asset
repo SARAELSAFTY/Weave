@@ -34,7 +34,7 @@ MonoBehaviour:
     values: []
   rightNextCard: {fileID: 0}
   isLlmReactionCard: 1
-  reactionSeedOverride: you are going to die beg for his mercy (player) in one line
+  reactionSeedOverride: "The condemned traitors were just publicly executed before the crowd; describe them begging the ruler for mercy as the sentence was carried out. One line, in character."
   isPetitionCard: 0
   petitionSeedOverride: 
   petitionerSource: 0

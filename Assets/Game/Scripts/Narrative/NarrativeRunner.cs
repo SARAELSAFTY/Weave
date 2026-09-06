@@ -120,7 +120,12 @@ namespace Game.Scripts.Narrative
                 resourceState.Apply(choseRight ? CurrentCard.rightResourceChange : CurrentCard.leftResourceChange);
             }
 
-            if (TryGetCollapsedResource(out ResourceData collapsedResource))
+            // An authored ending transition always plays its card: the story's final beat outranks a
+            // collapse that the same dramatic choice triggers (e.g. walking away from the crown costs
+            // every point of Crown by design).
+            bool nextIsAuthoredEnding = nextCard != null && nextCard.IsEnding;
+
+            if (!nextIsAuthoredEnding && TryGetCollapsedResource(out ResourceData collapsedResource))
             {
                 AdvanceDay(CurrentCard.dayAdvance);
                 return new NarrativeStepResult(null, null, isCollapseEnding: true, collapsedResource);
@@ -160,8 +165,9 @@ namespace Game.Scripts.Narrative
 
                 if (resourceState.Get(resource) <= resource.collapseThreshold)
                 {
-                    // Always trigger the collapse path; GameManager generates the ending at runtime
-                    // or falls back to the text stored on the resource.
+                    // GameManager generates the runtime collapse ending or falls back to the
+                    // text stored on the resource; authored ending transitions are exempted
+                    // in Choose before this check runs.
                     collapsedResource = resource;
                     return true;
                 }

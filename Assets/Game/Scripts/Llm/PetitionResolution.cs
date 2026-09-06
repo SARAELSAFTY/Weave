@@ -90,11 +90,25 @@ namespace Game.Scripts.Llm
             }
 
             ResourceChange? change = changeList.Count > 0 ? new ResourceChange { values = changeList.ToArray() } : (ResourceChange?)null;
-            string historyTag = !string.IsNullOrWhiteSpace(resolution.historyTag)
-                ? resolution.historyTag.Trim()
-                : null;
+            string historyTag = NormalizeHistoryTag(resolution.historyTag);
 
             return new PetitionApplyResult(change, historyTag);
+        }
+
+        // History tags are model-generated and are later injected verbatim into prompt snapshots, so
+        // normalize them to short lowercase snake_case: anything else is folded to underscores or dropped.
+        private static string NormalizeHistoryTag(string rawTag)
+        {
+            if (string.IsNullOrWhiteSpace(rawTag))
+            {
+                return null;
+            }
+
+            string normalized = rawTag.Trim().ToLowerInvariant();
+            normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"[^a-z0-9_]+", "_").Trim('_');
+            normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"_{2,}", "_");
+
+            return normalized.Length > 48 ? normalized.Substring(0, 48).Trim('_') : (normalized.Length > 0 ? normalized : null);
         }
     }
 }

@@ -80,7 +80,7 @@ MonoBehaviour:
   - card: {fileID: 11400000, guid: 91bf252fb218b744085c55dd830e59a1, type: 2}
     position: {x: -146, y: -503}
   - card: {fileID: 11400000, guid: 342e67267faeb754cbbe2b4f86196a45, type: 2}
-    position: {x: 466, y: -245}
+    position: {x: 347, y: -282}
   - card: {fileID: 11400000, guid: e09d4709b6396ce43960fe3b4004e066, type: 2}
     position: {x: 301, y: -1428}
   - card: {fileID: 11400000, guid: 855112f01e7e4444ea4e97526c76e9de, type: 2}
@@ -90,21 +90,21 @@ MonoBehaviour:
   - card: {fileID: 11400000, guid: 3def12be6eb950a49bbcd2b9b3699d1f, type: 2}
     position: {x: 1074, y: 53}
   - card: {fileID: 11400000, guid: 3f247f0442dc80248a2bbe7e741b5a53, type: 2}
-    position: {x: 1102, y: 789}
+    position: {x: 1224, y: 707}
   - card: {fileID: 11400000, guid: cb033306c6d295140b084dbda12d174f, type: 2}
     position: {x: 1618, y: 825}
   - card: {fileID: 11400000, guid: 338e4a24e64bbac48b16ab53e483dab5, type: 2}
-    position: {x: 1548, y: 1479}
+    position: {x: 2980, y: 1213}
   - card: {fileID: 11400000, guid: 6db1f7f60f71ed844b964df50119970e, type: 2}
-    position: {x: 2140, y: 1367}
+    position: {x: 3348, y: 1290}
   - card: {fileID: 11400000, guid: e7acbcbbda307874db4460d068af46a4, type: 2}
-    position: {x: 2024, y: 1788}
+    position: {x: 3346, y: 1618}
   - card: {fileID: 11400000, guid: ea02f5adccd8c964dbe9af092264d203, type: 2}
-    position: {x: 2520, y: 2288}
+    position: {x: 3651, y: 2003}
   - card: {fileID: 11400000, guid: 2645733732e5e434d9705df88dee41db, type: 2}
-    position: {x: 2520, y: 1858.4}
+    position: {x: 3754, y: 1744}
   - card: {fileID: 11400000, guid: 5afc70658e6568b46951b93ad1daae1a, type: 2}
-    position: {x: 2992, y: 2288}
+    position: {x: 4138, y: 2030}
   - card: {fileID: 11400000, guid: f1ccc51d36652ef43b3cf5fb464e164f, type: 2}
     position: {x: 2050, y: 876}
   - card: {fileID: 11400000, guid: 4f3c589609232a34c91604794487af28, type: 2}
@@ -112,15 +112,15 @@ MonoBehaviour:
   - card: {fileID: 11400000, guid: 9480a74bd895ccd45a16a7288aeed491, type: 2}
     position: {x: 1680, y: 266}
   - card: {fileID: 11400000, guid: 0bcb65149af112142814fb47cb958cd4, type: 2}
-    position: {x: 1544.7999, y: -16.8}
+    position: {x: 1639, y: -66}
   - card: {fileID: 11400000, guid: e6b1c1bfc4543334e82a00d18e3db371, type: 2}
     position: {x: 1959.2, y: 527.2}
   - card: {fileID: 11400000, guid: 5cb8e0fe5b292a84e91562e5ac62f793, type: 2}
-    position: {x: 2992, y: 1789.6}
+    position: {x: 4107, y: 1747}
   - card: {fileID: 11400000, guid: 2130c932794c1db4c91c3c4eb1d247f5, type: 2}
     position: {x: 1284.7999, y: -919.2}
   - card: {fileID: 11400000, guid: 3af559cb78b8a3045a8790650eed20b2, type: 2}
-    position: {x: 1285, y: -393}
+    position: {x: 1268, y: -546}
   - card: {fileID: 11400000, guid: 2b5fc4bd5427ca746be09401fb130f3e, type: 2}
     position: {x: 1713.6, y: -699.2}
   - card: {fileID: 11400000, guid: d63479f0263eac84ba0052f9dafab04d, type: 2}
@@ -202,4 +202,4 @@ MonoBehaviour:
   - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
     position: {x: -902, y: 35}
   - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
-    position: {x: -280, y: 68}
+    position: {x: -278, y: 68}

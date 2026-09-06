@@ -26,4 +26,4 @@ MonoBehaviour:
   petitionMinTurnLimit: 2
   petitionMaxTurnLimit: 4
   petitionRetryCooldownSeconds: 2
-  apiTimeoutSeconds: 10
+  apiTimeoutSeconds: 30
