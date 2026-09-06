@@ -41,6 +41,9 @@ namespace Game.Scripts
         [Tooltip("Pause menu overlay shown when the player presses Escape.")]
         [SerializeField] private PauseMenuView pauseMenuView;
 
+        [Tooltip("Optional panel for storing and validating the player's own Groq API key.")]
+        [SerializeField] private ByokPanelView byokPanelView;
+
         [Tooltip("Optional client used to request LLM-generated speaker reactions and petition dialogue.")]
         [SerializeField] private LlmReactionClient llmReactionClient;
 
@@ -89,6 +92,11 @@ namespace Game.Scripts
             if (llmSettings == null)
             {
                 Debug.LogWarning($"[GameManager] Optional Inspector reference '{nameof(llmSettings)}' is missing on '{gameObject.name}'. Falling back to hardcoded LLM defaults.", this);
+            }
+
+            if (byokPanelView == null)
+            {
+                Debug.LogWarning($"[GameManager] Optional Inspector reference '{nameof(byokPanelView)}' is missing on '{gameObject.name}'. Players will not be able to set their own API key.", this);
             }
 
             if (missingReference)
@@ -141,6 +149,12 @@ namespace Game.Scripts
             // Fresh boot (first load or after a restart): show the start screen until the player presses Play.
             // The scene saves StartPanel inactive, so activation must happen here rather than rely on authoring.
             startScreenView.Show();
+
+            // First launch: the AI-line screen comes before the start screen until the player picks a service.
+            if (!LlmKeyStore.ServiceChosen)
+            {
+                byokPanelView?.Show();
+            }
         }
 
         // Runtime-created ScriptableObjects (warning cards, generated endings, temp speakers) are not
@@ -171,6 +185,12 @@ namespace Game.Scripts
 
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {
+                if (byokPanelView != null && byokPanelView.IsVisible)
+                {
+                    byokPanelView.Hide();
+                    return;
+                }
+
                 TogglePause();
             }
         }
@@ -187,12 +207,14 @@ namespace Game.Scripts
             if (startScreenView != null)
             {
                 startScreenView.PlayRequested += BeginRun;
+                startScreenView.ApiKeyRequested += ShowByokPanel;
             }
 
             if (pauseMenuView != null)
             {
                 pauseMenuView.ResumeRequested += Resume;
                 pauseMenuView.RestartRequested += RestartRun;
+                pauseMenuView.ApiKeyRequested += ShowByokPanel;
             }
         }
 
@@ -208,12 +230,14 @@ namespace Game.Scripts
             if (startScreenView != null)
             {
                 startScreenView.PlayRequested -= BeginRun;
+                startScreenView.ApiKeyRequested -= ShowByokPanel;
             }
 
             if (pauseMenuView != null)
             {
                 pauseMenuView.ResumeRequested -= Resume;
                 pauseMenuView.RestartRequested -= RestartRun;
+                pauseMenuView.ApiKeyRequested -= ShowByokPanel;
             }
         }
 
@@ -461,6 +485,11 @@ namespace Game.Scripts
         private void HandlePetitionSubmitted(string playerInput)
         {
             petitionFlow?.HandlePetitionSubmitted(playerInput);
+        }
+
+        private void ShowByokPanel()
+        {
+            byokPanelView?.Show();
         }
 
         private void HandlePetitionConfirmed()

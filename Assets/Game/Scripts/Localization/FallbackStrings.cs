@@ -78,5 +78,91 @@ namespace Game.Scripts.Localization
             language == GameLanguage.Arabic
                 ? "حالة المملكة: غير معروفة"
                 : "Kingdom Status: Unknown";
+
+        /// <summary>Returns the title of the AI settings panel.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokPanelTitle(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "إعدادات الذكاء الاصطناعي" : "AI Settings";
+
+        /// <summary>Returns the concise panel explanation. Only some characters are AI-driven; most story text is static.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokPanelInfo(GameLanguage language) =>
+            language == GameLanguage.Arabic
+                ? "بعض الشخصيات تتحدث بذكاء اصطناعي حي، وردودها تُكتب في اللحظة.\n\nافتراضياً يتشارك الجميع اتصالاً مجانياً واحداً قد يزدحم. مفتاح Groq المجاني الخاص بك يمنحك اتصالاً خاصاً. يبقى المفتاح على جهازك ولا يُرسل إلا إلى Groq."
+                : "Some characters speak with a live AI: their replies are written on the spot.\n\nBy default everyone shares one free connection, which can get busy. Your own free Groq key gives you a private one. The key stays on this device and is sent only to Groq.";
+
+        /// <summary>Returns the localized placeholder for the key input field.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokPlaceholder(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "الصق مفتاحك هنا (يبدأ بـ gsk_)" : "Paste your key here (it starts with gsk_)";
+
+        /// <summary>Returns the label for the button opening the Groq key page.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokOpenGroq(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "احصل على مفتاح" : "Get a key";
+
+        /// <summary>Returns the label for the paste-from-clipboard button.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokPaste(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "لصق" : "Paste";
+
+        /// <summary>Returns the status shown when a gsk_ key was found in the clipboard.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokClipboardFound(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "وجدنا المفتاح في الحافظة. اضغط تحقق." : "Found your key in the clipboard. Press Check.";
+
+        /// <summary>Returns the status shown when the clipboard has no key to paste.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokClipboardEmpty(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "لا يوجد مفتاح للصق. انسخ المفتاح من صفحة Groq أولاً." : "Nothing to paste. Copy your key from the Groq page first.";
+
+        /// <summary>Returns the label of the shared-connection option button.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokSharedOption(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "اتصال مشترك" : "Shared connection";
+
+        /// <summary>Returns the label of the own-key option button.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokOwnOption(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "مفتاحي الخاص" : "My own key";
+
+        /// <summary>Returns the label for the button validating the pasted key.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokCheckButton(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "تحقق من المفتاح" : "Check key";
+
+        /// <summary>Returns the status shown while a candidate key is being validated.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokChecking(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "جارٍ التحقق..." : "Checking...";
+
+        /// <summary>Returns the status confirming a stored, working key.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokStatusSaved(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "تم حفظ المفتاح على هذا الجهاز." : "Key saved on this device.";
+
+        /// <summary>Returns the friendly status for a key Groq rejected during validation.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokRejectedKey(GameLanguage language) =>
+            language == GameLanguage.Arabic
+                ? "لم يقبل Groq هذا المفتاح. تأكد من نسخه كاملاً، يبدأ بـ gsk_"
+                : "Groq did not accept this key. Make sure you copied the whole key, it starts with gsk_";
+
+        /// <summary>Returns the status when the validation probe could not reach Groq.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokUnreachable(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "تعذر الوصول إلى Groq. تحقق من اتصالك." : "Could not reach Groq. Check your connection.";
+
+        /// <summary>Returns the nudge shown when continuing with the own-key option but no valid key is stored.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokNag(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "تحقق من مفتاحك أولاً، أو اختر الاتصال المشترك." : "Check your key first, or choose the shared connection.";
+
+        /// <summary>Returns the status shown after a mid-session 401 fallback to the shared service.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokSessionFallback(GameLanguage language) =>
+            language == GameLanguage.Arabic
+                ? "تم رفض مفتاحك. ستُستخدم الخدمة المشتركة في هذه الجلسة."
+                : "Your key was rejected. Using the shared service for this session.";
     }
 }

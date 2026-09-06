@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 
 namespace Game.Scripts.Llm
 {
-    /// <summary>MonoBehaviour that sends chat-completions requests to a Groq-compatible proxy and parses the responses.</summary>
+    /// <summary>MonoBehaviour that sends chat-completions requests either directly to Groq (player-supplied key) or through a Groq-compatible proxy, and parses the responses.</summary>
     /// <remarks>Handles two request types: single-turn reactions (plain text) and multi-turn petition turns (structured JSON).
     /// All HTTP work runs as coroutines via <see cref="UnityWebRequest"/>.</remarks>
     public class LlmReactionClient : MonoBehaviour
@@ -19,6 +19,14 @@ namespace Game.Scripts.Llm
         [Tooltip("URL of the Cloudflare Worker (or similar) proxy that forwards requests to the Groq API with authentication.")]
         [SerializeField]
         private string proxyUrl = "https://your-proxy.workers.dev";
+
+        [Tooltip("Groq chat-completions endpoint used when the player supplies their own API key (BYOK).")]
+        [SerializeField]
+        private string directApiUrl = "https://api.groq.com/openai/v1/chat/completions";
+
+        [Tooltip("Groq models endpoint used to validate a candidate player key without spending tokens.")]
+        [SerializeField]
+        private string modelsUrl = "https://api.groq.com/openai/v1/models";
 
         /// <summary>User message used when a caller has no message of its own and no template provides one;
         /// keeps single-turn requests to a valid system+user shape even on a misconfigured project.</summary>
@@ -102,7 +110,7 @@ namespace Game.Scripts.Llm
             LlmRequestError? failure = null;
             bool badRequest = false;
 
-            yield return SendProxyRequest(
+            yield return SendChatRequest(
                 jsonPayload,
                 body => responseText = body,
                 error => failure = error,
@@ -156,7 +164,7 @@ namespace Game.Scripts.Llm
                 yield break;
             }
 
-            yield return SendProxyRequest(
+            yield return SendChatRequest(
                 jsonPayload,
                 responseText =>
                 {
@@ -174,14 +182,24 @@ namespace Game.Scripts.Llm
                 onFailure);
         }
 
-        private IEnumerator SendProxyRequest(string jsonPayload, Action<string> onSuccess, Action<LlmRequestError> onFailure, Action onBadRequest = null)
+        // Sends one chat-completions request. Uses the player's own Groq key directly when one is
+        // stored and active; otherwise goes through the shared proxy. URL and Authorization header
+        // are chosen as a pair so a player key can never be attached to a proxy request.
+        private IEnumerator SendChatRequest(string jsonPayload, Action<string> onSuccess, Action<LlmRequestError> onFailure, Action onBadRequest = null)
         {
-            using (UnityWebRequest request = new UnityWebRequest(proxyUrl, "POST"))
+            bool useDirect = LlmKeyStore.HasActiveKey;
+            string url = useDirect ? directApiUrl : proxyUrl;
+
+            using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
             {
                 byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
                 request.downloadHandler = new DownloadHandlerBuffer();
                 request.SetRequestHeader("Content-Type", "application/json");
+                if (useDirect)
+                {
+                    request.SetRequestHeader("Authorization", "Bearer " + LlmKeyStore.GetKey());
+                }
                 request.timeout = Mathf.CeilToInt(settings.apiTimeoutSeconds);
 
                 yield return request.SendWebRequest();
@@ -189,6 +207,15 @@ namespace Game.Scripts.Llm
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     onSuccess?.Invoke(request.downloadHandler.text);
+                }
+                else if (request.responseCode == 401 && useDirect)
+                {
+                    // The stored key was rejected (e.g. revoked mid-session). Disable it for this
+                    // session and transparently re-send the same payload through the shared proxy
+                    // so gameplay never blocks.
+                    LlmKeyStore.SessionDisabled = true;
+                    Debug.LogWarning("[LlmReactionClient] Player API key was rejected (401); using the shared service for this session.");
+                    yield return SendChatRequest(jsonPayload, onSuccess, onFailure, onBadRequest);
                 }
                 else if (request.responseCode == 429)
                 {
@@ -207,6 +234,46 @@ namespace Game.Scripts.Llm
                 {
                     Debug.LogWarning($"[LlmReactionClient] Request failed: {request.result}, HTTP {request.responseCode}, error: {request.error}, body: {request.downloadHandler?.text}.");
                     onFailure?.Invoke(LlmRequestError.NetworkError);
+                }
+            }
+        }
+
+        /// <summary>Probes the Groq models endpoint with a candidate key; costs no tokens.</summary>
+        /// <param name="candidateKey">The key to validate; trimmed before sending.</param>
+        /// <param name="onResult">Called with the probe outcome: Valid, Invalid (HTTP 401), or Unreachable.</param>
+        public void ValidateApiKey(string candidateKey, Action<ApiKeyValidationResult> onResult)
+        {
+            if (settings == null)
+            {
+                Debug.LogError("[LlmReactionClient] LlmSettings reference is missing!");
+                onResult?.Invoke(ApiKeyValidationResult.Unreachable);
+                return;
+            }
+
+            StartCoroutine(ValidateApiKeyRoutine(candidateKey, onResult));
+        }
+
+        private IEnumerator ValidateApiKeyRoutine(string candidateKey, Action<ApiKeyValidationResult> onResult)
+        {
+            using (UnityWebRequest request = UnityWebRequest.Get(modelsUrl))
+            {
+                request.SetRequestHeader("Authorization", "Bearer " + (candidateKey ?? string.Empty).Trim());
+                request.timeout = Mathf.CeilToInt(settings.apiTimeoutSeconds);
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    onResult?.Invoke(ApiKeyValidationResult.Valid);
+                }
+                else if (request.responseCode == 401)
+                {
+                    onResult?.Invoke(ApiKeyValidationResult.Invalid);
+                }
+                else
+                {
+                    Debug.LogWarning($"[LlmReactionClient] Key validation request failed: {request.result}, HTTP {request.responseCode}, error: {request.error}.");
+                    onResult?.Invoke(ApiKeyValidationResult.Unreachable);
                 }
             }
         }

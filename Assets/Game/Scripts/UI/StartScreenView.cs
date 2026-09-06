@@ -22,8 +22,24 @@ namespace Game.Scripts.UI
             arabic = "ابدأ"
         };
 
+        [Tooltip("Button that opens the API key panel; optional.")]
+        [SerializeField] private Button apiKeyButton;
+        [Tooltip("Label on the API key button. Found automatically from the button's children if left empty.")]
+        [SerializeField]
+        private TMP_Text apiKeyButtonText;
+        [Tooltip("Localized label shown on the API key button.")]
+        [SerializeField]
+        private LocalizedText apiKeyButtonLocalized = new LocalizedText
+        {
+            english = "AI",
+            arabic = "الذكاء الاصطناعي"
+        };
+
         /// <summary>Raised when the player clicks Play.</summary>
         public event Action PlayRequested;
+
+        /// <summary>Raised when the player clicks the API key button.</summary>
+        public event Action ApiKeyRequested;
 
         protected override Button ViewButton => playButton;
 
@@ -37,6 +53,34 @@ namespace Game.Scripts.UI
         protected override string ComponentTag => nameof(StartScreenView);
         protected override string ButtonFieldName => nameof(playButton);
 
+        protected override void OnAwakeCompleted()
+        {
+            if (apiKeyButton != null)
+            {
+                apiKeyButton.onClick.AddListener(HandleApiKeyClicked);
+
+                if (apiKeyButtonText == null)
+                {
+                    apiKeyButtonText = apiKeyButton.GetComponentInChildren<TMP_Text>();
+                }
+
+                if (apiKeyButtonText != null)
+                {
+                    RtlTextHelper.SetText(apiKeyButtonText, apiKeyButtonLocalized.Get(LanguageManager.CurrentLanguageOrDefault), LanguageManager.CurrentLanguageOrDefault);
+                }
+            }
+        }
+
         protected override void HandleButtonClicked() => PlayRequested?.Invoke();
+
+        private void HandleApiKeyClicked() => ApiKeyRequested?.Invoke();
+
+        private void OnDestroy()
+        {
+            if (apiKeyButton != null)
+            {
+                apiKeyButton.onClick.RemoveListener(HandleApiKeyClicked);
+            }
+        }
     }
 }

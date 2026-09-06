@@ -35,11 +35,27 @@ namespace Game.Scripts.UI
             arabic = "إعادة التشغيل"
         };
 
+        [Tooltip("Button that opens the API key panel; optional.")]
+        [SerializeField] private Button apiKeyButton;
+        [Tooltip("Label on the API key button. Found automatically from the button's children if left empty.")]
+        [SerializeField]
+        private TMP_Text apiKeyButtonText;
+        [Tooltip("Localized label shown on the API key button.")]
+        [SerializeField]
+        private LocalizedText apiKeyButtonLocalized = new LocalizedText
+        {
+            english = "AI",
+            arabic = "الذكاء الاصطناعي"
+        };
+
         /// <summary>Raised when the player clicks Resume.</summary>
         public event Action ResumeRequested;
 
         /// <summary>Raised when the player clicks Restart.</summary>
         public event Action RestartRequested;
+
+        /// <summary>Raised when the player clicks the API key button.</summary>
+        public event Action ApiKeyRequested;
 
         protected override Button ViewButton => resumeButton;
 
@@ -71,17 +87,39 @@ namespace Game.Scripts.UI
                     restartButtonText.text = restartButtonLocalized.Get(LanguageManager.CurrentLanguageOrDefault);
                 }
             }
+
+            if (apiKeyButton != null)
+            {
+                apiKeyButton.onClick.AddListener(HandleApiKeyClicked);
+
+                if (apiKeyButtonText == null)
+                {
+                    apiKeyButtonText = apiKeyButton.GetComponentInChildren<TMP_Text>();
+                }
+
+                if (apiKeyButtonText != null)
+                {
+                    RtlTextHelper.SetText(apiKeyButtonText, apiKeyButtonLocalized.Get(LanguageManager.CurrentLanguageOrDefault), LanguageManager.CurrentLanguageOrDefault);
+                }
+            }
         }
 
         protected override void HandleButtonClicked() => ResumeRequested?.Invoke();
 
         private void HandleRestartClicked() => RestartRequested?.Invoke();
 
+        private void HandleApiKeyClicked() => ApiKeyRequested?.Invoke();
+
         private void OnDestroy()
         {
             if (restartButton != null)
             {
                 restartButton.onClick.RemoveListener(HandleRestartClicked);
+            }
+
+            if (apiKeyButton != null)
+            {
+                apiKeyButton.onClick.RemoveListener(HandleApiKeyClicked);
             }
         }
     }
