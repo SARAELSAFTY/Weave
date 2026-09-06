@@ -7,6 +7,19 @@ using UnityEngine.Networking;
 
 namespace Game.Scripts.Llm
 {
+    /// <summary>Outcome of the shared-service probe, as displayed on the AI settings panel.</summary>
+    public enum SharedServiceState
+    {
+        /// <summary>No probe has finished this session.</summary>
+        Unknown,
+        /// <summary>A probe is in flight.</summary>
+        Checking,
+        /// <summary>The proxy completed a request end to end (HTTP 200).</summary>
+        Online,
+        /// <summary>The proxy is unreachable, misconfigured, or its shared Groq key no longer works.</summary>
+        Unavailable
+    }
+
     /// <summary>MonoBehaviour that sends chat-completions requests either directly to Groq (player-supplied key) or through a Groq-compatible proxy, and parses the responses.</summary>
     /// <remarks>Handles two request types: single-turn reactions (plain text) and multi-turn petition turns (structured JSON).
     /// All HTTP work runs as coroutines via <see cref="UnityWebRequest"/>.</remarks>
@@ -27,6 +40,14 @@ namespace Game.Scripts.Llm
         [Tooltip("Groq models endpoint used to validate a candidate player key without spending tokens.")]
         [SerializeField]
         private string modelsUrl = "https://api.groq.com/openai/v1/models";
+
+        [Tooltip("Timeout for the shared-service probe. Shorter than the gameplay timeout so the status line resolves quickly when the service is unreachable.")]
+        [SerializeField]
+        private float probeTimeoutSeconds = 10f;
+
+        [Tooltip("How long a shared-service probe result stays fresh; further probes inside this window are skipped.")]
+        [SerializeField]
+        private float probeRefreshSeconds = 60f;
 
         /// <summary>User message used when a caller has no message of its own and no template provides one;
         /// keeps single-turn requests to a valid system+user shape even on a misconfigured project.</summary>
@@ -239,7 +260,7 @@ namespace Game.Scripts.Llm
         }
 
         /// <summary>Probes the Groq models endpoint with a candidate key; costs no tokens.</summary>
-        /// <param name="candidateKey">The key to validate; trimmed before sending.</param>
+        /// <param name="candidateKey">The key to validate; sanitized before sending.</param>
         /// <param name="onResult">Called with the probe outcome: Valid, Invalid (HTTP 401), or Unreachable.</param>
         public void ValidateApiKey(string candidateKey, Action<ApiKeyValidationResult> onResult)
         {
@@ -255,9 +276,16 @@ namespace Game.Scripts.Llm
 
         private IEnumerator ValidateApiKeyRoutine(string candidateKey, Action<ApiKeyValidationResult> onResult)
         {
+            string key = LlmKeyStore.SanitizeKey(candidateKey);
+            if (key.Length == 0)
+            {
+                onResult?.Invoke(ApiKeyValidationResult.Invalid);
+                yield break;
+            }
+
             using (UnityWebRequest request = UnityWebRequest.Get(modelsUrl))
             {
-                request.SetRequestHeader("Authorization", "Bearer " + (candidateKey ?? string.Empty).Trim());
+                request.SetRequestHeader("Authorization", "Bearer " + key);
                 request.timeout = Mathf.CeilToInt(settings.apiTimeoutSeconds);
 
                 yield return request.SendWebRequest();
@@ -276,6 +304,101 @@ namespace Game.Scripts.Llm
                     onResult?.Invoke(ApiKeyValidationResult.Unreachable);
                 }
             }
+        }
+
+        /// <summary>Last known state of the shared proxy; <see cref="SharedServiceState.Unknown"/> until a probe finishes.</summary>
+        public SharedServiceState SharedService { get; private set; } = SharedServiceState.Unknown;
+
+        /// <summary>Raised whenever <see cref="SharedService"/> changes so UI indicators can update live.</summary>
+        public event Action<SharedServiceState> SharedServiceChanged;
+
+        private const string ProbeSystemPrompt = "Reply with OK.";
+        private const string ProbeUserMessage = "ping";
+
+        // Room for a short reply rather than the bare minimum, so a model that needs a few tokens of
+        // headroom still answers 200 and the probe cannot report a false outage.
+        private const int ProbeMaxTokens = 32;
+
+        private bool probeInFlight;
+        private float lastProbeTime = float.NegativeInfinity;
+
+        /// <summary>Sends a throwaway completion through the shared proxy to confirm the whole line still works.</summary>
+        /// <remarks>Always targets <see cref="proxyUrl"/>, even when a player key is active, because the shared
+        /// line is what is being measured. Skipped while a probe is in flight or while the previous result is
+        /// younger than <see cref="probeRefreshSeconds"/>.</remarks>
+        public void ProbeSharedService()
+        {
+            if (probeInFlight || Time.unscaledTime - lastProbeTime < probeRefreshSeconds)
+            {
+                return;
+            }
+
+            lastProbeTime = Time.unscaledTime;
+
+            if (!TryValidateConfig(null))
+            {
+                PublishSharedService(SharedServiceState.Unavailable);
+                return;
+            }
+
+            probeInFlight = true;
+            StartCoroutine(ProbeSharedServiceRoutine());
+        }
+
+        private IEnumerator ProbeSharedServiceRoutine()
+        {
+            PublishSharedService(SharedServiceState.Checking);
+
+            float started = Time.unscaledTime;
+            string payload = BuildJsonPayload(ProbeSystemPrompt, ProbeUserMessage, ProbeMaxTokens);
+            SharedServiceState state;
+
+            using (UnityWebRequest request = new UnityWebRequest(proxyUrl, "POST"))
+            {
+                request.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(payload));
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.timeout = Mathf.CeilToInt(probeTimeoutSeconds);
+
+                yield return request.SendWebRequest();
+
+                state = InterpretProbeResponse(request, Time.unscaledTime - started);
+            }
+
+            probeInFlight = false;
+            PublishSharedService(state);
+        }
+
+        // The worker accepts only POST and returns Groq's status verbatim, so one response code tells us
+        // about the whole chain: the worker itself, its shared secret, Groq, and the configured model slug.
+        // Players get a single generic line; the specifics land here in the console.
+        private static SharedServiceState InterpretProbeResponse(UnityWebRequest request, float elapsedSeconds)
+        {
+            long code = request.responseCode;
+            if (code == 200)
+            {
+                Debug.Log($"[LlmReactionClient] Shared service probe: HTTP 200 in {elapsedSeconds:F2}s. The shared line is working.");
+                return SharedServiceState.Online;
+            }
+
+            string detail = code switch
+            {
+                401 or 403 => "the shared GROQ_API_KEY was rejected; rotate it with `wrangler secret put GROQ_API_KEY`",
+                429 => $"shared quota or rate limit exhausted (Retry-After: {request.GetResponseHeader("Retry-After") ?? "not provided"})",
+                500 => "the worker has no GROQ_API_KEY secret; a deploy resets bindings, so re-put the secret",
+                502 => "the worker could not reach Groq",
+                0 => $"no response ({request.result}, {request.error}); the worker is unreachable or the player is offline",
+                _ => $"request rejected, so the model slug or parameters may be invalid; body: {request.downloadHandler?.text}"
+            };
+
+            Debug.LogWarning($"[LlmReactionClient] Shared service probe failed after {elapsedSeconds:F2}s with HTTP {code}: {detail}.");
+            return SharedServiceState.Unavailable;
+        }
+
+        private void PublishSharedService(SharedServiceState state)
+        {
+            SharedService = state;
+            SharedServiceChanged?.Invoke(state);
         }
 
         private string BuildJsonPayload(string systemPrompt, string singleTurnUserMessage, int? maxTokensOverride = null)

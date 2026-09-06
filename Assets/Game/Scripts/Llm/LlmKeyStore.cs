@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using UnityEngine;
 
 namespace Game.Scripts.Llm
@@ -48,23 +49,51 @@ namespace Game.Scripts.Llm
         private static void RaiseKeyChanged() => KeyChanged?.Invoke();
 
         /// <summary>True when a key is stored and this session has not fallen back to the proxy.</summary>
-        public static bool HasActiveKey => !SessionDisabled && !string.IsNullOrEmpty(PlayerPrefs.GetString(PrefKey));
+        public static bool HasActiveKey => !SessionDisabled && GetKey() != null;
 
         /// <summary>Returns the stored key, or null when none is stored.</summary>
         public static string GetKey()
         {
-            string key = PlayerPrefs.GetString(PrefKey);
-            return string.IsNullOrEmpty(key) ? null : key;
+            string key = SanitizeKey(PlayerPrefs.GetString(PrefKey));
+            return key.Length == 0 ? null : key;
         }
 
-        /// <summary>Stores a trimmed key persistently (survives restarts). Callers should validate it
+        /// <summary>Stores a key persistently (survives restarts). Callers should validate it
         /// first via <see cref="LlmReactionClient.ValidateApiKey"/> so a typo cannot replace a working key.</summary>
         public static void SaveKey(string key)
         {
-            PlayerPrefs.SetString(PrefKey, (key ?? string.Empty).Trim());
+            PlayerPrefs.SetString(PrefKey, SanitizeKey(key));
             PlayerPrefs.Save();
             SessionDisabled = false;
             RaiseKeyChanged();
+        }
+
+        /// <summary>Returns the key with every character outside <c>[A-Za-z0-9_-]</c> removed.</summary>
+        /// <remarks>Pastes into the RTL-capable input field can carry an interior space or newline,
+        /// wrapping quotes, or bidi marks, and <c>UnityWebRequest.SetRequestHeader</c> throws on those.</remarks>
+        public static string SanitizeKey(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return string.Empty;
+            }
+
+            StringBuilder builder = new StringBuilder(key.Length);
+            foreach (char character in key)
+            {
+                bool allowed = (character >= 'a' && character <= 'z')
+                    || (character >= 'A' && character <= 'Z')
+                    || (character >= '0' && character <= '9')
+                    || character == '_'
+                    || character == '-';
+
+                if (allowed)
+                {
+                    builder.Append(character);
+                }
+            }
+
+            return builder.ToString();
         }
 
         /// <summary>Deletes the stored key and clears the session fallback flag.</summary>

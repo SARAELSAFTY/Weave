@@ -13,7 +13,8 @@ namespace Game.Scripts.UI
     /// two-option line choice, the key box with its check button, and Continue. A candidate key is
     /// validated against Groq's free models endpoint before being stored; the stored key persists in
     /// PlayerPrefs and is only ever sent directly to api.groq.com by <see cref="LlmReactionClient"/>,
-    /// never through the shared proxy.</remarks>
+    /// never through the shared proxy. The status line doubles as the shared-line indicator: opening the
+    /// panel probes that service, and its result is shown while the shared option is selected.</remarks>
     public class ByokPanelView : LocalizedDisplay
     {
         [Tooltip("Title of the panel.")]
@@ -65,12 +66,13 @@ namespace Game.Scripts.UI
         /// <summary>True while the panel is showing; lets GameManager route Escape to closing it.</summary>
         public bool IsVisible => gameObject.activeInHierarchy;
 
-        /// <summary>Shows the panel reflecting the stored key, if any.</summary>
+        /// <summary>Shows the panel reflecting the stored key, if any, and refreshes the shared-line status.</summary>
         public void Show()
         {
             gameObject.SetActive(true);
             ownMode = !string.IsNullOrEmpty(LlmKeyStore.GetKey());
             keyInputField.text = LlmKeyStore.GetKey() ?? string.Empty;
+            llmClient?.ProbeSharedService();
             RefreshMode();
         }
 
@@ -116,6 +118,28 @@ namespace Game.Scripts.UI
             }
         }
 
+        // Subscribed only while the panel is showing: Show() and the base refresh already re-render the
+        // status line from LlmReactionClient.SharedService, so nothing is missed while hidden.
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            if (llmClient != null)
+            {
+                llmClient.SharedServiceChanged += HandleSharedServiceChanged;
+            }
+        }
+
+        protected override void OnDisable()
+        {
+            if (llmClient != null)
+            {
+                llmClient.SharedServiceChanged -= HandleSharedServiceChanged;
+            }
+
+            base.OnDisable();
+        }
+
         private void OnDestroy()
         {
             if (sharedOptionButton != null) sharedOptionButton.onClick.RemoveListener(HandleSharedSelected);
@@ -148,7 +172,7 @@ namespace Game.Scripts.UI
                 return;
             }
 
-            string candidate = (GUIUtility.systemCopyBuffer ?? string.Empty).Trim();
+            string candidate = LlmKeyStore.SanitizeKey(GUIUtility.systemCopyBuffer);
             if (!candidate.StartsWith(KeyPrefix, StringComparison.Ordinal))
             {
                 if (announceEmpty)
@@ -181,11 +205,37 @@ namespace Game.Scripts.UI
             ownKeyGroup.SetActive(ownMode);
 
             GameLanguage language = LanguageManager.CurrentLanguageOrDefault;
-            string status = ownMode && !string.IsNullOrEmpty(LlmKeyStore.GetKey())
-                ? FallbackStrings.ByokStatusSaved(language)
-                : string.Empty;
+            string status;
+            if (ownMode)
+            {
+                status = string.IsNullOrEmpty(LlmKeyStore.GetKey()) ? string.Empty : FallbackStrings.ByokStatusSaved(language);
+            }
+            else
+            {
+                SharedServiceState state = llmClient != null ? llmClient.SharedService : SharedServiceState.Unknown;
+                status = SharedStatusLine(state, language);
+            }
+
             SetStatus(status);
         }
+
+        // The status line doubles as the shared-line indicator, so a finished probe updates it live;
+        // it must not clobber a key-validation message the player is reading in own-key mode.
+        private void HandleSharedServiceChanged(SharedServiceState state)
+        {
+            if (IsVisible && !ownMode)
+            {
+                SetStatus(SharedStatusLine(state, LanguageManager.CurrentLanguageOrDefault));
+            }
+        }
+
+        private static string SharedStatusLine(SharedServiceState state, GameLanguage language) => state switch
+        {
+            SharedServiceState.Checking => FallbackStrings.ByokSharedChecking(language),
+            SharedServiceState.Online => FallbackStrings.ByokSharedOnline(language),
+            SharedServiceState.Unavailable => FallbackStrings.ByokSharedOffline(language),
+            _ => string.Empty
+        };
 
         // Dims the inactive option by fading the button image; the label keeps its own color.
         private static void SetOptionEmphasis(Button button, bool selected)

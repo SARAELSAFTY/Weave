@@ -151,9 +151,21 @@ namespace Game.Scripts
             startScreenView.Show();
 
             // First launch: the AI-line screen comes before the start screen until the player picks a service.
+            // The scene saves the panel active, so returning players need it hidden here rather than by authoring.
             if (!LlmKeyStore.ServiceChosen)
             {
                 byokPanelView?.Show();
+            }
+            else
+            {
+                byokPanelView?.Hide();
+            }
+
+            // Probe the shared line only when it is actually in use: players on their own key bypass the
+            // proxy entirely and should not spend its quota. On first launch the Show() above already probed.
+            if (!LlmKeyStore.HasActiveKey)
+            {
+                llmReactionClient?.ProbeSharedService();
             }
         }
 

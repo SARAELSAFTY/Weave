@@ -164,5 +164,21 @@ namespace Game.Scripts.Localization
             language == GameLanguage.Arabic
                 ? "تم رفض مفتاحك. ستُستخدم الخدمة المشتركة في هذه الجلسة."
                 : "Your key was rejected. Using the shared service for this session.";
+
+        /// <summary>Returns the shared-line status while the service probe is in flight.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokSharedChecking(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "جارٍ التحقق من الاتصال المشترك..." : "Checking the shared connection...";
+
+        /// <summary>Returns the shared-line status once a probe completed a request end to end.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokSharedOnline(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "الاتصال المشترك يعمل." : "Shared connection is working.";
+
+        /// <summary>Returns the shared-line status when the probe failed. Deliberately generic: the reason
+        /// (dead key, exhausted quota, outage) is only actionable for us and goes to the console.</summary>
+        /// <param name="language">Target language.</param>
+        public static string ByokSharedOffline(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "الاتصال المشترك غير متاح حالياً." : "Shared connection is unavailable right now.";
     }
 }

@@ -2968,7 +2968,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -8, y: 0}
+  m_AnchoredPosition: {x: -8.000061, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &478604117
@@ -3780,6 +3780,8 @@ MonoBehaviour:
   proxyUrl: https://weave-groq-proxy.abdullah-weave-dev.workers.dev
   directApiUrl: https://api.groq.com/openai/v1/chat/completions
   modelsUrl: https://api.groq.com/openai/v1/models
+  probeTimeoutSeconds: 10
+  probeRefreshSeconds: 60
 --- !u!114 &596245568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8102,7 +8104,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1982439582}
+  m_Father: {fileID: 2050290477}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -10799,7 +10801,6 @@ RectTransform:
   - {fileID: 226638251}
   - {fileID: 377104034}
   - {fileID: 178671873}
-  - {fileID: 1402024568}
   m_Father: {fileID: 2050290477}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -11333,6 +11334,7 @@ RectTransform:
   - {fileID: 574317502}
   - {fileID: 1767015734}
   - {fileID: 1982439582}
+  - {fileID: 1402024568}
   - {fileID: 422309162}
   m_Father: {fileID: 161118569}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
