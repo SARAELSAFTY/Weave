@@ -2968,7 +2968,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -8.000061, y: 0}
+  m_AnchoredPosition: {x: -8.000122, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &478604117
@@ -3705,14 +3705,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardView: {fileID: 1195434284}
   resourceState: {fileID: 596245563}
-  narrativeDatabase: {fileID: 11400000, guid: cca7124d0c337d240b41100af670b92a, type: 2}
+  narrativeDatabase: {fileID: 11400000, guid: 6e18ec970705145408f300ec375fe9be, type: 2}
   cardExitDuration: 0.25
   dayDisplay: {fileID: 827729979}
   startScreenView: {fileID: 1413500621}
   pauseMenuView: {fileID: 949664362}
   byokPanelView: {fileID: 2050290478}
   llmReactionClient: {fileID: 596245567}
-  llmSettings: {fileID: 11400000, guid: 11883ca5c969cfa478358d9de1bdd1fa, type: 2}
+  llmSettings: {fileID: 11400000, guid: d613892ac4cdbe84ca63031c7c644bf1, type: 2}
 --- !u!4 &596245562
 Transform:
   m_ObjectHideFlags: 0
@@ -3740,7 +3740,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44c408b7380778a46a8bc5b9343c0c3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  catalog: {fileID: 11400000, guid: af53b8efaa0572d4f80c6a71e5a89982, type: 2}
+  catalog: {fileID: 11400000, guid: 6b2923c43cf2ce847a3ced381a116f0b, type: 2}
 --- !u!114 &596245566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3776,7 +3776,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fea6a1f0c2aa4c1449907bb083c81507, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  settings: {fileID: 11400000, guid: 11883ca5c969cfa478358d9de1bdd1fa, type: 2}
+  settings: {fileID: 11400000, guid: d613892ac4cdbe84ca63031c7c644bf1, type: 2}
   proxyUrl: https://weave-groq-proxy.abdullah-weave-dev.workers.dev
   directApiUrl: https://api.groq.com/openai/v1/chat/completions
   modelsUrl: https://api.groq.com/openai/v1/models
@@ -3794,7 +3794,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65fdda777d6e1a844b70205ee71c5df5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fontSettings: {fileID: 11400000, guid: 5035ac0c1f3a2d44e9bb9bb9d3c99b0d, type: 2}
+  fontSettings: {fileID: 11400000, guid: c99791955c0f3d44ba9f07c8d11332aa, type: 2}
 --- !u!1 &598457467
 GameObject:
   m_ObjectHideFlags: 0

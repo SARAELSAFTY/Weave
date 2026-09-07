@@ -55,32 +55,11 @@ namespace Game.Scripts.UI
 
         protected override void OnAwakeCompleted()
         {
-            if (apiKeyButton != null)
-            {
-                apiKeyButton.onClick.AddListener(HandleApiKeyClicked);
-
-                if (apiKeyButtonText == null)
-                {
-                    apiKeyButtonText = apiKeyButton.GetComponentInChildren<TMP_Text>();
-                }
-
-                if (apiKeyButtonText != null)
-                {
-                    RtlTextHelper.SetText(apiKeyButtonText, apiKeyButtonLocalized.Get(LanguageManager.CurrentLanguageOrDefault), LanguageManager.CurrentLanguageOrDefault);
-                }
-            }
+            ConfigureOptionalButton(apiKeyButton, apiKeyButtonText, apiKeyButtonLocalized, HandleApiKeyClicked);
         }
 
         protected override void HandleButtonClicked() => PlayRequested?.Invoke();
 
         private void HandleApiKeyClicked() => ApiKeyRequested?.Invoke();
-
-        private void OnDestroy()
-        {
-            if (apiKeyButton != null)
-            {
-                apiKeyButton.onClick.RemoveListener(HandleApiKeyClicked);
-            }
-        }
     }
 }

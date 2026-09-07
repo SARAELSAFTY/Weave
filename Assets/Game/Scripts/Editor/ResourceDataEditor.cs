@@ -13,8 +13,6 @@ namespace Game.Scripts.Editor
         {
             serializedObject.Update();
 
-            ResourceData resource = (ResourceData)target;
-
             EditorGUILayout.Space(4);
             EditorGUILayout.LabelField("Resource Identity", EditorStyles.boldLabel);
 

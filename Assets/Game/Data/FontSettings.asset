@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e47c19bb8432a947b1945112f4510001, type: 3}
+  m_Name: FontSettings
+  m_EditorClassIdentifier: 
+  englishFont: {fileID: 11400000, guid: 9754f889b3dbf9747a49162fe13ccdaa, type: 2}
+  arabicFont: {fileID: 11400000, guid: 9754f889b3dbf9747a49162fe13ccdaa, type: 2}
+  alignmentMode: 1
+  enableCategoryOverrides: 1
+  titleFont:
+    overrideDefault: 0
+    englishFont: {fileID: 0}
+    arabicFont: {fileID: 0}
+  speakerNameFont:
+    overrideDefault: 0
+    englishFont: {fileID: 0}
+    arabicFont: {fileID: 0}
+  menuUIFont:
+    overrideDefault: 0
+    englishFont: {fileID: 0}
+    arabicFont: {fileID: 0}
+  dialogueBodyFont:
+    overrideDefault: 0
+    englishFont: {fileID: 0}
+    arabicFont: {fileID: 0}
+  choiceFont:
+    overrideDefault: 0
+    englishFont: {fileID: 0}
+    arabicFont: {fileID: 0}

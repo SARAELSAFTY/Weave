@@ -11,24 +11,19 @@ namespace Game.Scripts.Llm
     /// <summary>Runs the multi-turn petition audience state machine: opening line, ruler submissions,
     /// proposal confirmation, turn exhaustion with a closing line, and failure cooldowns.</summary>
     /// <remarks>Constructed and owned by <see cref="GameManager"/>; narrative advancement after a confirmed
-    /// proposal and global choice input remain with GameManager, reached via the delegates passed to the constructor.</remarks>
-    public class PetitionFlowController
+    /// proposal and global choice input remain with GameManager, reached via the delegates passed to the constructor.
+    /// The opening line is requested through the same petition JSON contract as later turns and recorded as the
+    /// first assistant turn, so the model always sees how the audience began.</remarks>
+    public class PetitionFlowController : AudienceFlowController
     {
-        private readonly CardView cardView;
-        private readonly LlmReactionClient llmReactionClient;
-        private readonly LlmSettings llmSettings;
-        private readonly NarrativeDatabase database;
-        private readonly NarrativeRunner narrativeRunner;
         private readonly ResourceState resourceState;
-        private readonly PlayerHistoryTracker historyTracker;
-        private readonly Func<GameLanguage> currentLanguage;
-        private readonly Action<bool> setInputEnabled;
-        private readonly Action beginConfirmAdvance;
-        private readonly Action<float> scheduleSubmitReenable;
 
-        private PetitionSession currentPetitionSession;
-        private SpeakerData currentPetitionSpeaker;
-        private bool currentPetitionSpeakerIsTemp;
+        // Typed view of the shared session holder; only this class ever assigns a PetitionSession.
+        private PetitionSession currentPetitionSession
+        {
+            get => (PetitionSession)Session;
+            set => Session = value;
+        }
 
         public PetitionFlowController(
             CardView cardView,
@@ -42,40 +37,50 @@ namespace Game.Scripts.Llm
             Action<bool> setInputEnabled,
             Action beginConfirmAdvance,
             Action<float> scheduleSubmitReenable)
+            : base(cardView, llmReactionClient, llmSettings, database, narrativeRunner, historyTracker,
+                currentLanguage, setInputEnabled, beginConfirmAdvance, scheduleSubmitReenable)
         {
-            this.cardView = cardView;
-            this.llmReactionClient = llmReactionClient;
-            this.llmSettings = llmSettings;
-            this.database = database;
-            this.narrativeRunner = narrativeRunner;
             this.resourceState = resourceState;
-            this.historyTracker = historyTracker;
-            this.currentLanguage = currentLanguage;
-            this.setInputEnabled = setInputEnabled;
-            this.beginConfirmAdvance = beginConfirmAdvance;
-            this.scheduleSubmitReenable = scheduleSubmitReenable;
         }
 
         /// <summary>Presents the petition card: resolves the petitioner, opens a new session and requests the opening line.</summary>
         public void ShowPetitionCard(CardData card)
         {
-            currentPetitionSpeaker = ResolvePetitioner(card);
-            LlmPromptTemplates templates = database != null ? database.promptTemplates : null;
-            cardView.ShowPetition(card, currentPetitionSpeaker);
+            currentSpeaker = ResolveSpeaker(card);
+            LlmPromptTemplates templates = Templates;
+            cardView.ShowPetition(card, currentSpeaker);
+            cardView.SetPetitionConfirmButtonLabel(LlmFallbackText.PetitionConfirmLabel(templates, currentLanguage()));
             setInputEnabled(false);
-            currentPetitionSession = new PetitionSession(llmSettings != null ? llmSettings.ResolvePetitionTurnLimit() : 3);
+            currentPetitionSession = new PetitionSession(
+                llmSettings != null ? llmSettings.ResolvePetitionTurnLimit() : LlmSettings.DefaultPetitionTurnLimit);
 
-            string snapshot = GetPetitionSnapshotOrDefault();
+            string snapshot = GetSnapshotOrDefault(PetitionHistoryCount, PastPetitionChatCount);
             string seed = card.EffectivePetitionSeed(templates);
+            string systemPrompt = SpeakerPromptBuilder.BuildPetitionTurnPrompt(
+                currentSpeaker,
+                snapshot,
+                situationalPrompt: null,
+                GetResourceCatalog(),
+                PetitionResourceClampMagnitude,
+                templates,
+                currentLanguage());
+            currentPetitionSession.Initialize(systemPrompt);
 
-            LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
-                currentPetitionSpeaker, snapshot, seed, currentLanguage(),
-                LlmFallbackText.PetitionOpening(templates, currentLanguage()),
-                line =>
+            if (llmReactionClient == null)
+            {
+                Debug.LogWarning("[PetitionFlowController] llmReactionClient is missing; showing fallback opening line.", cardView);
+                DeliverPetitionOpening(LlmFallbackText.PetitionOpening(templates, currentLanguage()), null, null);
+                return;
+            }
+
+            llmReactionClient.RequestPetitionTurn(
+                currentPetitionSession.BuildOpeningMessages(seed),
+                currentLanguage(),
+                (resolution, rawContent) => DeliverPetitionOpening(resolution.reaction, rawContent, resolution.speakerName),
+                error =>
                 {
-                    cardView.SetDescriptionText(line);
-                    cardView.ShowPetitionInput();
-                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
+                    Debug.LogWarning($"[PetitionFlowController] Petition opening request failed: {error}");
+                    DeliverPetitionOpening(LlmFallbackText.PetitionOpening(templates, currentLanguage()), null, null);
                 });
         }
 
@@ -83,21 +88,11 @@ namespace Game.Scripts.Llm
         public void HandlePetitionSubmitted(string playerInput)
         {
             CardData card = narrativeRunner.CurrentCard;
-            if (card == null || !card.isPetitionCard || currentPetitionSession == null || currentPetitionSession.TurnsExhausted)
+            if (card == null || !card.isPetitionCard || currentPetitionSession == null
+                || !currentPetitionSession.HasOpening || currentPetitionSession.TurnsExhausted)
             {
                 return;
             }
-
-            cardView.SetPetitionSubmitting(true);
-
-            SpeakerData speaker = currentPetitionSpeaker != null ? currentPetitionSpeaker : card.speaker;
-            string snapshot = GetPetitionSnapshotOrDefault();
-            LlmPromptTemplates templates = database != null ? database.promptTemplates : null;
-            string seed = card.EffectivePetitionSeed(templates);
-
-            IReadOnlyList<ResourceData> validResources = GetResourceCatalog();
-
-            int clamp = llmSettings != null ? llmSettings.petitionResourceClampMagnitude : 20;
 
             if (llmReactionClient == null)
             {
@@ -106,9 +101,9 @@ namespace Game.Scripts.Llm
                 return;
             }
 
-            List<GroqApiMessage> messages = currentPetitionSession.BuildMessagesForSubmission(
-                playerInput, speaker, snapshot, seed, validResources, clamp, templates, currentLanguage());
+            cardView.SetPetitionSubmitting(true);
 
+            List<GroqApiMessage> messages = currentPetitionSession.BuildMessagesForSubmission(playerInput);
             llmReactionClient.RequestPetitionTurn(messages, currentLanguage(), OnPetitionTurnResolved, OnPetitionFailed);
         }
 
@@ -121,8 +116,8 @@ namespace Game.Scripts.Llm
             }
 
             PetitionResolution proposal = currentPetitionSession.LastProposal;
-            int clampMagnitude = llmSettings != null ? llmSettings.petitionResourceClampMagnitude : 20;
-            PetitionApplyResult applyResult = PetitionResolutionApplier.Apply(proposal, database?.resourceCatalog, clampMagnitude);
+            PetitionApplyResult applyResult = PetitionResolutionApplier.Apply(
+                proposal, database?.resourceCatalog, PetitionResourceClampMagnitude);
 
             if (applyResult.resourceChange.HasValue)
             {
@@ -139,8 +134,7 @@ namespace Game.Scripts.Llm
                 historyTracker.RecordPetitionTranscript(currentPetitionSession.GetTranscript());
             }
 
-            currentPetitionSession = null;
-            CleanupPetitionSpeaker();
+            EndAudience();
             cardView.SetPetitionSubmitting(true);
             beginConfirmAdvance();
         }
@@ -148,13 +142,28 @@ namespace Game.Scripts.Llm
         /// <summary>Destroys the temporary petitioner speaker, if one was generated; call from the owner's OnDestroy.</summary>
         public void CleanupPetitionSpeaker()
         {
-            if (currentPetitionSpeakerIsTemp && currentPetitionSpeaker != null)
+            CleanupAudienceSpeaker();
+        }
+
+        // Shows the petitioner's opening line, records it as the first conversation turn (so later
+        // requests know how the audience began), names a generated commoner, and opens the input.
+        private void DeliverPetitionOpening(string openingLine, string rawHistoryContent, string speakerName)
+        {
+            if (currentPetitionSession == null)
             {
-                UnityEngine.Object.Destroy(currentPetitionSpeaker);
+                return;
             }
 
-            currentPetitionSpeaker = null;
-            currentPetitionSpeakerIsTemp = false;
+            if (TempSpeakerFactory.TryApplyGeneratedName(currentSpeaker, speakerName))
+            {
+                cardView.RefreshSpeakerName();
+            }
+
+            string line = !string.IsNullOrWhiteSpace(openingLine) ? openingLine : string.Empty;
+            currentPetitionSession.RecordOpening(rawHistoryContent ?? line, line);
+            cardView.SetDescriptionText(line);
+            cardView.ShowPetitionInput();
+            cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
         }
 
         private void OnPetitionTurnResolved(PetitionResolution result, string rawContent)
@@ -186,7 +195,7 @@ namespace Game.Scripts.Llm
             if (currentPetitionSession != null && currentPetitionSession.TurnsExhausted)
             {
                 CardData currentCard = narrativeRunner.CurrentCard;
-                SpeakerData speaker = currentPetitionSpeaker != null ? currentPetitionSpeaker : (currentCard != null ? currentCard.speaker : null);
+                SpeakerData speaker = currentSpeaker != null ? currentSpeaker : (currentCard != null ? currentCard.speaker : null);
                 HandlePetitionTurnsExhausted(currentCard, speaker);
                 return;
             }
@@ -200,11 +209,11 @@ namespace Game.Scripts.Llm
             cardView.UpdatePetitionDots(0);
             cardView.SetPetitionSubmitting(true);
 
-            LlmPromptTemplates templates = database != null ? database.promptTemplates : null;
+            LlmPromptTemplates templates = Templates;
             string seed = templates != null ? templates.petitionClosingSeedPrompt : string.Empty;
 
             LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
-                speaker, GetPetitionSnapshotOrDefault(), seed, currentLanguage(),
+                speaker, GetSnapshotOrDefault(PetitionHistoryCount, PastPetitionChatCount), seed, currentLanguage(),
                 LlmFallbackText.PetitionClosing(templates, currentLanguage()),
                 closingLine => FinalizePetitionExhaustion(card, closingLine));
         }
@@ -212,67 +221,15 @@ namespace Game.Scripts.Llm
         private void FinalizePetitionExhaustion(CardData card, string closingLine)
         {
             historyTracker?.RecordPetitionTranscript(currentPetitionSession?.GetTranscript());
-            currentPetitionSession = null;
-            CleanupPetitionSpeaker();
+            EndAudience();
             cardView.SetPetitionSubmitting(false);
             cardView.ConvertPetitionToNormalChoices(card, closingLine);
             setInputEnabled(true);
         }
 
-        // Applies a brief cooldown before re-enabling the submit button to prevent rapid-fire retries
-        // that could compound rate-limiting or error states.
         private void OnPetitionFailed(LlmRequestError error)
         {
-            Debug.LogWarning($"[PetitionFlowController] Petition resolution failed: {error}");
-            bool isRateLimited = error == LlmRequestError.RateLimited;
-            LlmPromptTemplates templates = database != null ? database.promptTemplates : null;
-            string message = isRateLimited
-                ? LlmFallbackText.PetitionRateLimited(templates, currentLanguage())
-                : LlmFallbackText.PetitionSendFailed(templates, currentLanguage());
-
-            cardView.ShowPetitionSubmitFailed(message);
-            float cooldown = llmSettings != null ? llmSettings.petitionRetryCooldownSeconds : 2f;
-            scheduleSubmitReenable(cooldown);
-        }
-
-        private SpeakerData ResolvePetitioner(CardData card)
-        {
-            if (card.petitionerSource == PetitionerSource.DefinedSpeaker && card.speaker != null)
-            {
-                currentPetitionSpeakerIsTemp = false;
-                return card.speaker;
-            }
-
-            currentPetitionSpeakerIsTemp = true;
-            return BuildCommonerSpeaker();
-        }
-
-        // Creates a runtime-only SpeakerData; caller must track currentPetitionSpeakerIsTemp
-        // so CleanupPetitionSpeaker can destroy it later.
-        private SpeakerData BuildCommonerSpeaker()
-        {
-            LlmPromptTemplates templates = database != null ? database.promptTemplates : null;
-            SpeakerData commoner = ScriptableObject.CreateInstance<SpeakerData>();
-            commoner.displayNameLocalized = new LocalizedText { english = "A Common Subject", arabic = "أحد رعايا التاج" };
-            commoner.llmPersonaPrompt = templates != null ? templates.defaultCommonerPersona : string.Empty;
-            return commoner;
-        }
-
-        private string GetPetitionSnapshotOrDefault()
-        {
-            int narrativeHistoryEntryCount = llmSettings != null ? llmSettings.petitionHistoryCount : 0;
-            int petitionTranscriptCount = llmSettings != null ? llmSettings.pastPetitionChatCount : 0;
-            return historyTracker != null
-                ? historyTracker.GetSnapshot(narrativeHistoryEntryCount, petitionTranscriptCount, currentLanguage())
-                : FallbackStrings.KingdomStatusUnknown(currentLanguage());
-        }
-
-        // Resource catalog used by prompt building; null when the database or catalog is unassigned.
-        private IReadOnlyList<ResourceData> GetResourceCatalog()
-        {
-            return database != null && database.resourceCatalog != null
-                ? database.resourceCatalog.resources
-                : null;
+            OnAudienceFailed("Petition resolution failed", error);
         }
     }
 }

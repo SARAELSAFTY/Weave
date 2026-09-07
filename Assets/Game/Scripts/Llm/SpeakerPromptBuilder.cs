@@ -71,6 +71,26 @@ namespace Game.Scripts.Llm
             return terminology != null ? section + "\n" + terminology : section;
         }
 
+        /// <summary>Builds a complete system prompt for a chat card turn: talk only, no resource contract.</summary>
+        /// <param name="speaker">Speaker data providing the persona prompt section.</param>
+        /// <param name="gameStateSnapshot">Serialized kingdom state injected as the State section.</param>
+        /// <param name="templates">Prompt templates providing chat system instructions and language strings.</param>
+        /// <param name="language">Target language controlling which language instruction is selected.</param>
+        /// <returns>The assembled system prompt string.</returns>
+        public static string BuildChatTurnPrompt(
+            SpeakerData speaker,
+            string gameStateSnapshot,
+            LlmPromptTemplates templates,
+            GameLanguage language = GameLanguage.English)
+        {
+            return new PromptComposer()
+                .AddRaw(templates != null ? templates.chatSystemInstructions : null)
+                .AddSection("Language Requirement", GetLanguageInstruction(templates, language))
+                .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
+                .AddSection("State", gameStateSnapshot)
+                .ToString();
+        }
+
         /// <summary>Builds a complete system prompt for the end-of-reign epilogue narration.</summary>
         /// <param name="dayCount">Length of the reign in days.</param>
         /// <param name="endingCauseLine">Full record line stating how the reign ended,
@@ -102,6 +122,33 @@ namespace Game.Scripts.Llm
                 .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
                 .AddSection("REIGN RECORD", reignRecord)
                 .ToString();
+        }
+
+        // The model never sees the card text the player just read; prepending it to the seed keeps the
+        // generated reaction from contradicting the on-card reveal.
+        private const string ReactionScenePrefix = "Scene just shown to the ruler: ";
+
+        /// <summary>Composes the situation seed for a reaction request: the scene description shown on the card,
+        /// prepended to the reaction seed so the model cannot contradict the on-card reveal.</summary>
+        /// <param name="sceneDescription">Card description the ruler just read; may be empty.</param>
+        /// <param name="reactionSeed">Reaction seed from the card override or the global default.</param>
+        /// <returns>The combined seed, or the bare reaction seed when no scene description exists.</returns>
+        public static string BuildReactionSituation(string sceneDescription, string reactionSeed)
+        {
+            return string.IsNullOrWhiteSpace(sceneDescription)
+                ? reactionSeed
+                : $"{ReactionScenePrefix}{sceneDescription.Trim()}\n{reactionSeed}";
+        }
+
+        /// <summary>Fills the default warning seed template with the resource that is running low.</summary>
+        /// <param name="templates">Prompt templates providing the warning seed; may be null.</param>
+        /// <param name="resourceName">Localized display name of the low resource.</param>
+        /// <returns>The filled warning seed.</returns>
+        public static string BuildWarningSituation(LlmPromptTemplates templates, string resourceName)
+        {
+            return PromptTemplateUtility.Fill(
+                templates != null ? templates.defaultWarningSeedPrompt : string.Empty,
+                "resourceName", resourceName);
         }
 
         // Selects the appropriate language instruction template based on the current game language.

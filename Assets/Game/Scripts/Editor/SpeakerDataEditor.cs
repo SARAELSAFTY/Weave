@@ -13,8 +13,6 @@ namespace Game.Scripts.Editor
         {
             serializedObject.Update();
 
-            SpeakerData speaker = (SpeakerData)target;
-
             EditorGUILayout.Space(4);
             EditorGUILayout.LabelField("Speaker Identity", EditorStyles.boldLabel);
 

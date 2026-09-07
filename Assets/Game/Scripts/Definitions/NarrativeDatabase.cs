@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Game.Scripts.Llm;
-using Game.Scripts.Narrative;
 using UnityEngine;
 
 namespace Game.Scripts.Definitions

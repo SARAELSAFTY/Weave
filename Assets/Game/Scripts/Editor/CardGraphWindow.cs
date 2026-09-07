@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Game.Scripts.Definitions;
-using Game.Scripts.Narrative;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -15,6 +14,7 @@ namespace Game.Scripts.Editor
     {
         private const string NewCardFolder = "Assets/Game/Data/Cards";
         private const string NewSpeakerFolder = "Assets/Game/Data/Speakers";
+        private const string NewDatabaseFolder = "Assets/Game/Data";
 
         private NarrativeDatabase currentDatabase;
         private CardGraphView graphView;
@@ -138,7 +138,10 @@ namespace Game.Scripts.Editor
 
         private void SetStartingCardFromDropdown(string selected)
         {
-            if (currentDatabase == null) return;
+            if (currentDatabase == null)
+            {
+                return;
+            }
 
             CardData newStartCard = null;
             if (selected != "(None)" && currentDatabase.cards != null)
@@ -146,7 +149,10 @@ namespace Game.Scripts.Editor
                 newStartCard = currentDatabase.cards.Find(c => c != null && c.AssetName == selected);
             }
 
-            if (currentDatabase.startingCard == newStartCard) return;
+            if (currentDatabase.startingCard == newStartCard)
+            {
+                return;
+            }
 
             Undo.RecordObject(currentDatabase, "Set Starting Card");
             currentDatabase.startingCard = newStartCard;
@@ -174,7 +180,10 @@ namespace Game.Scripts.Editor
         /// <summary>Rebuilds the starting-card dropdown choices from the current database and reselects the current starting card.</summary>
         public void RefreshStartingCardDropdownOptions()
         {
-            if (currentDatabase == null || startingCardDropdown == null) return;
+            if (currentDatabase == null || startingCardDropdown == null)
+            {
+                return;
+            }
 
             List<string> options = new List<string> { "(None)" };
             if (currentDatabase.cards != null)
@@ -209,11 +218,17 @@ namespace Game.Scripts.Editor
         /// <param name="windowPosition">Graph position for the new node; null defers placement to the graph view's pending-drop flow.</param>
         public void CreateCardAt(Vector2? windowPosition)
         {
-            if (currentDatabase == null) return;
+            if (currentDatabase == null)
+            {
+                return;
+            }
 
             string cardName = FindNextUnusedCardName();
             CardData newCard = CardGraphEditor.CreateCard(NewCardFolder, cardName);
-            if (newCard == null) return;
+            if (newCard == null)
+            {
+                return;
+            }
 
             Undo.RecordObject(currentDatabase, "Add New Card");
             currentDatabase.cards ??= new List<CardData>();
@@ -269,11 +284,17 @@ namespace Game.Scripts.Editor
         /// <param name="windowPosition">Graph position for the new node; null defers placement to the graph view's pending-drop flow.</param>
         public void CreateSpeakerAt(Vector2? windowPosition)
         {
-            if (currentDatabase == null) return;
+            if (currentDatabase == null)
+            {
+                return;
+            }
 
             string speakerName = FindNextUnusedSpeakerName();
             SpeakerData newSpeaker = CardGraphEditor.CreateSpeaker(NewSpeakerFolder, speakerName);
-            if (newSpeaker == null) return;
+            if (newSpeaker == null)
+            {
+                return;
+            }
 
             Undo.RecordObject(currentDatabase, "Add New Speaker");
             currentDatabase.speakers ??= new List<SpeakerData>();
@@ -315,11 +336,17 @@ namespace Game.Scripts.Editor
         /// <param name="windowPosition">Graph position for the new node; null defers placement to the graph view's pending-drop flow.</param>
         public void CreateResourceAt(Vector2? windowPosition)
         {
-            if (currentDatabase == null || currentDatabase.resourceCatalog == null) return;
+            if (currentDatabase == null || currentDatabase.resourceCatalog == null)
+            {
+                return;
+            }
 
             ResourceCatalog catalog = currentDatabase.resourceCatalog;
             ResourceData newResource = CardGraphEditor.CreateResource(catalog);
-            if (newResource == null) return;
+            if (newResource == null)
+            {
+                return;
+            }
 
             if (windowPosition.HasValue)
             {
@@ -346,10 +373,12 @@ namespace Game.Scripts.Editor
 
         private void OnCreateNewDatabaseClicked()
         {
-            string databaseFolder = "Assets/Game/Data";
-            string databaseName = FindNextUnusedDatabaseName(databaseFolder);
-            NarrativeDatabase newDb = CardGraphEditor.CreateDatabase(databaseFolder, databaseName);
-            if (newDb == null) return;
+            string databaseName = FindNextUnusedDatabaseName(NewDatabaseFolder);
+            NarrativeDatabase newDb = CardGraphEditor.CreateDatabase(NewDatabaseFolder, databaseName);
+            if (newDb == null)
+            {
+                return;
+            }
             AssetDatabase.SaveAssets();
 
             currentDatabase = newDb;
@@ -373,12 +402,17 @@ namespace Game.Scripts.Editor
 
         private void OnCreateNewCatalogClicked()
         {
-            if (currentDatabase == null) return;
+            if (currentDatabase == null)
+            {
+                return;
+            }
 
-            string folder = "Assets/Game/Data";
-            string catalogName = FindNextUnusedCatalogName(folder);
-            ResourceCatalog newCatalog = CardGraphEditor.CreateCatalog(folder, catalogName);
-            if (newCatalog == null) return;
+            string catalogName = FindNextUnusedCatalogName(NewDatabaseFolder);
+            ResourceCatalog newCatalog = CardGraphEditor.CreateCatalog(NewDatabaseFolder, catalogName);
+            if (newCatalog == null)
+            {
+                return;
+            }
 
             Undo.RecordObject(currentDatabase, "Assign Resource Catalog");
             currentDatabase.resourceCatalog = newCatalog;

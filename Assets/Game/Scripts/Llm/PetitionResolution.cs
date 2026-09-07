@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Game.Scripts.Definitions;
-using Game.Scripts.Narrative;
 using UnityEngine;
 
 namespace Game.Scripts.Llm
@@ -17,7 +16,7 @@ namespace Game.Scripts.Llm
     }
 
     /// <summary>Structured JSON response from a petition turn, deserialized from the model's output.</summary>
-    /// <remarks>The JSON keys (phase, reaction, resourceChanges, historyTag) must stay in sync with the
+    /// <remarks>The JSON keys (phase, reaction, speakerName, resourceChanges, historyTag) must stay in sync with the
     /// contract defined in <see cref="LlmPromptTemplates.petitionSystemInstructions"/>. Changing either side
     /// without updating the other will silently break petition parsing.</remarks>
     [Serializable]
@@ -25,8 +24,10 @@ namespace Game.Scripts.Llm
     {
         /// <summary>"deliberating" while the matter is open; "proposal" once the ruler gives a clear command.</summary>
         public string phase;
-        /// <summary>1-2 in-character sentences expressing the petitioner's reaction.</summary>
+        /// <summary>1-3 in-character sentences expressing the petitioner's reaction.</summary>
         public string reaction;
+        /// <summary>The petitioner's name and role; only expected on the opening turn for generated personas.</summary>
+        public string speakerName;
         /// <summary>Resource changes to apply when <see cref="IsProposal"/> is true; null during deliberation.</summary>
         public PetitionResourceDelta[] resourceChanges;
         /// <summary>Short snake_case tag recorded in kingdom history when the petition resolves.</summary>

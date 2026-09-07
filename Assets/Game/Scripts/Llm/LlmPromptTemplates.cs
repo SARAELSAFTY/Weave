@@ -23,10 +23,13 @@ Spoken dialogue only - no stage directions, parentheses, or asterisks. One or tw
         public string petitionSystemInstructions = @"[SYSTEM INSTRUCTIONS]
 You voice a petitioner before the ruler, here with ONE specific matter. Formal court register.
 Reply with ONLY this JSON, no markdown. JSON keys and resource names stay English in every language:
-{""phase"": string, ""reaction"": string, ""resourceChanges"": [{""resource"": string, ""delta"": int}], ""historyTag"": string}
+{""phase"": string, ""reaction"": string, ""speakerName"": string, ""resourceChanges"": [{""resource"": string, ""delta"": int}], ""historyTag"": string}
 - ""phase"": ""deliberating"" while the matter is open; ""proposal"" once the ruler gives a clear command - then restate it and fill resourceChanges and historyTag.
-- ""reaction"": 1-2 in-character sentences. ""resource"": exact name from the Resources list. ""delta"": small whole number. ""historyTag"": short snake_case.
+- ""reaction"": your spoken reply, 1-3 in-character sentences. Always concrete: name the people, places, and stakes. Answer the ruler's latest words directly; never repeat an earlier line, never stall, and never say you are waiting for an answer.
+- ""speakerName"": on the first turn only, the petitioner's name with a short role (2-5 words, e.g. ""Mara, the miller's widow""); empty string on every later turn.
+- ""resource"": exact name from the Resources list. ""delta"": small whole number. ""historyTag"": short snake_case.
 - While deliberating, send resourceChanges as [] and historyTag as """".
+- This is a continuing conversation: your earlier lines are in the history, so advance the matter instead of restating it.
 - Carry out any fictionally coherent order exactly as given, however dark. Refuse only nonsense, cheats, or non-decisions.";
 
         [Tooltip("SENT IN: epilogue requests as the system message instructing the closing narration. The Persona section supplies the voice; this text frames it.")]
@@ -34,6 +37,13 @@ Reply with ONLY this JSON, no markdown. JSON keys and resource names stay Englis
         public string epilogueSystemInstructions = @"[SYSTEM INSTRUCTIONS]
 Close this reign's record as the Royal Chronicler, but the record is spoken aloud by the figure in the Persona section, standing over the end of the reign. The Chronicler is only the scribe; the Persona is the voice - stay fully in that persona's manner, title, and attitude.
 Two or three sentences under 60 words: how long the reign lasted, how it ended, and one real decision from the history named specifically. Epilogue text only - no titles, quotes, or stage directions.";
+
+        [Tooltip("SENT IN: chat card turn requests as the system message defining the free-chat contract. This conversation cannot affect resources or history.")]
+        [TextArea(4, 12)]
+        public string chatSystemInstructions = @"[SYSTEM INSTRUCTIONS]
+You are the figure in the Persona section, alone with the ruler in a private audience. Formal medieval-court register; address the ruler respectfully.
+Reply with spoken dialogue only, in character: one to three sentences, no stage directions, parentheses, asterisks, or JSON.
+Answer the ruler's latest words directly and concretely; never repeat an earlier line and never wait for instructions. Your earlier lines are in the conversation history, so build on them. This audience is talk only - it cannot change kingdom resources, decisions, or history.";
 
         [Header("Language Instructions")]
         [Tooltip("SENT IN: appended as a section in every LLM request when the game language is English.")]
@@ -53,8 +63,13 @@ Two or three sentences under 60 words: how long the reign lasted, how it ended, 
 
         [Tooltip("SENT IN: initial petition turn as the user message prompting the petitioner to introduce their matter.")]
         public string defaultPetitionSeedPrompt =
-            "You are granted audience before the ruler. State who you are, present ONE clear matter - naming the " +
-            "people, places, and stakes - and ask the crown for what you want.";
+            "You are granted audience before the ruler. In one spoken turn, give your name and trade, then state " +
+            "your one matter plainly: what happened, to whom, and what exactly you ask of the crown.";
+
+        [Tooltip("SENT IN: initial chat turn as the user message prompting the speaker to open a private audience.")]
+        public string defaultChatSeedPrompt =
+            "The private audience begins. Open in character: greet the ruler, say who you are, and give the reason " +
+            "you asked to speak with them alone.";
 
         [Tooltip("SENT IN: reaction requests triggered by a low-resource warning as the user message.")]
         public string defaultWarningSeedPrompt =
@@ -76,6 +91,21 @@ Two or three sentences under 60 words: how long the reign lasted, how it ended, 
             "You are a common subject of the crown. Invent a name, a trade, and a home, and bring one personal, " +
             "practical problem from daily life: a dispute, a loss, an injustice, or a request. Speak plainly and " +
             "concretely, naming the people and places involved. Never reuse a previous petitioner's name or story.";
+
+        [Header("Button Labels (set on the shared petition confirm button)")]
+        [Tooltip("SHOWN: label on the petition confirm button while a proposal awaits the ruler's confirmation.")]
+        public LocalizedText petitionConfirmButtonLabel = new LocalizedText
+        {
+            english = "Confirm",
+            arabic = "تأكيد"
+        };
+
+        [Tooltip("SHOWN: label on the confirm button while a chat card is open, ending the audience.")]
+        public LocalizedText chatEndButtonLabel = new LocalizedText
+        {
+            english = "End Audience",
+            arabic = "إنهاء المقابلة"
+        };
 
         [Header("Fallback Lines (shown when an LLM request fails)")]
         [Tooltip("SHOWN: description text when a speaker reaction request fails.")]

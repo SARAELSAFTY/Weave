@@ -45,13 +45,25 @@ namespace Game.Scripts.Editor
             Func<TEntry, TAsset> getAsset, Func<TAsset, Vector2, TEntry> makeEntry)
             where TAsset : UnityEngine.Object
         {
-            if (list == null || asset == null) return false;
-            if (cache.TryGetValue(asset, out Vector2 existing) && existing == position) return false;
+            if (list == null || asset == null)
+            {
+                return false;
+            }
+            if (cache.TryGetValue(asset, out Vector2 existing) && existing == position)
+            {
+                return false;
+            }
 
             cache[asset] = position;
             int index = list.FindIndex(e => getAsset(e) == asset);
-            if (index >= 0) list[index] = makeEntry(asset, position);
-            else list.Add(makeEntry(asset, position));
+            if (index >= 0)
+            {
+                list[index] = makeEntry(asset, position);
+            }
+            else
+            {
+                list.Add(makeEntry(asset, position));
+            }
             return true;
         }
 
@@ -60,10 +72,16 @@ namespace Game.Scripts.Editor
             List<TEntry> list, Dictionary<TAsset, Vector2> cache, TAsset asset, Func<TEntry, TAsset> getAsset)
             where TAsset : UnityEngine.Object
         {
-            if (list == null || asset == null) return false;
+            if (list == null || asset == null)
+            {
+                return false;
+            }
             cache.Remove(asset);
             int index = list.FindIndex(e => getAsset(e) == asset);
-            if (index < 0) return false;
+            if (index < 0)
+            {
+                return false;
+            }
             list.RemoveAt(index);
             return true;
         }
@@ -208,12 +226,18 @@ namespace Game.Scripts.Editor
         private List<CardNode> CreateNodes(Dictionary<CardData, CardNode> nodesByCard)
         {
             List<CardNode> nodeList = new List<CardNode>();
-            if (database?.cards == null) return nodeList;
+            if (database?.cards == null)
+            {
+                return nodeList;
+            }
 
             int i = 0;
             foreach (CardData card in database.cards)
             {
-                if (card == null) continue;
+                if (card == null)
+                {
+                    continue;
+                }
 
                 bool isStartCard = database.startingCard == card;
                 CardNode node = new CardNode(card, isStartCard, this);
@@ -279,7 +303,10 @@ namespace Game.Scripts.Editor
             foreach (CardNode sourceNode in nodeList)
             {
                 CardData card = sourceNode.Card;
-                if (card == null) continue;
+                if (card == null)
+                {
+                    continue;
+                }
 
                 if (card.UsesContinueExit)
                 {
@@ -306,7 +333,10 @@ namespace Game.Scripts.Editor
         /// <param name="card">The card to designate as the starting card.</param>
         public void SetStartingCard(CardData card)
         {
-            if (database == null || card == null) return;
+            if (database == null || card == null)
+            {
+                return;
+            }
 
             Undo.RecordObject(database, "Set Starting Card");
             database.startingCard = card;
@@ -319,12 +349,18 @@ namespace Game.Scripts.Editor
         /// <summary>Creates and adds a <see cref="SpeakerNode"/> for each speaker in the database at saved or default positions.</summary>
         private void CreateSpeakerNodes()
         {
-            if (database?.speakers == null) return;
+            if (database?.speakers == null)
+            {
+                return;
+            }
 
             int i = 0;
             foreach (SpeakerData speaker in database.speakers)
             {
-                if (speaker == null) continue;
+                if (speaker == null)
+                {
+                    continue;
+                }
 
                 SpeakerNode speakerNode = new SpeakerNode(speaker);
                 Vector2 pos = ResolveSpeakerNodePosition(speaker, i);
@@ -346,12 +382,18 @@ namespace Game.Scripts.Editor
         /// <summary>Creates and adds a <see cref="ResourceNode"/> for each resource in the catalog.</summary>
         private void CreateResourceNodes()
         {
-            if (database?.resourceCatalog?.resources == null) return;
+            if (database?.resourceCatalog?.resources == null)
+            {
+                return;
+            }
 
             int i = 0;
             foreach (ResourceData resource in database.resourceCatalog.resources)
             {
-                if (resource == null) continue;
+                if (resource == null)
+                {
+                    continue;
+                }
 
                 ResourceNode resourceNode = new ResourceNode(resource);
                 Vector2 pos = ResolveResourceNodePosition(resource, i);
@@ -371,7 +413,10 @@ namespace Game.Scripts.Editor
         /// <summary>Persists the positions of all moved graph elements (cards, speakers, resources) back to the database with undo support.</summary>
         private void SaveMovedNodePositions(List<GraphElement> movedElements)
         {
-            if (database == null || movedElements == null) return;
+            if (database == null || movedElements == null)
+            {
+                return;
+            }
 
             foreach (GraphElement element in movedElements)
             {
@@ -392,17 +437,26 @@ namespace Game.Scripts.Editor
 
         private void SavePositionToDatabase(CardData card, Vector2 position)
         {
-            if (database == null || card == null) return;
+            if (database == null || card == null)
+            {
+                return;
+            }
             database.editorGraphPositions ??= new List<NarrativeDatabase.CardGraphPosition>();
             Undo.RecordObject(database, "Move Card Node");
             bool changed = TrySavePosition(database.editorGraphPositions, positionsByCard, card, position,
                 e => e.card, (c, p) => new NarrativeDatabase.CardGraphPosition { card = c, position = p });
-            if (changed) EditorUtility.SetDirty(database);
+            if (changed)
+            {
+                EditorUtility.SetDirty(database);
+            }
         }
 
         private void RemovePositionFromDatabase(CardData card)
         {
-            if (database?.editorGraphPositions == null || card == null) return;
+            if (database?.editorGraphPositions == null || card == null)
+            {
+                return;
+            }
 
             Undo.RecordObject(database, "Delete Card Node Position");
             if (TryRemovePosition(database.editorGraphPositions, positionsByCard, card, e => e.card))
@@ -413,17 +467,26 @@ namespace Game.Scripts.Editor
 
         private void SaveSpeakerPositionToDatabase(SpeakerData speaker, Vector2 position)
         {
-            if (database == null || speaker == null) return;
+            if (database == null || speaker == null)
+            {
+                return;
+            }
             database.editorSpeakerPositions ??= new List<NarrativeDatabase.SpeakerGraphPosition>();
             Undo.RecordObject(database, "Move Speaker Node");
             bool changed = TrySavePosition(database.editorSpeakerPositions, positionsBySpeaker, speaker, position,
                 e => e.speaker, (s, p) => new NarrativeDatabase.SpeakerGraphPosition { speaker = s, position = p });
-            if (changed) EditorUtility.SetDirty(database);
+            if (changed)
+            {
+                EditorUtility.SetDirty(database);
+            }
         }
 
         private void RemoveSpeakerPositionFromDatabase(SpeakerData speaker)
         {
-            if (database?.editorSpeakerPositions == null || speaker == null) return;
+            if (database?.editorSpeakerPositions == null || speaker == null)
+            {
+                return;
+            }
 
             Undo.RecordObject(database, "Delete Speaker Node Position");
             if (TryRemovePosition(database.editorSpeakerPositions, positionsBySpeaker, speaker, e => e.speaker))
@@ -434,17 +497,26 @@ namespace Game.Scripts.Editor
 
         private void SaveResourcePositionToDatabase(ResourceData resource, Vector2 position)
         {
-            if (database == null || resource == null) return;
+            if (database == null || resource == null)
+            {
+                return;
+            }
             database.editorResourcePositions ??= new List<NarrativeDatabase.ResourceGraphPosition>();
             Undo.RecordObject(database, "Move Resource Node");
             bool changed = TrySavePosition(database.editorResourcePositions, positionsByResource, resource, position,
                 e => e.resource, (r, p) => new NarrativeDatabase.ResourceGraphPosition { resource = r, position = p });
-            if (changed) EditorUtility.SetDirty(database);
+            if (changed)
+            {
+                EditorUtility.SetDirty(database);
+            }
         }
 
         private void RemoveResourcePositionFromDatabase(ResourceData resource)
         {
-            if (database?.editorResourcePositions == null || resource == null) return;
+            if (database?.editorResourcePositions == null || resource == null)
+            {
+                return;
+            }
 
             Undo.RecordObject(database, "Delete Resource Node Position");
             if (TryRemovePosition(database.editorResourcePositions, positionsByResource, resource, e => e.resource))
@@ -455,7 +527,10 @@ namespace Game.Scripts.Editor
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
-            if (database == null) return;
+            if (database == null)
+            {
+                return;
+            }
 
             Vector2 mousePos = evt.mousePosition;
             Vector2 graphPos = contentViewContainer.WorldToLocal(mousePos);
@@ -473,7 +548,10 @@ namespace Game.Scripts.Editor
 
         private GraphViewChange OnGraphViewChanged(GraphViewChange change)
         {
-            if (isPopulating) return change;
+            if (isPopulating)
+            {
+                return change;
+            }
 
             if (change.movedElements != null)
             {
@@ -514,7 +592,10 @@ namespace Game.Scripts.Editor
 
             CardData sourceCard = sourceNode.Card;
             CardData targetCard = targetNode.Card;
-            if (sourceCard == null || targetCard == null) return false;
+            if (sourceCard == null || targetCard == null)
+            {
+                return false;
+            }
 
             Undo.RecordObject(sourceCard, "Connect Card Link");
             if (sourceCard.UsesContinueExit && edge.output == sourceNode.ContinuePort)
@@ -583,7 +664,10 @@ namespace Game.Scripts.Editor
 
         private bool ClearEdgeLink(Edge edge)
         {
-            if (edge.output?.node is not CardNode sourceNode || sourceNode.Card == null) return false;
+            if (edge.output?.node is not CardNode sourceNode || sourceNode.Card == null)
+            {
+                return false;
+            }
 
             CardData sourceCard = sourceNode.Card;
             Undo.RecordObject(sourceCard, "Clear Card Link");
@@ -606,10 +690,16 @@ namespace Game.Scripts.Editor
         private bool TryDeleteCard(CardNode cardNode)
         {
             CardData cardToDelete = cardNode.Card;
-            if (cardToDelete == null) return true;
+            if (cardToDelete == null)
+            {
+                return true;
+            }
 
             bool confirm = EditorUtility.DisplayDialog("Delete Card", $"Delete '{cardToDelete.AssetName}'? This cannot be undone.", "Delete", "Cancel");
-            if (!confirm) return false;
+            if (!confirm)
+            {
+                return false;
+            }
 
             RemovePositionFromDatabase(cardToDelete);
             ClearIncomingLinks(cardToDelete);
@@ -627,10 +717,16 @@ namespace Game.Scripts.Editor
         private bool TryDeleteSpeaker(SpeakerNode speakerNode)
         {
             SpeakerData speakerToDelete = speakerNode.Speaker;
-            if (speakerToDelete == null) return true;
+            if (speakerToDelete == null)
+            {
+                return true;
+            }
 
             bool confirm = EditorUtility.DisplayDialog("Delete Speaker", $"Delete '{speakerToDelete.AssetName}'? This cannot be undone.", "Delete", "Cancel");
-            if (!confirm) return false;
+            if (!confirm)
+            {
+                return false;
+            }
 
             RemoveSpeakerPositionFromDatabase(speakerToDelete);
 
@@ -666,10 +762,16 @@ namespace Game.Scripts.Editor
         private bool TryDeleteResource(ResourceNode resourceNode)
         {
             ResourceData dataToDelete = resourceNode.Data;
-            if (dataToDelete == null) return true;
+            if (dataToDelete == null)
+            {
+                return true;
+            }
 
             bool confirm = EditorUtility.DisplayDialog("Delete Resource", $"Delete resource '{dataToDelete.AssetName}'? This cannot be undone.", "Delete", "Cancel");
-            if (!confirm) return false;
+            if (!confirm)
+            {
+                return false;
+            }
 
             RemoveResourcePositionFromDatabase(dataToDelete);
 
@@ -691,11 +793,17 @@ namespace Game.Scripts.Editor
 
         private void ClearIncomingLinks(CardData cardToDelete)
         {
-            if (database == null || database.cards == null) return;
+            if (database == null || database.cards == null)
+            {
+                return;
+            }
 
             foreach (CardData other in database.cards)
             {
-                if (other == null || other == cardToDelete) continue;
+                if (other == null || other == cardToDelete)
+                {
+                    continue;
+                }
 
                 if (other.leftNextCard == cardToDelete)
                 {

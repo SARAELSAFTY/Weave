@@ -12,7 +12,9 @@ namespace Game.Scripts.Llm
     }
 
     /// <summary>ScriptableObject holding all tunable LLM parameters shared across reaction, petition, and epilogue requests.</summary>
-    /// <remarks>Referenced by <see cref="LlmReactionClient"/> at runtime. Petition turn limits are resolved per audience via <see cref="ResolvePetitionTurnLimit"/>.</remarks>
+    /// <remarks>Referenced by <see cref="LlmReactionClient"/> at runtime. Petition turn limits are resolved per audience via <see cref="ResolvePetitionTurnLimit"/>.
+    /// Callers holding an optional reference use the Default* constants below when the asset is missing, so fallback
+    /// values live in exactly one place and stay aligned with the serialized field defaults.</remarks>
     [CreateAssetMenu(fileName = "LlmSettings", menuName = "Weave/LLM Settings", order = 10)]
     public class LlmSettings : ScriptableObject
     {
@@ -77,6 +79,29 @@ namespace Game.Scripts.Llm
         [Tooltip("HTTP request timeout in seconds applied to every LLM proxy call.")]
         [Min(1f)]
         public float apiTimeoutSeconds = 10f;
+
+        /// <summary>Resource-delta clamp used when no LlmSettings asset is assigned; matches the serialized default.</summary>
+        public const int DefaultPetitionResourceClampMagnitude = 20;
+
+        /// <summary>Retry cooldown seconds used when no LlmSettings asset is assigned; matches the serialized default.</summary>
+        public const float DefaultPetitionRetryCooldownSeconds = 2f;
+
+        /// <summary>Petition turn limit used when no LlmSettings asset is assigned; matches the serialized default.</summary>
+        public const int DefaultPetitionTurnLimit = 3;
+
+        /// <summary>Epilogue token cap used when no LlmSettings asset is assigned; matches the serialized default.</summary>
+        public const int DefaultEpilogueMaxTokens = 200;
+
+        /// <summary>Reaction history count used when no LlmSettings asset is assigned; deliberately zero so a
+        /// missing asset yields a minimal snapshot rather than pulling the serialized default window.</summary>
+        public const int DefaultReactionHistoryCount = 0;
+
+        /// <summary>Petition history count used when no LlmSettings asset is assigned; deliberately zero so a
+        /// missing asset yields a minimal snapshot rather than pulling the serialized default window.</summary>
+        public const int DefaultPetitionHistoryCount = 0;
+
+        /// <summary>Past-petition transcript count used when no LlmSettings asset is assigned; matches the serialized default.</summary>
+        public const int DefaultPastPetitionChatCount = 0;
 
         /// <summary>Returns the turn limit for a new petition audience, respecting the configured mode.</summary>
         /// <returns>A turn count >= 1 drawn from either the fixed value or the random range.</returns>

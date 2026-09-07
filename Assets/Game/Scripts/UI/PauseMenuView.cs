@@ -84,24 +84,11 @@ namespace Game.Scripts.UI
 
                 if (restartButtonText != null)
                 {
-                    restartButtonText.text = restartButtonLocalized.Get(LanguageManager.CurrentLanguageOrDefault);
+                    RtlTextHelper.SetText(restartButtonText, restartButtonLocalized.Get(LanguageManager.CurrentLanguageOrDefault), LanguageManager.CurrentLanguageOrDefault);
                 }
             }
 
-            if (apiKeyButton != null)
-            {
-                apiKeyButton.onClick.AddListener(HandleApiKeyClicked);
-
-                if (apiKeyButtonText == null)
-                {
-                    apiKeyButtonText = apiKeyButton.GetComponentInChildren<TMP_Text>();
-                }
-
-                if (apiKeyButtonText != null)
-                {
-                    RtlTextHelper.SetText(apiKeyButtonText, apiKeyButtonLocalized.Get(LanguageManager.CurrentLanguageOrDefault), LanguageManager.CurrentLanguageOrDefault);
-                }
-            }
+            ConfigureOptionalButton(apiKeyButton, apiKeyButtonText, apiKeyButtonLocalized, HandleApiKeyClicked);
         }
 
         protected override void HandleButtonClicked() => ResumeRequested?.Invoke();
@@ -110,16 +97,13 @@ namespace Game.Scripts.UI
 
         private void HandleApiKeyClicked() => ApiKeyRequested?.Invoke();
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
+
             if (restartButton != null)
             {
                 restartButton.onClick.RemoveListener(HandleRestartClicked);
-            }
-
-            if (apiKeyButton != null)
-            {
-                apiKeyButton.onClick.RemoveListener(HandleApiKeyClicked);
             }
         }
     }

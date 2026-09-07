@@ -25,7 +25,7 @@ namespace Game.Scripts.Definitions
     }
 
     /// <summary>A single narrative card defining speaker, choices, resource changes, and branching logic.</summary>
-    /// <remarks>Cards may be standard (left/right choices), LLM reaction cards, or petition cards. The exit mode is determined by <see cref="UsesContinueExit"/>.</remarks>
+    /// <remarks>Cards may be standard (left/right choices), LLM reaction cards, petition cards, or free chat cards. The exit mode is determined by <see cref="UsesContinueExit"/>.</remarks>
     [CreateAssetMenu(fileName = "Scene_Speaker_Slug", menuName = "Weave/Card Data", order = 0)]
     public class CardData : NamedGameAsset
     {
@@ -80,6 +80,14 @@ namespace Game.Scripts.Definitions
         [Tooltip("Whether the petitioner persona is a generated commoner or the card's defined speaker.")]
         public PetitionerSource petitionerSource = PetitionerSource.GeneratedCommoner;
 
+        [Header("Chat")]
+        [Tooltip("When true, this card opens a free multi-turn LLM chat with the speaker. It cannot change resources or history; the player ends it with the audience button.")]
+        public bool isChatCard;
+
+        [TextArea(2, 4)]
+        [Tooltip("Custom seed prompt overriding the default chat template from LlmPromptTemplates.")]
+        public string chatSeedOverride;
+
         [Header("Continue Exit")]
         [Tooltip("Card shown after the continue action on reaction/petition cards; null means the narrative ends.")]
         public CardData continueNextCard;
@@ -94,8 +102,8 @@ namespace Game.Scripts.Definitions
         [Tooltip("Optional visual template providing background and border sprites for this card.")]
         public CardVisualTemplate visualTemplate;
 
-        /// <summary>True when this card exits via the continue path (reaction or petition) instead of left/right choices.</summary>
-        public bool UsesContinueExit => isLlmReactionCard || isPetitionCard;
+        /// <summary>True when this card exits via the continue path (reaction, petition, or chat) instead of left/right choices.</summary>
+        public bool UsesContinueExit => isLlmReactionCard || isPetitionCard || isChatCard;
 
         /// <summary>True when no next card is reachable from this card's active exit path.</summary>
         public bool IsEnding => UsesContinueExit
@@ -131,6 +139,14 @@ namespace Game.Scripts.Definitions
         public string EffectivePetitionSeed(LlmPromptTemplates templates)
         {
             return ResolveSeed(petitionSeedOverride, templates != null ? templates.defaultPetitionSeedPrompt : string.Empty);
+        }
+
+        /// <summary>Returns the effective chat seed prompt, using the override if set or falling back to the template default.</summary>
+        /// <param name="templates">Prompt templates providing the default seed; may be null.</param>
+        /// <returns>The override value when non-blank, otherwise the template default.</returns>
+        public string EffectiveChatSeed(LlmPromptTemplates templates)
+        {
+            return ResolveSeed(chatSeedOverride, templates != null ? templates.defaultChatSeedPrompt : string.Empty);
         }
 
         // Returns the per-card override when non-blank, otherwise falls back to the shared template default.

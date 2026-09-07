@@ -11,13 +11,16 @@ namespace Game.Scripts.Editor
     public class CardDataEditor : UnityEditor.Editor
     {
         /// <summary>
-        /// Draws the card inspector with mode-dependent field visibility: speaker is hidden for petition cards using generated commoners;
-        /// description/choices are hidden for LLM and petition cards; LLM and petition toggles are mutually exclusive.
+        /// Draws the card inspector with mode-dependent field visibility: speaker is hidden for petition/chat cards using generated commoners;
+        /// description/choices are hidden for LLM, petition, and chat cards; LLM, petition, and chat toggles are mutually exclusive.
         /// </summary>
         public override void OnInspectorGUI()
         {
             CardData card = (CardData)target;
-            if (card == null) return;
+            if (card == null)
+            {
+                return;
+            }
 
             serializedObject.Update();
 
@@ -27,6 +30,7 @@ namespace Game.Scripts.Editor
             SerializedProperty rightChoiceLocalizedProp = serializedObject.FindProperty("rightChoiceLocalized");
             SerializedProperty isLlmProp = serializedObject.FindProperty("isLlmReactionCard");
             SerializedProperty isPetitionProp = serializedObject.FindProperty("isPetitionCard");
+            SerializedProperty isChatProp = serializedObject.FindProperty("isChatCard");
 
             SerializedProperty assetNameProp = serializedObject.FindProperty("assetName");
             EditorGUILayout.PropertyField(assetNameProp, new GUIContent(
@@ -36,11 +40,11 @@ namespace Game.Scripts.Editor
 
             SerializedProperty speakerProp = serializedObject.FindProperty("speaker");
             SerializedProperty petitionerSourceProp = serializedObject.FindProperty("petitionerSource");
-            bool usesGeneratedCommoner = isPetitionProp.boolValue && petitionerSourceProp != null &&
-                                         petitionerSourceProp.enumValueIndex == (int)PetitionerSource.GeneratedCommoner;
+            bool usesGeneratedPersona = (isPetitionProp.boolValue || isChatProp.boolValue) && petitionerSourceProp != null &&
+                                        petitionerSourceProp.enumValueIndex == (int)PetitionerSource.GeneratedCommoner;
 
-            // Speaker selector is only relevant for non-petition cards; petition cards use petitionerSource instead.
-            if (!isPetitionProp.boolValue)
+            // Speaker selector is only relevant for non-audience cards; petition/chat cards use petitionerSource instead.
+            if (!isPetitionProp.boolValue && !isChatProp.boolValue)
             {
                 EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker"));
             }
@@ -57,8 +61,8 @@ namespace Game.Scripts.Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("visualTemplate"), new GUIContent(
                 "Visual Template"));
 
-            // Description text areas are only relevant for standard narrative cards; LLM/petition cards generate text at runtime.
-            if (!isLlmProp.boolValue && !isPetitionProp.boolValue)
+            // Description text areas are only relevant for standard narrative cards; LLM/petition/chat cards generate text at runtime.
+            if (!isLlmProp.boolValue && !isPetitionProp.boolValue && !isChatProp.boolValue)
             {
                 LocalizedTextGui.DrawTextAreas(descriptionLocalizedProp, "Card Description (Story Text)");
             }
@@ -67,35 +71,9 @@ namespace Game.Scripts.Editor
 
             EditorGUILayout.Space(8);
 
-            EditorGUI.BeginChangeCheck();
-            bool newIsLlm = EditorGUILayout.Toggle(
-                new GUIContent("Is LLM Reaction Card"),
-                isLlmProp.boolValue);
-            if (EditorGUI.EndChangeCheck())
-            {
-                isLlmProp.boolValue = newIsLlm;
-                if (newIsLlm)
-                {
-                    // LLM and petition modes are mutually exclusive; clear hand-authored description since LLM generates it.
-                    isPetitionProp.boolValue = false;
-                    LocalizedTextGui.Clear(descriptionLocalizedProp);
-                }
-            }
-
-            EditorGUI.BeginChangeCheck();
-            bool newIsPetition = EditorGUILayout.Toggle(
-                new GUIContent("Is Petition Card"),
-                isPetitionProp.boolValue);
-            if (EditorGUI.EndChangeCheck())
-            {
-                isPetitionProp.boolValue = newIsPetition;
-                if (newIsPetition)
-                {
-                    // Petition and LLM modes are mutually exclusive; clear hand-authored description since petition text is generated.
-                    isLlmProp.boolValue = false;
-                    LocalizedTextGui.Clear(descriptionLocalizedProp);
-                }
-            }
+            DrawExclusiveModeToggle(isLlmProp, "Is LLM Reaction Card", descriptionLocalizedProp, isPetitionProp, isChatProp);
+            DrawExclusiveModeToggle(isPetitionProp, "Is Petition Card", descriptionLocalizedProp, isLlmProp, isChatProp);
+            DrawExclusiveModeToggle(isChatProp, "Is Chat Card", descriptionLocalizedProp, isLlmProp, isPetitionProp);
 
             if (isLlmProp.boolValue)
             {
@@ -109,21 +87,13 @@ namespace Game.Scripts.Editor
             }
             else if (isPetitionProp.boolValue)
             {
-                EditorGUILayout.PropertyField(petitionerSourceProp, new GUIContent(
-                    "Petitioner Source"));
-
-                if (!usesGeneratedCommoner)
-                {
-                    EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker"));
-                }
-
-                SerializedProperty petitionSeedOverrideProp = serializedObject.FindProperty("petitionSeedOverride");
-                EditorGUILayout.PropertyField(petitionSeedOverrideProp, new GUIContent(
-                    "Petition Seed Override"));
-
-                EditorGUILayout.Space(6);
-                SerializedProperty continueNextCardProp = serializedObject.FindProperty("continueNextCard");
-                EditorGUILayout.PropertyField(continueNextCardProp, new GUIContent("Continue Next Card"));
+                DrawAudienceFields(petitionerSourceProp, speakerProp, usesGeneratedPersona,
+                    serializedObject.FindProperty("petitionSeedOverride"), "Petition Seed Override");
+            }
+            else if (isChatProp.boolValue)
+            {
+                DrawAudienceFields(petitionerSourceProp, speakerProp, usesGeneratedPersona,
+                    serializedObject.FindProperty("chatSeedOverride"), "Chat Seed Override");
             }
             else if (!card.IsEnding)
             {
@@ -158,6 +128,46 @@ namespace Game.Scripts.Editor
                 EditorUtility.SetDirty(card);
                 CardGraphWindow.RefreshOpenWindows();
             }
+        }
+
+        // Draws one card-kind toggle; LLM, petition, and chat modes are mutually exclusive, so enabling one
+        // clears the others and the hand-authored description those modes generate at runtime.
+        private void DrawExclusiveModeToggle(SerializedProperty toggleProp, string label, SerializedProperty descriptionLocalizedProp, params SerializedProperty[] otherModeProps)
+        {
+            EditorGUI.BeginChangeCheck();
+            bool newValue = EditorGUILayout.Toggle(new GUIContent(label), toggleProp.boolValue);
+            if (EditorGUI.EndChangeCheck())
+            {
+                toggleProp.boolValue = newValue;
+                if (newValue)
+                {
+                    foreach (SerializedProperty other in otherModeProps)
+                    {
+                        other.boolValue = false;
+                    }
+
+                    LocalizedTextGui.Clear(descriptionLocalizedProp);
+                }
+            }
+        }
+
+        // Draws the shared audience configuration (petition/chat): persona source, optional speaker, seed override, and continue exit.
+        private void DrawAudienceFields(SerializedProperty petitionerSourceProp, SerializedProperty speakerProp,
+            bool usesGeneratedPersona, SerializedProperty seedOverrideProp, string seedOverrideLabel)
+        {
+            EditorGUILayout.PropertyField(petitionerSourceProp, new GUIContent(
+                "Petitioner Source"));
+
+            if (!usesGeneratedPersona)
+            {
+                EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker"));
+            }
+
+            EditorGUILayout.PropertyField(seedOverrideProp, new GUIContent(seedOverrideLabel));
+
+            EditorGUILayout.Space(6);
+            SerializedProperty continueNextCardProp = serializedObject.FindProperty("continueNextCard");
+            EditorGUILayout.PropertyField(continueNextCardProp, new GUIContent("Continue Next Card"));
         }
     }
 }

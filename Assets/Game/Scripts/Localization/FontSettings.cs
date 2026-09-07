@@ -131,17 +131,30 @@ namespace Game.Scripts.Localization
             }
         }
 
+        // All category override pairs with their category, so the font lookup and fallback registration share one list.
+        private IEnumerable<(TextFontCategory category, CategoryFontPair pair)> CategoryPairs
+        {
+            get
+            {
+                yield return (TextFontCategory.Title, titleFont);
+                yield return (TextFontCategory.SpeakerName, speakerNameFont);
+                yield return (TextFontCategory.MenuUI, menuUIFont);
+                yield return (TextFontCategory.DialogueBody, dialogueBodyFont);
+                yield return (TextFontCategory.Choice, choiceFont);
+            }
+        }
+
         private CategoryFontPair GetCategoryPair(TextFontCategory category)
         {
-            switch (category)
+            foreach ((TextFontCategory pairCategory, CategoryFontPair pair) in CategoryPairs)
             {
-                case TextFontCategory.Title: return titleFont;
-                case TextFontCategory.SpeakerName: return speakerNameFont;
-                case TextFontCategory.MenuUI: return menuUIFont;
-                case TextFontCategory.DialogueBody: return dialogueBodyFont;
-                case TextFontCategory.Choice: return choiceFont;
-                default: return null;
+                if (pairCategory == category)
+                {
+                    return pair;
+                }
             }
+
+            return null;
         }
 
         /// <summary>Loads the singleton FontSettings asset from Resources, caching the result.</summary>
@@ -186,16 +199,16 @@ namespace Game.Scripts.Localization
 
                 if (enableCategoryOverrides)
                 {
-                    RegisterFallback(titleFont?.arabicFont);
-                    RegisterFallback(titleFont?.englishFont);
-                    RegisterFallback(speakerNameFont?.arabicFont);
-                    RegisterFallback(speakerNameFont?.englishFont);
-                    RegisterFallback(menuUIFont?.arabicFont);
-                    RegisterFallback(menuUIFont?.englishFont);
-                    RegisterFallback(dialogueBodyFont?.arabicFont);
-                    RegisterFallback(dialogueBodyFont?.englishFont);
-                    RegisterFallback(choiceFont?.arabicFont);
-                    RegisterFallback(choiceFont?.englishFont);
+                    foreach ((_, CategoryFontPair pair) in CategoryPairs)
+                    {
+                        if (pair == null)
+                        {
+                            continue;
+                        }
+
+                        RegisterFallback(pair.arabicFont);
+                        RegisterFallback(pair.englishFont);
+                    }
                 }
             }
 

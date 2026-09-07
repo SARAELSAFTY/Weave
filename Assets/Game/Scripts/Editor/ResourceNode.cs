@@ -69,30 +69,25 @@ namespace Game.Scripts.Editor
 
             AddIdentityLabels(body, data.GetDisplayName(GameLanguage.English), data.assetName);
 
-            // Starting value
             Label startValue = new Label($"Start: {data.defaultStartingValue}");
             startValue.style.fontSize = 10;
             startValue.style.color = new StyleColor(new Color(0.7f, 0.7f, 0.7f));
             body.Add(startValue);
 
-            // Warning threshold
             Label warningLabel = new Label($"⚠  Warning at {data.warningThresholdPercent}%");
             warningLabel.style.fontSize = 9;
             warningLabel.style.color = new StyleColor(WarningAccent);
             warningLabel.style.marginTop = 2;
             body.Add(warningLabel);
 
-            // Collapse threshold
             Label collapseLabel = new Label($"✕  Collapse at ≤ {data.collapseThreshold}");
             collapseLabel.style.fontSize = 9;
             collapseLabel.style.color = new StyleColor(CollapseAccent);
             collapseLabel.style.marginTop = 1;
             body.Add(collapseLabel);
 
-            // Resource icon preview
             AddPreviewImage(body, data.icon, 36f, withBorder: false);
 
-            // Separator: Speakers
             body.Add(CreateSeparator());
 
             Label speakersHeader = new Label("Speakers");
@@ -102,7 +97,6 @@ namespace Game.Scripts.Editor
             speakersHeader.style.marginBottom = 2;
             body.Add(speakersHeader);
 
-            // Speaker (Portrait & LLM Persona)
             Label speakerLabel = new Label("Speaker (Portrait & LLM Voice)");
             speakerLabel.style.fontSize = 9;
             speakerLabel.style.color = new StyleColor(new Color(0.75f, 0.75f, 0.75f));
@@ -128,7 +122,6 @@ namespace Game.Scripts.Editor
             });
             body.Add(speakerField);
 
-            // Separator: Fallback Ending Text
             body.Add(CreateSeparator());
 
             Label fallbackHeader = new Label("Collapse Fallback Text");
@@ -144,7 +137,6 @@ namespace Game.Scripts.Editor
             fallbackHint.style.marginBottom = 4;
             body.Add(fallbackHint);
 
-            // English Fallback
             Label enLabel = new Label("English");
             enLabel.style.fontSize = 9;
             enLabel.style.color = new StyleColor(new Color(0.75f, 0.75f, 0.75f));
@@ -170,7 +162,6 @@ namespace Game.Scripts.Editor
             });
             body.Add(enField);
 
-            // Arabic Fallback
             Label arLabel = new Label("Arabic");
             arLabel.style.fontSize = 9;
             arLabel.style.color = new StyleColor(new Color(0.75f, 0.75f, 0.75f));

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Game.Scripts.Definitions;
 using Game.Scripts.Localization;
@@ -22,6 +23,7 @@ namespace Game.Scripts.Editor
         private static readonly Color StartBorder = new Color(1.0f, 0.84f, 0.0f);
         private static readonly Color LlmBorder = new Color(0.65f, 0.35f, 1f);
         private static readonly Color PetitionBorder = new Color(0.1f, 0.85f, 0.75f);
+        private static readonly Color ChatBorder = new Color(0.95f, 0.6f, 0.2f);
         private static readonly Color DefaultBorder = new Color(0.28f, 0.30f, 0.35f);
 
         /// <summary>The card asset this node represents.</summary>
@@ -40,7 +42,7 @@ namespace Game.Scripts.Editor
         private VisualElement metaRow;
         private Label summaryLabel;
 
-        protected override Object TargetAsset => Card;
+        protected override UnityEngine.Object TargetAsset => Card;
         protected override string TargetId => Card != null ? Card.AssetName : "Null Card";
         protected override string PingActionLabel => "Ping Card Asset";
         protected override string OpenActionLabel => "Open Card Asset";
@@ -56,7 +58,7 @@ namespace Game.Scripts.Editor
             this.isStartCardCached = isStartCard;
 
             InitializeNode(TargetId);
-            ApplyNodeChrome(isStartCard, card.isLlmReactionCard, card.isPetitionCard);
+            ApplyNodeChrome(isStartCard, card.isLlmReactionCard, card.isPetitionCard, card.isChatCard);
             titleContainer.Add(BuildBadges(card, isStartCard));
 
             InputPort = Port.Create<Edge>(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(bool));
@@ -71,17 +73,22 @@ namespace Game.Scripts.Editor
             RefreshPorts();
         }
 
-        private void ApplyNodeChrome(bool isStartCard, bool isLlmCard, bool isPetitionCard = false)
+        private void ApplyNodeChrome(bool isStartCard, bool isLlmCard, bool isPetitionCard = false, bool isChatCard = false)
         {
             style.width = 260;
             style.maxWidth = 260;
             style.backgroundColor = new StyleColor(new Color(0.14f, 0.15f, 0.18f));
 
-            bool highlightBorder = isStartCard || isLlmCard || isPetitionCard;
-            Color borderColor = isStartCard ? StartBorder : isLlmCard ? LlmBorder : isPetitionCard ? PetitionBorder : DefaultBorder;
+            bool highlightBorder = isStartCard || isLlmCard || isPetitionCard || isChatCard;
+            Color borderColor = isStartCard ? StartBorder
+                : isLlmCard ? LlmBorder
+                : isPetitionCard ? PetitionBorder
+                : isChatCard ? ChatBorder
+                : DefaultBorder;
             Color headerColor = isStartCard ? new Color(0.28f, 0.24f, 0.05f)
                 : isLlmCard ? new Color(0.22f, 0.12f, 0.32f)
                 : isPetitionCard ? new Color(0.05f, 0.22f, 0.20f)
+                : isChatCard ? new Color(0.30f, 0.19f, 0.05f)
                 : new Color(0.18f, 0.19f, 0.22f);
 
             ApplyBaseChrome(headerColor, borderColor, highlightBorder ? 2f : 1f, 34f);
@@ -116,19 +123,25 @@ namespace Game.Scripts.Editor
                     new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f)));
             }
 
-            if (card.isPetitionCard && card.petitionerSource == PetitionerSource.GeneratedCommoner)
+            if (card.isChatCard)
+            {
+                badges.Add(MakeBadge("CHAT",
+                    new Color(1f, 0.8f, 0.5f), new Color(0.35f, 0.22f, 0.02f)));
+            }
+
+            if ((card.isPetitionCard || card.isChatCard) && card.petitionerSource == PetitionerSource.GeneratedCommoner)
             {
                 badges.Add(MakeBadge("COMMONER",
                     new Color(0.2f, 1f, 0.9f), new Color(0.03f, 0.28f, 0.25f)));
             }
-            else if ((card.isLlmReactionCard || card.isPetitionCard) && card.speaker != null &&
+            else if ((card.isLlmReactionCard || card.isPetitionCard || card.isChatCard) && card.speaker != null &&
                      string.IsNullOrWhiteSpace(card.speaker.llmPersonaPrompt))
             {
                 badges.Add(MakeBadge("No Speaker Persona",
                     new Color(1.0f, 0.75f, 0.2f), new Color(0.35f, 0.22f, 0.0f)));
             }
 
-            if (!card.isPetitionCard && card.speaker == null)
+            if (!card.isPetitionCard && !card.isChatCard && card.speaker == null)
             {
                 badges.Add(MakeBadge("NARRATOR",
                     new Color(0.7f, 0.8f, 1f), new Color(0.15f, 0.25f, 0.45f)));
@@ -178,7 +191,9 @@ namespace Game.Scripts.Editor
                 ? BuildSeedPreview(card.reactionSeedOverride, "reaction")
                 : card.isPetitionCard
                     ? BuildSeedPreview(card.petitionSeedOverride, "petition")
-                    : Truncate(card.GetDescription(GameLanguage.English), DescriptionPreviewLength, "(No description)");
+                    : card.isChatCard
+                        ? BuildSeedPreview(card.chatSeedOverride, "chat")
+                        : Truncate(card.GetDescription(GameLanguage.English), DescriptionPreviewLength, "(No description)");
 
             Label previewLabel = new Label(previewText);
             previewLabel.style.fontSize = 11;
@@ -209,7 +224,11 @@ namespace Game.Scripts.Editor
             int selectedIndex = 0;
             foreach (SpeakerData s in speakerList)
             {
-                if (s == null) continue;
+                if (s == null)
+                {
+                    continue;
+                }
+
                 choices.Add(s.GetDisplayName(GameLanguage.English));
                 choiceSpeakers.Add(s);
                 if (card.speaker == s)
@@ -443,7 +462,10 @@ namespace Game.Scripts.Editor
 
                 foreach (ResourceValue rv in resourceChange.values)
                 {
-                    if (rv.resource == null) continue;
+                    if (rv.resource == null)
+                    {
+                        continue;
+                    }
 
                     string name = rv.resource.GetDisplayName(GameLanguage.English);
                     Label resLabel = new Label($"{(rv.value >= 0 ? "+" : "")}{rv.value}{name[0]}");
@@ -488,30 +510,33 @@ namespace Game.Scripts.Editor
             evt.menu.AppendAction("Set as Starting Card", _ => parentGraphView.SetStartingCard(Card),
                 isStartCardCached ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
 
-            // LLM reaction and petition are mutually exclusive card kinds; enabling one disables the other.
-            evt.menu.AppendAction("Is LLM Reaction Card", _ =>
+            // LLM reaction, petition, and chat are mutually exclusive card kinds; enabling one disables the others.
+            (string label, string undoName, Func<CardData, bool> get, Action<CardData, bool> set, Action<CardData> clearOthers)[] modeToggles =
             {
-                Undo.RecordObject(Card, "Toggle LLM Reaction");
-                Card.isLlmReactionCard = !Card.isLlmReactionCard;
-                if (Card.isLlmReactionCard)
-                {
-                    Card.isPetitionCard = false;
-                }
-                EditorUtility.SetDirty(Card);
-                parentGraphView.Populate(parentGraphView.Database);
-            }, Card.isLlmReactionCard ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+                ("Is LLM Reaction Card", "Toggle LLM Reaction", c => c.isLlmReactionCard, (c, v) => c.isLlmReactionCard = v,
+                    c => { c.isPetitionCard = false; c.isChatCard = false; }),
+                ("Is Petition Card", "Toggle Petition Card", c => c.isPetitionCard, (c, v) => c.isPetitionCard = v,
+                    c => { c.isLlmReactionCard = false; c.isChatCard = false; }),
+                ("Is Chat Card", "Toggle Chat Card", c => c.isChatCard, (c, v) => c.isChatCard = v,
+                    c => { c.isLlmReactionCard = false; c.isPetitionCard = false; })
+            };
 
-            evt.menu.AppendAction("Is Petition Card", _ =>
+            foreach ((string label, string undoName, Func<CardData, bool> get, Action<CardData, bool> set, Action<CardData> clearOthers) toggle in modeToggles)
             {
-                Undo.RecordObject(Card, "Toggle Petition Card");
-                Card.isPetitionCard = !Card.isPetitionCard;
-                if (Card.isPetitionCard)
+                DropdownMenuAction.Status status = toggle.get(Card) ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal;
+                evt.menu.AppendAction(toggle.label, _ =>
                 {
-                    Card.isLlmReactionCard = false;
-                }
-                EditorUtility.SetDirty(Card);
-                parentGraphView.Populate(parentGraphView.Database);
-            }, Card.isPetitionCard ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+                    bool enabling = !toggle.get(Card);
+                    Undo.RecordObject(Card, toggle.undoName);
+                    toggle.set(Card, enabling);
+                    if (enabling)
+                    {
+                        toggle.clearOthers(Card);
+                    }
+                    EditorUtility.SetDirty(Card);
+                    parentGraphView.Populate(parentGraphView.Database);
+                }, status);
+            }
 
             evt.menu.AppendSeparator();
 
@@ -525,10 +550,9 @@ namespace Game.Scripts.Editor
                 {
                     if (s != null)
                     {
-                        SpeakerData speakerObj = s;
                         string label = s.GetDisplayName(GameLanguage.English);
-                        evt.menu.AppendAction($"Assign Speaker/{label}", _ => AssignSpeaker(speakerObj),
-                            Card.speaker == speakerObj ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+                        evt.menu.AppendAction($"Assign Speaker/{label}", _ => AssignSpeaker(s),
+                            Card.speaker == s ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
                     }
                 }
             }

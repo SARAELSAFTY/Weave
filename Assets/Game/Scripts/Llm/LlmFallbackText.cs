@@ -35,6 +35,14 @@ namespace Game.Scripts.Llm
         public static string PetitionSendFailed(LlmPromptTemplates templates, GameLanguage language) =>
             GetLocalized(templates, language, t => t.petitionSendFailedMessage, FallbackStrings.PetitionSendFailed);
 
+        /// <summary>Label on the petition confirm button while a proposal awaits confirmation.</summary>
+        public static string PetitionConfirmLabel(LlmPromptTemplates templates, GameLanguage language) =>
+            GetLocalized(templates, language, t => t.petitionConfirmButtonLabel, FallbackStrings.Confirm);
+
+        /// <summary>Label on the confirm button while a chat card is open, ending the audience.</summary>
+        public static string ChatEndLabel(LlmPromptTemplates templates, GameLanguage language) =>
+            GetLocalized(templates, language, t => t.chatEndButtonLabel, FallbackStrings.EndAudience);
+
         // Prefers the editable template line; only a missing asset or blank field drops to the hardcoded copy.
         private static string GetLocalized(LlmPromptTemplates templates, GameLanguage language,
             Func<LlmPromptTemplates, LocalizedText> selector, Func<GameLanguage, string> hardFallback)

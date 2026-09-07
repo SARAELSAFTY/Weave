@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Game.Scripts.Definitions;
-using Game.Scripts.Localization;
 
 namespace Game.Scripts.Llm
 {
     /// <summary>Tracks the state of a single multi-turn petition audience including turn budget, conversation history, and resolution status.</summary>
-    /// <remarks>Owns the Groq message list sent to <see cref="LlmReactionClient.RequestPetitionTurn"/> and a human-readable transcript for UI display.</remarks>
-    public class PetitionSession
+    /// <remarks>Owns the Groq message list sent to <see cref="LlmReactionClient.RequestPetitionTurn"/> and a human-readable transcript for UI display.
+    /// The petitioner's opening line is recorded as the first assistant turn so every later request sees the full conversation.</remarks>
+    public class PetitionSession : AudienceSession
     {
-        /// <summary>Full Groq conversation history (system + alternating user/assistant turns) rebuilt each submission.</summary>
-        private readonly List<GroqApiMessage> history = new List<GroqApiMessage>();
         /// <summary>Human-readable log of ruler inputs and petitioner reactions for UI transcript display.</summary>
         private readonly List<string> transcript = new List<string>();
         /// <summary>Holds the current player input until RecordReply commits it to history and transcript.</summary>
@@ -36,40 +33,26 @@ namespace Game.Scripts.Llm
             TurnsRemaining = TurnBudget;
         }
 
-        /// <summary>Builds the complete message list for the next petition API call, including system prompt and history.</summary>
+        /// <summary>Commits the petitioner's opening line as the first assistant turn so later requests know how the audience began.</summary>
+        /// <param name="rawOpening">Raw assistant message content stored verbatim in conversation history.</param>
+        /// <param name="openingReaction">Human-readable opening line for the UI transcript.</param>
+        public void RecordOpening(string rawOpening, string openingReaction)
+        {
+            RecordOpeningInHistory(rawOpening);
+            if (!string.IsNullOrWhiteSpace(openingReaction))
+            {
+                transcript.Add($"Petitioner: {openingReaction.Trim()}");
+            }
+        }
+
+        /// <summary>Builds the complete message list for the next petition API call: stored system prompt, committed history, and the new ruler input.</summary>
         /// <param name="playerInput">The ruler's latest input for this turn.</param>
-        /// <param name="speaker">Speaker data providing persona and identity context.</param>
-        /// <param name="gameStateSnapshot">Serialized kingdom state injected into the system prompt.</param>
-        /// <param name="situationalPrompt">Optional situational context appended to the system prompt.</param>
-        /// <param name="validResources">Resources the model may reference in resourceChanges deltas.</param>
-        /// <param name="clampMagnitude">Maximum absolute delta value communicated to the model.</param>
-        /// <param name="templates">Prompt templates providing system instructions and language strings.</param>
-        /// <param name="language">Target language for language instruction selection.</param>
         /// <returns>A message list ready for <see cref="LlmReactionClient.RequestPetitionTurn"/>.</returns>
-        public List<GroqApiMessage> BuildMessagesForSubmission(
-            string playerInput,
-            SpeakerData speaker,
-            string gameStateSnapshot,
-            string situationalPrompt,
-            IReadOnlyList<ResourceData> validResources,
-            int clampMagnitude,
-            LlmPromptTemplates templates,
-            GameLanguage language = GameLanguage.English)
+        public List<GroqApiMessage> BuildMessagesForSubmission(string playerInput)
         {
             LastProposal = null;
             pendingPlayerInput = playerInput;
-
-            string systemPrompt = SpeakerPromptBuilder.BuildPetitionTurnPrompt(
-                speaker, gameStateSnapshot, situationalPrompt, validResources,
-                clampMagnitude, templates, language);
-
-            List<GroqApiMessage> messages = new List<GroqApiMessage>(history.Count + 2)
-            {
-                new GroqApiMessage { role = "system", content = systemPrompt }
-            };
-            messages.AddRange(history);
-            messages.Add(new GroqApiMessage { role = "user", content = playerInput });
-            return messages;
+            return BuildNextTurnMessages(playerInput);
         }
 
         /// <summary>Commits a completed petition turn to history and transcript, decrementing the turn budget.</summary>
@@ -77,11 +60,9 @@ namespace Game.Scripts.Llm
         /// <param name="rawContent">Raw assistant message content stored verbatim in conversation history.</param>
         public void RecordReply(PetitionResolution resolution, string rawContent)
         {
-            history.Add(new GroqApiMessage { role = "user", content = pendingPlayerInput });
+            RecordTurnInHistory(pendingPlayerInput, rawContent);
             transcript.Add($"Ruler: {pendingPlayerInput}");
             pendingPlayerInput = null;
-
-            history.Add(new GroqApiMessage { role = "assistant", content = rawContent });
 
             string reply = resolution != null && !string.IsNullOrWhiteSpace(resolution.reaction)
                 ? resolution.reaction

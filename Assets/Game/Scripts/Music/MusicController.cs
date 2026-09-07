@@ -1,21 +1,34 @@
 using UnityEngine;
 
-public class MusicController : MonoBehaviour
+namespace Game.Scripts.Music
 {
-    public AudioSource musicSource;
-
-    // Call this method from the Play Button
-    public void PlayMusic()
+    /// <summary>Minimal play/stop wrapper around one AudioSource; scene buttons call <see cref="PlayMusic"/> and <see cref="StopMusic"/>.</summary>
+    public class MusicController : MonoBehaviour
     {
-        if (!musicSource.isPlaying)
+        [Tooltip("Audio source that plays the game's music track.")]
+        [SerializeField] private AudioSource musicSource;
+
+        private void Awake()
         {
-            musicSource.Play();
+            if (InspectorValidation.RequireField(musicSource, nameof(musicSource), nameof(MusicController), this))
+            {
+                enabled = false;
+            }
         }
-    }
 
-    // Call this method from the Stop Button
-    public void StopMusic()
-    {
-        musicSource.Stop();
+        /// <summary>Starts the music unless it is already playing.</summary>
+        public void PlayMusic()
+        {
+            if (!musicSource.isPlaying)
+            {
+                musicSource.Play();
+            }
+        }
+
+        /// <summary>Stops the music.</summary>
+        public void StopMusic()
+        {
+            musicSource.Stop();
+        }
     }
 }

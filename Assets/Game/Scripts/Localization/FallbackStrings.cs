@@ -72,12 +72,29 @@ namespace Game.Scripts.Localization
         public static string Continue(GameLanguage language) =>
             language == GameLanguage.Arabic ? "متابعة" : "Continue";
 
+        /// <summary>Returns the localized label for the petition proposal confirm button.</summary>
+        /// <param name="language">Target language.</param>
+        public static string Confirm(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "تأكيد" : "Confirm";
+
+        /// <summary>Returns the localized label for the chat audience end button.</summary>
+        /// <param name="language">Target language.</param>
+        public static string EndAudience(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "إنهاء المقابلة" : "End Audience";
+
         /// <summary>Returns the placeholder kingdom-status string when no game-state snapshot is available.</summary>
         /// <param name="language">Target language.</param>
         public static string KingdomStatusUnknown(GameLanguage language) =>
             language == GameLanguage.Arabic
                 ? "حالة المملكة: غير معروفة"
                 : "Kingdom Status: Unknown";
+
+        /// <summary>Returns the line used in kingdom-history summaries when no ruler decisions were recorded.</summary>
+        /// <param name="language">Target language.</param>
+        public static string FullHistoryUnavailable(GameLanguage language) =>
+            language == GameLanguage.Arabic
+                ? "لم تُسجَّل أي قرارات."
+                : "No decisions were recorded.";
 
         /// <summary>Returns the title of the AI settings panel.</summary>
         /// <param name="language">Target language.</param>
@@ -157,13 +174,6 @@ namespace Game.Scripts.Localization
         /// <param name="language">Target language.</param>
         public static string ByokNag(GameLanguage language) =>
             language == GameLanguage.Arabic ? "تحقق من مفتاحك أولاً، أو اختر الاتصال المشترك." : "Check your key first, or choose the shared connection.";
-
-        /// <summary>Returns the status shown after a mid-session 401 fallback to the shared service.</summary>
-        /// <param name="language">Target language.</param>
-        public static string ByokSessionFallback(GameLanguage language) =>
-            language == GameLanguage.Arabic
-                ? "تم رفض مفتاحك. ستُستخدم الخدمة المشتركة في هذه الجلسة."
-                : "Your key was rejected. Using the shared service for this session.";
 
         /// <summary>Returns the shared-line status while the service probe is in flight.</summary>
         /// <param name="language">Target language.</param>

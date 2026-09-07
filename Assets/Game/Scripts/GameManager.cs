@@ -58,6 +58,7 @@ namespace Game.Scripts
         private bool showingResourceWarning;
         private CardData warningCardInstance;
         private PetitionFlowController petitionFlow;
+        private ChatFlowController chatFlow;
         private CollapseEndingBuilder collapseEndingBuilder;
 
         private LlmPromptTemplates Templates => narrativeDatabase != null ? narrativeDatabase.promptTemplates : null;
@@ -130,6 +131,17 @@ namespace Game.Scripts
                 value => inputEnabled = value,
                 BeginPetitionConfirmAdvance,
                 delay => StartCoroutine(ReenablePetitionSubmitAfterDelay(delay)));
+            chatFlow = new ChatFlowController(
+                cardView,
+                llmReactionClient,
+                llmSettings,
+                narrativeDatabase,
+                narrativeRunner,
+                historyTracker,
+                () => CurrentLanguage,
+                value => inputEnabled = value,
+                BeginPetitionConfirmAdvance,
+                delay => StartCoroutine(ReenablePetitionSubmitAfterDelay(delay)));
             collapseEndingBuilder = new CollapseEndingBuilder(
                 cardView,
                 llmReactionClient,
@@ -185,6 +197,7 @@ namespace Game.Scripts
             }
 
             petitionFlow?.CleanupPetitionSpeaker();
+            chatFlow?.CleanupChatSpeaker();
             collapseEndingBuilder?.Cleanup();
         }
 
@@ -432,9 +445,7 @@ namespace Game.Scripts
 
             string gameStateSnapshot = GetReactionSnapshotOrDefault();
 
-            string seed = PromptTemplateUtility.Fill(
-                templates != null ? templates.defaultWarningSeedPrompt : string.Empty,
-                "resourceName", resource.GetDisplayName(CurrentLanguage));
+            string seed = SpeakerPromptBuilder.BuildWarningSituation(templates, resource.GetDisplayName(CurrentLanguage));
 
             LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
                 speaker, gameStateSnapshot, seed, CurrentLanguage,
@@ -455,6 +466,12 @@ namespace Game.Scripts
             }
 
             SpeakerData speaker = card.speaker;
+            if (card.isChatCard)
+            {
+                chatFlow?.ShowChatCard(card);
+                return;
+            }
+
             if (card.isPetitionCard)
             {
                 petitionFlow.ShowPetitionCard(card);
@@ -468,13 +485,9 @@ namespace Game.Scripts
                 inputEnabled = false;
 
                 string gameStateSnapshot = GetReactionSnapshotOrDefault();
-                // The model never sees the card text the player just read; prepend it so the generated
-                // reaction cannot contradict the on-card reveal.
                 string sceneDescription = card.GetDescription(CurrentLanguage);
                 string reactionSeed = card.EffectiveReactionSeed(templates);
-                string seed = string.IsNullOrWhiteSpace(sceneDescription)
-                    ? reactionSeed
-                    : $"Scene just shown to the ruler: {sceneDescription.Trim()}\n{reactionSeed}";
+                string seed = SpeakerPromptBuilder.BuildReactionSituation(sceneDescription, reactionSeed);
 
                 LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
                     speaker, gameStateSnapshot, seed, CurrentLanguage,
@@ -492,10 +505,16 @@ namespace Game.Scripts
             inputEnabled = !card.IsEnding;
         }
 
-        // Thin forwarders to the petition flow controller; the card view can raise these events
-        // before Start() has constructed the controller.
+        // Thin forwarders to the audience flow controllers; the card view can raise these events
+        // before Start() has constructed the controllers. The petition input field is shared by
+        // petition and chat audiences, so submissions route to whichever flow is active.
         private void HandlePetitionSubmitted(string playerInput)
         {
+            if (chatFlow != null && chatFlow.HandleChatSubmitted(playerInput))
+            {
+                return;
+            }
+
             petitionFlow?.HandlePetitionSubmitted(playerInput);
         }
 
@@ -506,6 +525,12 @@ namespace Game.Scripts
 
         private void HandlePetitionConfirmed()
         {
+            // The confirm button doubles as the chat end-audience button; route it to the active flow.
+            if (chatFlow != null && chatFlow.HandleChatEndRequested())
+            {
+                return;
+            }
+
             petitionFlow?.HandlePetitionConfirmed();
         }
 
@@ -546,8 +571,8 @@ namespace Game.Scripts
         private string GetReactionSnapshotOrDefault()
         {
             return GetSnapshotOrDefault(
-                llmSettings != null ? llmSettings.reactionHistoryCount : 0,
-                llmSettings != null ? llmSettings.pastPetitionChatCount : 0);
+                llmSettings != null ? llmSettings.reactionHistoryCount : LlmSettings.DefaultReactionHistoryCount,
+                llmSettings != null ? llmSettings.pastPetitionChatCount : LlmSettings.DefaultPastPetitionChatCount);
         }
 
         private string GetSnapshotOrDefault(int narrativeHistoryEntryCount, int petitionTranscriptCount)

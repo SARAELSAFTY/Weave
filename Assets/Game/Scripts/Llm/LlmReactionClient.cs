@@ -51,6 +51,8 @@ namespace Game.Scripts.Llm
 
         /// <summary>User message used when a caller has no message of its own and no template provides one;
         /// keeps single-turn requests to a valid system+user shape even on a misconfigured project.</summary>
+        /// <remarks>Must stay in sync with the default text of <see cref="LlmPromptTemplates.singleTurnUserMessage"/>:
+        /// single-sourcing the runtime const from the ScriptableObject would couple them, so both sides carry the note.</remarks>
         internal const string DefaultSingleTurnUserMessage = "Respond to the situation above.";
 
         /// <summary>Sends a single-turn reaction request and returns the cleaned response text via callback.</summary>
@@ -86,6 +88,22 @@ namespace Game.Scripts.Llm
             StartCoroutine(RequestPetitionRoutine(messages, language, onSuccess, onFailure, maxTokensOverride));
         }
 
+        /// <summary>Sends a multi-turn chat request with full conversation history and returns the cleaned plain-text reply.</summary>
+        /// <param name="messages">Complete message list including system prompt, prior turns, and current user input.</param>
+        /// <param name="language">Target language for post-processing sanitization.</param>
+        /// <param name="onSuccess">Called with the sanitized reply text on success.</param>
+        /// <param name="onFailure">Called with an error code when validation, network, or parsing fails.</param>
+        /// <param name="maxTokensOverride">Optional per-request token limit overriding <see cref="LlmSettings.maxTokensPerResponse"/>.</param>
+        public void RequestChatTurn(List<GroqApiMessage> messages, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
+        {
+            if (!TryValidateConfig(onFailure))
+            {
+                return;
+            }
+
+            StartCoroutine(RequestChatRoutine(messages, language, onSuccess, onFailure, maxTokensOverride));
+        }
+
         private bool TryValidateConfig(Action<LlmRequestError> onFailure)
         {
             if (settings == null)
@@ -108,6 +126,39 @@ namespace Game.Scripts.Llm
         private IEnumerator RequestPetitionRoutine(List<GroqApiMessage> messages, GameLanguage language, Action<PetitionResolution, string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
         {
             yield return SendPetitionTurn(messages, language, onSuccess, onFailure, maxTokensOverride, strictSchema: true);
+        }
+
+        private IEnumerator RequestChatRoutine(List<GroqApiMessage> messages, GameLanguage language, Action<string> onSuccess, Action<LlmRequestError> onFailure, int? maxTokensOverride = null)
+        {
+            string jsonPayload;
+            try
+            {
+                // No response_format: the chat contract is plain spoken text, enforced by prompt only.
+                jsonPayload = BuildPetitionJsonPayload(messages, maxTokensOverride, strictSchema: false);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[LlmReactionClient] Unexpected error while building chat request payload: {exception}");
+                onFailure?.Invoke(LlmRequestError.NetworkError);
+                yield break;
+            }
+
+            yield return SendChatRequest(
+                jsonPayload,
+                responseText =>
+                {
+                    string reply = ParseResponse(responseText, language);
+                    if (!string.IsNullOrEmpty(reply))
+                    {
+                        onSuccess?.Invoke(reply);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[LlmReactionClient] Chat request succeeded but no reply was parsed. Response body: {responseText}");
+                        onFailure?.Invoke(LlmRequestError.EmptyResponse);
+                    }
+                },
+                onFailure);
         }
 
         // Sends one petition turn. Strict json_schema is tried first; if the request shape is ever
@@ -460,7 +511,11 @@ namespace Game.Scripts.Llm
         // Strips <think>...</think> blocks emitted by reasoning models that leak chain-of-thought into visible output.
         private static string StripThoughtBlocks(string text)
         {
-            if (string.IsNullOrEmpty(text)) return text;
+            if (string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
             return System.Text.RegularExpressions.Regex.Replace(text, @"<think>[\s\S]*?</think>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
         }
 
@@ -470,8 +525,19 @@ namespace Game.Scripts.Llm
             string trimmed = content.Trim();
             if (trimmed.StartsWith("{") && trimmed.Contains("\"reaction\""))
             {
-                try { var leaked = JsonUtility.FromJson<PetitionResolution>(trimmed); if (leaked != null && !string.IsNullOrWhiteSpace(leaked.reaction)) return leaked.reaction; } catch { }
+                try
+                {
+                    PetitionResolution leaked = JsonUtility.FromJson<PetitionResolution>(trimmed);
+                    if (leaked != null && !string.IsNullOrWhiteSpace(leaked.reaction))
+                    {
+                        return leaked.reaction;
+                    }
+                }
+                catch
+                {
+                }
             }
+
             return content;
         }
 
@@ -496,7 +562,10 @@ namespace Game.Scripts.Llm
                 if (response?.choices != null && response.choices.Length > 0)
                 {
                     string content = response.choices[0]?.message?.content;
-                    if (string.IsNullOrWhiteSpace(content)) return null;
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                        return null;
+                    }
 
                     content = StripThoughtBlocks(content);
 
@@ -529,7 +598,10 @@ namespace Game.Scripts.Llm
                 if (response?.choices != null && response.choices.Length > 0)
                 {
                     string content = response.choices[0]?.message?.content;
-                    if (string.IsNullOrWhiteSpace(content)) return null;
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                        return null;
+                    }
 
                     content = content.Trim();
 

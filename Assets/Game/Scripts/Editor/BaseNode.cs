@@ -125,7 +125,10 @@ namespace Game.Scripts.Editor
         /// <param name="withBorder">Whether to draw a 1px dark border around the image.</param>
         protected static void AddPreviewImage(VisualElement body, Sprite sprite, float size, bool withBorder)
         {
-            if (sprite == null) return;
+            if (sprite == null)
+            {
+                return;
+            }
 
             Image image = new Image { sprite = sprite, scaleMode = ScaleMode.ScaleToFit };
             image.style.width = size;

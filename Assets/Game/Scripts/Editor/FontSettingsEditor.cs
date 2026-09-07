@@ -18,7 +18,7 @@ namespace Game.Scripts.Editor
             ("choiceFont", "Choice")
         };
 
-        private readonly bool[] _expanded = new bool[Categories.Length];
+        private readonly bool[] expanded = new bool[Categories.Length];
 
         /// <summary>Draws global defaults, then per-category override rows whose fonts only appear when expanded and overridden.</summary>
         public override void OnInspectorGUI()
@@ -57,10 +57,10 @@ namespace Game.Scripts.Editor
                     Rect foldoutRect = new Rect(row.x, row.y, row.width - toggleWidth, row.height);
                     Rect toggleRect = new Rect(row.xMax - toggleWidth, row.y, toggleWidth, row.height);
 
-                    _expanded[i] = EditorGUI.Foldout(foldoutRect, _expanded[i], Categories[i].label);
+                    expanded[i] = EditorGUI.Foldout(foldoutRect, expanded[i], Categories[i].label);
                     overrideDefault.boolValue = EditorGUI.ToggleLeft(toggleRect, "Override", overrideDefault.boolValue);
 
-                    if (_expanded[i] && overrideDefault.boolValue)
+                    if (expanded[i] && overrideDefault.boolValue)
                     {
                         EditorGUI.indentLevel++;
                         EditorGUILayout.PropertyField(englishFont, new GUIContent("English Font"));

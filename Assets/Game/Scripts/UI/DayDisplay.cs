@@ -12,15 +12,19 @@ namespace Game.Scripts.UI
         [SerializeField, FormerlySerializedAs("dayText")]
         private TMP_Text textComponent;
 
+        // Fallback formats matching the serialized field defaults, used when a serialized format was cleared.
+        private const string DefaultFormatEnglish = "Day {0}";
+        private const string DefaultFormatArabic = "اليوم {0}";
+
         [Tooltip("English format for the day label; {0} is replaced by the day number.")]
         [SerializeField, FormerlySerializedAs("format")]
-        private string formatEnglish = "Day {0}";
+        private string formatEnglish = DefaultFormatEnglish;
 
         [Tooltip("Arabic format for the day label; {0} is replaced by the day number.")]
         [SerializeField]
-        private string formatArabic = "اليوم {0}";
+        private string formatArabic = DefaultFormatArabic;
 
-        private int _lastDay = 1;
+        private int lastDay = 1;
 
         private void Reset()
         {
@@ -44,7 +48,7 @@ namespace Game.Scripts.UI
         /// <param name="day">Day number to display.</param>
         public void SetDay(int day)
         {
-            _lastDay = day;
+            lastDay = day;
             Refresh();
         }
 
@@ -58,10 +62,10 @@ namespace Game.Scripts.UI
             string format = language == GameLanguage.Arabic ? formatArabic : formatEnglish;
             if (string.IsNullOrEmpty(format))
             {
-                format = language == GameLanguage.Arabic ? "اليوم {0}" : "Day {0}";
+                format = language == GameLanguage.Arabic ? DefaultFormatArabic : DefaultFormatEnglish;
             }
 
-            RtlTextHelper.SetText(textComponent, string.Format(format, _lastDay), language);
+            RtlTextHelper.SetText(textComponent, string.Format(format, lastDay), language);
         }
 
         private void ResolveTextComponent()

@@ -100,6 +100,7 @@ namespace Game.Scripts.UI
         private CardData currentCardData;
         private SpeakerData currentSpeaker;
         private string currentDynamicDescription;
+        private TMP_Text petitionConfirmLabel;
 
         /// <summary>Raised when the player clicks the restart button on an ending card.</summary>
         public event Action RestartRequested;
@@ -248,6 +249,14 @@ namespace Game.Scripts.UI
             ApplyCardVisuals(cardData);
         }
 
+        /// <summary>Presents a chat card. Uses the same presentation mode as petitions: no drag, no choice sub-cards, input shown separately.</summary>
+        /// <param name="cardData">The card data providing speaker and visual configuration.</param>
+        /// <param name="speaker">The speaker whose name is displayed; may be null for generated commoners.</param>
+        public void ShowChat(CardData cardData, SpeakerData speaker)
+        {
+            ShowPetition(cardData, speaker);
+        }
+
         /// <summary>Converts an active petition card into a normal choice card displaying the final LLM reaction text and reaction-fallback labels.</summary>
         /// <param name="cardData">The card data providing choice text fallbacks.</param>
         /// <param name="finalReactionText">The LLM-generated reaction text displayed as the card description.</param>
@@ -296,6 +305,12 @@ namespace Game.Scripts.UI
         {
             currentDynamicDescription = text ?? string.Empty;
             SetLabel(descriptionText, currentDynamicDescription);
+        }
+
+        /// <summary>Re-applies the current speaker's display name label; called after a generated persona is named.</summary>
+        public void RefreshSpeakerName()
+        {
+            ApplySpeaker(currentSpeaker, currentCardData);
         }
 
         /// <summary>Presents an ending card with its description, hides choice labels, and shows the restart button.</summary>
@@ -451,10 +466,17 @@ namespace Game.Scripts.UI
 
         private void SetPatienceDotsActive(bool active)
         {
-            if (petitionPatienceDots == null) return;
+            if (petitionPatienceDots == null)
+            {
+                return;
+            }
+
             foreach (Image dot in petitionPatienceDots)
             {
-                if (dot != null) dot.gameObject.SetActive(active);
+                if (dot != null)
+                {
+                    dot.gameObject.SetActive(active);
+                }
             }
         }
 
@@ -542,10 +564,13 @@ namespace Game.Scripts.UI
 
             ApplyPartSprite(cardArtImage, art);
 
-            if (speaker != null)
+            // Generated personas start with a blank name until the model names them; hide the
+            // label rather than showing a placeholder subject line.
+            string displayName = speaker != null ? speaker.GetDisplayName(CurrentLanguage) : null;
+            if (!string.IsNullOrWhiteSpace(displayName))
             {
                 speakerNameText.gameObject.SetActive(true);
-                SetLabel(speakerNameText, speaker.GetDisplayName(CurrentLanguage), TextFontCategory.SpeakerName);
+                SetLabel(speakerNameText, displayName, TextFontCategory.SpeakerName);
             }
             else
             {
@@ -616,6 +641,33 @@ namespace Game.Scripts.UI
             DisplayPetitionResponse(reactionText, showConfirm: true);
         }
 
+        /// <summary>Displays a chat reply in the description and reopens chat input with the end-audience button visible.</summary>
+        /// <param name="replyText">The LLM-generated chat reply.</param>
+        public void ShowChatReply(string replyText)
+        {
+            DisplayPetitionResponse(replyText, showConfirm: true);
+        }
+
+        /// <summary>Sets the label text of the petition confirm button (reused as the chat end-audience button).</summary>
+        /// <param name="label">The new button label; blank values keep the current text.</param>
+        public void SetPetitionConfirmButtonLabel(string label)
+        {
+            if (petitionConfirmButton == null || string.IsNullOrWhiteSpace(label))
+            {
+                return;
+            }
+
+            if (petitionConfirmLabel == null)
+            {
+                petitionConfirmLabel = petitionConfirmButton.GetComponentInChildren<TMP_Text>(true);
+            }
+
+            if (petitionConfirmLabel != null)
+            {
+                SetLabel(petitionConfirmLabel, label);
+            }
+        }
+
         private void DisplayPetitionResponse(string reactionText, bool showConfirm)
         {
             currentDynamicDescription = reactionText ?? string.Empty;
@@ -632,19 +684,28 @@ namespace Game.Scripts.UI
         /// <param name="remainingDots">Number of patience dots that should appear active; clamped to array length.</param>
         public void UpdatePetitionDots(int remainingDots)
         {
-            if (petitionPatienceDots == null || petitionPatienceDots.Length == 0) return;
+            if (petitionPatienceDots == null || petitionPatienceDots.Length == 0)
+            {
+                return;
+            }
 
             SetPatienceDotsActive(true);
             int remaining = Mathf.Clamp(remainingDots, 0, petitionPatienceDots.Length);
             for (int i = 0; i < petitionPatienceDots.Length; i++)
             {
-                if (petitionPatienceDots[i] == null) continue;
+                if (petitionPatienceDots[i] == null)
+                {
+                    continue;
+                }
+
                 Color c = petitionPatienceDots[i].color;
                 c.a = i < remaining ? 1f : 0.25f;
                 petitionPatienceDots[i].color = c;
             }
         }
 
+        /// <summary>Shows a petition failure message in the description and re-enables the petition controls.</summary>
+        /// <param name="message">Localized failure text; empty values leave the description unchanged.</param>
         public void ShowPetitionSubmitFailed(string message)
         {
             if (descriptionText != null && !string.IsNullOrEmpty(message))

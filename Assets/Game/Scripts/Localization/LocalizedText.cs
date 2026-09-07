@@ -20,7 +20,10 @@ namespace Game.Scripts.Localization
         public string Get(GameLanguage language)
         {
             if (language == GameLanguage.Arabic && !string.IsNullOrWhiteSpace(arabic))
+            {
                 return arabic;
+            }
+
             return english ?? string.Empty;
         }
     }

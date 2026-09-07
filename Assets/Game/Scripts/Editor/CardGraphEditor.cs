@@ -3,7 +3,6 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using Game.Scripts.Definitions;
-using Game.Scripts.Narrative;
 
 namespace Game.Scripts.Editor
 {
@@ -171,7 +170,7 @@ namespace Game.Scripts.Editor
         }
 
         /// <summary>Recursively creates the specified asset folder path if any segment does not already exist.</summary>
-        private static void EnsureFolderExists(string folder)
+        public static void EnsureFolderExists(string folder)
         {
             folder = folder.Replace('\\', '/');
             if (AssetDatabase.IsValidFolder(folder)) return;

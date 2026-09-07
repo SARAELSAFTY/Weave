@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Test_03_Collapse_Fork
+  m_EditorClassIdentifier: 
+  assetName: Test_03_Collapse_Fork
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 012f826a4ad563b4784233fe08d0f6b7, type: 2}
+  descriptionLocalized:
+    english: TEST 3 - Losing with resources. The left decree drops Gold past its
+      collapse threshold and ends the reign with a generated epilogue. The right
+      decree borrows instead and the story continues.
+    arabic: "\u0627\u062E\u062A\u0628\u0627\u0631 \u0663 - \u0627\u0644\u062E\u0633\u0627\u0631\u0629
+      \u0628\u0627\u0644\u0645\u0648\u0627\u0631\u062F. \u0627\u0644\u0623\u0645\u0631\u064F
+      \u0627\u0644\u0623\u064A\u0633\u0631 \u064A\u0647\u0648\u064A \u0628\u0627\u0644\u0630\u0647\u0628
+      \u062A\u062D\u062A \u062D\u062F\u0651 \u0627\u0644\u0627\u0646\u0647\u064A\u0627\u0631
+      \u0641\u064A\u064F\u0646\u0647\u064A \u0627\u0644\u0645\u064F\u0644\u0643 \u0628\u062E\u0627\u062A\u0645\u0629
+      \u0645\u064F\u0648\u0644\u064E\u0651\u062F\u0629. \u0627\u0644\u0623\u0645\u0631\u064F
+      \u0627\u0644\u0623\u064A\u0645\u0646 \u064A\u0633\u062A\u0642\u0631\u0636 \u0648\u062A\u0633\u062A\u0645\u0631
+      \u0627\u0644\u0642\u0635\u0629."
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: Spend the vault to the last coin
+    arabic: "\u0623\u0646\u0641\u0642 \u0627\u0644\u062E\u0632\u064A\u0646\u0629
+      \u062D\u062A\u0649 \u0622\u062E\u0631 \u0639\u0645\u0644\u0629"
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -80
+  leftNextCard: {fileID: 11400000, guid: f9f1397e3aacc62428234102c2986f84, type: 2}
+  rightChoiceLocalized:
+    english: Borrow against the crown
+    arabic: "\u0627\u0633\u062A\u0642\u0631\u0636 \u0645\u0642\u0627\u0628\u0644
+      \u0627\u0644\u062A\u0627\u062C"
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: 15
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -5
+  rightNextCard: {fileID: 11400000, guid: f9f1397e3aacc62428234102c2986f84, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: 
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

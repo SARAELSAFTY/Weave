@@ -45,17 +45,19 @@ namespace Game.Scripts.Editor
 
             if (GUILayout.Button("Preview English"))
             {
-                // Undo must cover the object SetText actually modifies: the target text when assigned, otherwise the label itself.
-                Undo.RecordObject(label.TargetText != null ? (Object)label.TargetText : label, "Preview English");
+                // Undo and SetDirty must cover the object SetText actually modifies: the target text when assigned, otherwise the label itself.
+                Object previewTarget = label.TargetText != null ? (Object)label.TargetText : label;
+                Undo.RecordObject(previewTarget, "Preview English");
                 RtlTextHelper.SetText(label.TargetText, label.English, GameLanguage.English, label.FontCategory);
-                EditorUtility.SetDirty(label.gameObject);
+                EditorUtility.SetDirty(previewTarget);
             }
 
             if (GUILayout.Button("Preview Arabic"))
             {
-                Undo.RecordObject(label.TargetText != null ? (Object)label.TargetText : label, "Preview Arabic");
+                Object previewTarget = label.TargetText != null ? (Object)label.TargetText : label;
+                Undo.RecordObject(previewTarget, "Preview Arabic");
                 RtlTextHelper.SetText(label.TargetText, label.Arabic, GameLanguage.Arabic, label.FontCategory);
-                EditorUtility.SetDirty(label.gameObject);
+                EditorUtility.SetDirty(previewTarget);
             }
 
             EditorGUILayout.EndHorizontal();

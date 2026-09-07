@@ -99,8 +99,9 @@ namespace Game.Scripts.Narrative
         }
 
         /// <summary>Returns all recorded player choices joined by semicolons, or a fallback message if none exist.</summary>
-        public string GetFullHistorySummary() =>
-            fullChoiceHistory.Count > 0 ? string.Join("; ", fullChoiceHistory) : "No decisions were recorded.";
+        /// <param name="language">Language used for the fallback message when no choices were recorded.</param>
+        public string GetFullHistorySummary(GameLanguage language = GameLanguage.English) =>
+            fullChoiceHistory.Count > 0 ? string.Join("; ", fullChoiceHistory) : FallbackStrings.FullHistoryUnavailable(language);
 
         /// <summary>Builds a multi-line prompt snapshot containing the current day, resources, recent narrative history, and recent petition transcripts.</summary>
         /// <param name="narrativeHistoryEntryCount">Maximum number of recent narrative history entries to include.</param>

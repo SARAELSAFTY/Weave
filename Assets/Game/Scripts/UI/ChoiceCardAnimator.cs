@@ -61,6 +61,7 @@ namespace Game.Scripts.UI
         private bool dismissing;
         private Coroutine dismissRoutine;
 
+        /// <summary>True while the confirm-dismiss animation is in flight.</summary>
         public bool IsDismissing => dismissing;
 
         private void Awake()

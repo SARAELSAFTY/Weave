@@ -142,12 +142,35 @@ namespace Game.Scripts.UI
 
         private void OnDestroy()
         {
-            if (sharedOptionButton != null) sharedOptionButton.onClick.RemoveListener(HandleSharedSelected);
-            if (ownKeyOptionButton != null) ownKeyOptionButton.onClick.RemoveListener(HandleOwnSelected);
-            if (checkButton != null) checkButton.onClick.RemoveListener(HandleCheckClicked);
-            if (continueButton != null) continueButton.onClick.RemoveListener(HandleContinueClicked);
-            if (openGroqButton != null) openGroqButton.onClick.RemoveListener(HandleOpenGroqClicked);
-            if (pasteButton != null) pasteButton.onClick.RemoveListener(HandlePasteClicked);
+            if (sharedOptionButton != null)
+            {
+                sharedOptionButton.onClick.RemoveListener(HandleSharedSelected);
+            }
+
+            if (ownKeyOptionButton != null)
+            {
+                ownKeyOptionButton.onClick.RemoveListener(HandleOwnSelected);
+            }
+
+            if (checkButton != null)
+            {
+                checkButton.onClick.RemoveListener(HandleCheckClicked);
+            }
+
+            if (continueButton != null)
+            {
+                continueButton.onClick.RemoveListener(HandleContinueClicked);
+            }
+
+            if (openGroqButton != null)
+            {
+                openGroqButton.onClick.RemoveListener(HandleOpenGroqClicked);
+            }
+
+            if (pasteButton != null)
+            {
+                pasteButton.onClick.RemoveListener(HandlePasteClicked);
+            }
         }
 
         private void HandleOpenGroqClicked() => Application.OpenURL(ConsoleKeysUrl);

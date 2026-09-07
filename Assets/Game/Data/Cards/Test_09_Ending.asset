@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Test_09_Ending
+  m_EditorClassIdentifier: 
+  assetName: Test_09_Ending
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 220c64b1d598ddf41bc3f43bc6849160, type: 2}
+  descriptionLocalized:
+    english: TEST 9 - Authored ending with a per-card visual template and the restart
+      button. If the warning, the collapse, the reaction, the petitions, the chats
+      and the day counter all behaved, every mechanic passed.
+    arabic: "\u0627\u062E\u062A\u0628\u0627\u0631 \u0669 - \u0646\u0647\u0627\u064A\u0629
+      \u0645\u0643\u062A\u0648\u0628\u0629 \u0628\u0642\u0627\u0644\u0628\u064D \u0628\u0635\u0631\u064A
+      \u062E\u0627\u0635 \u0628\u0627\u0644\u0628\u0637\u0627\u0642\u0629 \u0648\u0632\u0631\u0651
+      \u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u0628\u062F\u0621. \u0625\u0646
+      \u0639\u0645\u0644\u064E \u0627\u0644\u062A\u062D\u0630\u064A\u0631\u064F \u0648\u0627\u0644\u0627\u0646\u0647\u064A\u0627\u0631\u064E
+      \u0648\u0627\u0644\u0631\u062F\u0651 \u0648\u0627\u0644\u0639\u0631\u064A\u0636\u0627\u062A\u064F
+      \u0648\u0627\u0644\u062F\u0631\u062F\u0634\u0629\u064E \u0648\u0639\u062F\u0651\u0627\u062F\u064F
+      \u0627\u0644\u0623\u064A\u0627\u0645\u060C \u0641\u0642\u062F \u0646\u062C\u062D
+      \u0643\u0644\u064F\u0651 \u0634\u064A\u0621."
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: 
+    arabic: 
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 0}
+  rightChoiceLocalized:
+    english: 
+    arabic: 
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 0}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: 
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 11400000, guid: 89bdb5124eeea4e40a05be312822ed13, type: 2}

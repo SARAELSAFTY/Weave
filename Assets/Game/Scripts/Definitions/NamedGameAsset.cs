@@ -1,3 +1,6 @@
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using Game.Scripts.Localization;
 using UnityEngine;
 
@@ -34,11 +37,40 @@ namespace Game.Scripts.Definitions
         }
 
 #if UNITY_EDITOR
-        // Schedules a deferred rename so the asset filename stays in sync with assetName without triggering re-entrant serialization.
+        // Schedules a deferred rename so the asset filename stays in sync with assetName without triggering
+        // re-entrant serialization. This hook lives on the asset class (inside the runtime assembly) because
+        // OnValidate is the only callback that fires on assetName edits; editor assemblies cannot be
+        // referenced from here, so the editor-only logic stays behind #if UNITY_EDITOR.
         protected virtual void OnValidate()
         {
-            if (string.IsNullOrWhiteSpace(assetName)) return;
-            DefinitionAssetRenamer.ScheduleRenameToMatch(this, assetName.Trim());
+            if (string.IsNullOrWhiteSpace(assetName))
+            {
+                return;
+            }
+
+            string trimmedName = assetName.Trim();
+            EditorApplication.delayCall += () =>
+            {
+                if (this == null)
+                {
+                    return;
+                }
+
+                string assetPath = AssetDatabase.GetAssetPath(this);
+                if (string.IsNullOrEmpty(assetPath))
+                {
+                    return;
+                }
+
+                string currentFilename = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+                if (currentFilename == trimmedName)
+                {
+                    return;
+                }
+
+                AssetDatabase.RenameAsset(assetPath, trimmedName);
+                AssetDatabase.SaveAssets();
+            };
         }
 #endif
     }
