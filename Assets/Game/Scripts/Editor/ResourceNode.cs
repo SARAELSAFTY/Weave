@@ -145,6 +145,7 @@ namespace Game.Scripts.Editor
             TextField enField = new TextField
             {
                 multiline = true,
+                isDelayed = true,
                 value = data.collapseEndingFallbackEnglish ?? string.Empty
             };
             enField.style.fontSize = 10;
@@ -170,6 +171,7 @@ namespace Game.Scripts.Editor
             TextField arField = new TextField
             {
                 multiline = true,
+                isDelayed = true,
                 value = data.collapseEndingFallbackArabic ?? string.Empty
             };
             arField.style.fontSize = 10;

@@ -37,6 +37,13 @@ namespace Game.Scripts.Editor
         // When set, the next Populate call places this newly-created asset at the viewport center instead of the grid fallback.
         private UnityEngine.Object pendingNewAsset;
 
+        // Returns true when the cached position already matches, so no-op saves skip undo registration.
+        private static bool HasUnchangedPosition<TAsset>(Dictionary<TAsset, Vector2> cache, TAsset asset, Vector2 position)
+            where TAsset : UnityEngine.Object
+        {
+            return asset != null && cache.TryGetValue(asset, out Vector2 existing) && existing == position;
+        }
+
         /// <summary>
         /// Updates or inserts a position entry in the given list and cache; returns false if the position is unchanged.
         /// </summary>
@@ -137,7 +144,18 @@ namespace Game.Scripts.Editor
         /// <summary>Returns all ports that belong to a different node and have the opposite direction, enabling cross-node connections only.</summary>
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
-            return ports.Where(p => p.node != startPort.node && p.direction != startPort.direction).ToList();
+            List<Port> compatiblePorts = new List<Port>();
+            foreach (Port port in ports)
+            {
+                if (port.node == startPort.node || port.direction == startPort.direction)
+                {
+                    continue;
+                }
+
+                compatiblePorts.Add(port);
+            }
+
+            return compatiblePorts;
         }
 
         /// <summary>
@@ -441,6 +459,12 @@ namespace Game.Scripts.Editor
             {
                 return;
             }
+
+            if (HasUnchangedPosition(positionsByCard, card, position))
+            {
+                return;
+            }
+
             database.editorGraphPositions ??= new List<NarrativeDatabase.CardGraphPosition>();
             Undo.RecordObject(database, "Move Card Node");
             bool changed = TrySavePosition(database.editorGraphPositions, positionsByCard, card, position,
@@ -471,6 +495,12 @@ namespace Game.Scripts.Editor
             {
                 return;
             }
+
+            if (HasUnchangedPosition(positionsBySpeaker, speaker, position))
+            {
+                return;
+            }
+
             database.editorSpeakerPositions ??= new List<NarrativeDatabase.SpeakerGraphPosition>();
             Undo.RecordObject(database, "Move Speaker Node");
             bool changed = TrySavePosition(database.editorSpeakerPositions, positionsBySpeaker, speaker, position,
@@ -501,6 +531,12 @@ namespace Game.Scripts.Editor
             {
                 return;
             }
+
+            if (HasUnchangedPosition(positionsByResource, resource, position))
+            {
+                return;
+            }
+
             database.editorResourcePositions ??= new List<NarrativeDatabase.ResourceGraphPosition>();
             Undo.RecordObject(database, "Move Resource Node");
             bool changed = TrySavePosition(database.editorResourcePositions, positionsByResource, resource, position,

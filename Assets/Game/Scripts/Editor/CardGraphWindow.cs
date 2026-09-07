@@ -15,6 +15,7 @@ namespace Game.Scripts.Editor
         private const string NewCardFolder = "Assets/Game/Data/Cards";
         private const string NewSpeakerFolder = "Assets/Game/Data/Speakers";
         private const string NewDatabaseFolder = "Assets/Game/Data";
+        private const double RefreshDebounceSeconds = 0.4;
 
         private NarrativeDatabase currentDatabase;
         private CardGraphView graphView;
@@ -26,6 +27,9 @@ namespace Game.Scripts.Editor
         private ObjectField databaseField;
         private PopupField<string> startingCardDropdown;
 
+        private static bool refreshQueued;
+        private static double lastRefreshRequestTime;
+
         /// <summary>Opens (or focuses) the Card Graph window from the Weave menu.</summary>
         [MenuItem("Weave/Card Graph")]
         public static void OpenWindow()
@@ -35,9 +39,31 @@ namespace Game.Scripts.Editor
             window.titleContent = new GUIContent("Card Graph");
         }
 
-        /// <summary>Rebuilds the graph in every open Card Graph window; called after assets are edited elsewhere.</summary>
+        /// <summary>
+        /// Rebuilds the graph in every open Card Graph window after a short quiet period, so per-keystroke
+        /// inspector edits coalesce into a single rebuild instead of one full repopulate per change.
+        /// </summary>
         public static void RefreshOpenWindows()
         {
+            lastRefreshRequestTime = EditorApplication.timeSinceStartup;
+            if (refreshQueued)
+            {
+                return;
+            }
+
+            refreshQueued = true;
+            EditorApplication.update += FlushOpenWindowRefreshes;
+        }
+
+        private static void FlushOpenWindowRefreshes()
+        {
+            if (EditorApplication.timeSinceStartup - lastRefreshRequestTime < RefreshDebounceSeconds)
+            {
+                return;
+            }
+
+            EditorApplication.update -= FlushOpenWindowRefreshes;
+            refreshQueued = false;
             foreach (CardGraphWindow window in Resources.FindObjectsOfTypeAll<CardGraphWindow>())
             {
                 window.PopulateGraph();
@@ -186,13 +212,20 @@ namespace Game.Scripts.Editor
             }
 
             List<string> options = new List<string> { "(None)" };
+            HashSet<string> seenNames = new HashSet<string> { "(None)" };
             if (currentDatabase.cards != null)
             {
                 foreach (CardData card in currentDatabase.cards)
                 {
-                    if (card != null && !options.Contains(card.AssetName))
+                    if (card == null)
                     {
-                        options.Add(card.AssetName);
+                        continue;
+                    }
+
+                    string cardName = card.AssetName;
+                    if (seenNames.Add(cardName))
+                    {
+                        options.Add(cardName);
                     }
                 }
             }

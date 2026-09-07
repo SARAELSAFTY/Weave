@@ -40,6 +40,7 @@ namespace Game.Scripts.Editor
         private readonly CardGraphView parentGraphView;
         private bool isStartCardCached;
         private VisualElement metaRow;
+        private VisualElement bodyContainer;
         private Label summaryLabel;
 
         protected override UnityEngine.Object TargetAsset => Card;
@@ -176,9 +177,7 @@ namespace Game.Scripts.Editor
                 }
             };
 
-            VisualElement meta = BuildMetaRow(card);
-            meta.style.display = DisplayStyle.None;
-            body.Add(meta);
+            bodyContainer = body;
 
             summaryLabel = new Label(BuildSummary(card));
             summaryLabel.style.fontSize = 10;
@@ -204,7 +203,8 @@ namespace Game.Scripts.Editor
             return body;
         }
 
-        // Builds the inline-editable row (speaker / visual template / art mode popups) shown only while the node is selected.
+        // Builds the inline-editable row (speaker / visual template / art mode popups) on first selection,
+        // so node construction avoids the visual-template asset scan for nodes that are never selected.
         private VisualElement BuildMetaRow(CardData card)
         {
             VisualElement row = new VisualElement
@@ -321,7 +321,6 @@ namespace Game.Scripts.Editor
                 row.Add(dayLabel);
             }
 
-            metaRow = row;
             return row;
         }
 
@@ -329,15 +328,14 @@ namespace Game.Scripts.Editor
         public override void OnSelected()
         {
             base.OnSelected();
-            if (metaRow != null)
+            if (metaRow == null)
             {
-                metaRow.style.display = DisplayStyle.Flex;
+                metaRow = BuildMetaRow(Card);
+                bodyContainer.Insert(bodyContainer.IndexOf(summaryLabel), metaRow);
             }
 
-            if (summaryLabel != null)
-            {
-                summaryLabel.style.display = DisplayStyle.None;
-            }
+            metaRow.style.display = DisplayStyle.Flex;
+            summaryLabel.style.display = DisplayStyle.None;
         }
 
         /// <summary>Restores the read-only summary label when the node is deselected, rebuilding it to reflect any edits.</summary>
