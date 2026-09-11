@@ -16,14 +16,25 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
+  speaker: {fileID: 11400000, guid: bd422fef7c7a0976bcb3c39364963115, type: 2}
   descriptionLocalized:
-    english: "Merchant: 'A guild of private smugglers offers to bring in foreign goods under the Western Kingdom's nose, provided we turn a blind eye to contraband.'"
-    arabic: "كبير التجار: «تعرض نقابة من المهربين جلب البضائع تحت أنوف أساطيل الغرب، شريطة أن نتغاضى عن بعض شحناتهم غير المرخصة.»"
+    english: "Treasurer: 'Sire, a guild of private smugglers offers to move foreign
+      goods under the Western Kingdom's nose \u2014 provided we extend them certain...
+      administrative courtesies. The margin is considerable, I assure you.'"
+    arabic: "\u0623\u0645\u064A\u0646 \u0627\u0644\u062E\u0632\u064A\u0646\u0629:
+      \xAB\u064A\u0627 \u0645\u0648\u0644\u0627\u064A\u060C \u0645\u062C\u0645\u0648\u0639\u0629
+      \u0645\u0646 \u0627\u0644\u0645\u0647\u0631\u0628\u064A\u0646 \u0645\u0633\u062A\u0639\u062F\u0629
+      \u0644\u062A\u0647\u0631\u064A\u0628 \u0628\u0636\u0627\u0626\u0639 \u0623\u062C\u0646\u0628\u064A\u0629
+      \u062A\u062D\u062A \u0623\u0646\u0641 \u0645\u0645\u0644\u0643\u0629 \u0627\u0644\u063A\u0631\u0628\u060C
+      \u0645\u0642\u0627\u0628\u0644 \u062A\u0633\u0647\u064A\u0644\u0627\u062A \u0625\u062F\u0627\u0631\u064A\u0629
+      \u0628\u0633\u064A\u0637\u0629. \u0627\u0644\u0639\u0627\u0626\u062F \u0648\u0641\u064A\u0631
+      \u064A\u0627 \u0633\u064A\u062F\u064A.\xBB"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: "License the smugglers quietly; survival requires cunning."
-    arabic: "رخّص لهم سراً؛ فالبقاء في الأزمات يتطلب الدهاء."
+    english: License the smugglers quietly; survival requires cunning.
+    arabic: "\u0631\u062E\u0651\u0635 \u0644\u0647\u0645 \u0633\u0631\u0627\u064B\u061B
+      \u0641\u0627\u0644\u0628\u0642\u0627\u0621 \u0641\u064A \u0627\u0644\u0623\u0632\u0645\u0627\u062A
+      \u064A\u062A\u0637\u0644\u0628 \u0627\u0644\u062F\u0647\u0627\u0621."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
@@ -34,8 +45,11 @@ MonoBehaviour:
       value: 5
   leftNextCard: {fileID: 11400000, guid: 73757d5d33ead2505f585d8a8ce14d1d, type: 2}
   rightChoiceLocalized:
-    english: "Hang the smugglers; the realm will not deal in vice."
-    arabic: "اقبض على المهربين؛ فلن يدنس التاج شرفه بالخروج عن القانون."
+    english: Hang the smugglers; the realm will not deal in vice.
+    arabic: "\u0627\u0642\u0628\u0636 \u0639\u0644\u0649 \u0627\u0644\u0645\u0647\u0631\u0628\u064A\u0646\u061B
+      \u0641\u0644\u0646 \u064A\u062F\u0646\u0633 \u0627\u0644\u062A\u0627\u062C
+      \u0634\u0631\u0641\u0647 \u0628\u0627\u0644\u062E\u0631\u0648\u062C \u0639\u0646
+      \u0627\u0644\u0642\u0627\u0646\u0648\u0646."
   rightResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
@@ -45,40 +59,13 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
       value: 5
   rightNextCard: {fileID: 11400000, guid: 73757d5d33ead2505f585d8a8ce14d1d, type: 2}
-  middleChoiceLocalized:
-    english: ""
-    arabic: ""
-  middleResourceChange:
-    values:
-  middleNextCard: {fileID: 0}
-  isThreeWayVerdict: 0
-  isEndingEvaluator: 0
-  leftSetFlags: 0
-  rightSetFlags: 0
-  middleSetFlags: 0
-  continueSetFlags: 0
-  leftRequiresFlags: 0
-  rightRequiresFlags: 0
-  middleRequiresFlags: 0
-  alternateDescriptionIfFlags: 0
-  alternateDescriptionIfMissing: 0
-  alternateDescriptionLocalized:
-    english: ""
-    arabic: ""
-  entryRequiresFlags: 0
-  hasResourceGate: 0
-  gateResource: {fileID: 0}
-  gateMinInclusive: 0
-  gateMaxInclusive: 100
-  skipToCard: {fileID: 0}
-  skipToAltCard: {fileID: 0}
   isLlmReactionCard: 0
-  reactionSeedOverride: ""
+  reactionSeedOverride: 
   isPetitionCard: 0
-  petitionSeedOverride: ""
+  petitionSeedOverride: 
   petitionerSource: 0
   isChatCard: 0
-  chatSeedOverride: ""
+  chatSeedOverride: 
   continueNextCard: {fileID: 0}
   artMode: 0
   cardImage: {fileID: 0}

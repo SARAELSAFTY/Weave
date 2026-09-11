@@ -67,7 +67,7 @@ MonoBehaviour:
   petitionerSource: 0
   isChatCard: 0
   chatSeedOverride: "The ghost reflects on the heavy cost of triumph and pride."
-  continueNextCard: {fileID: 11400000, guid: 73757d5d33ead2505f585d8a8ce14d1d, type: 2}
+  continueNextCard: {fileID: 11400000, guid: cd1bad0e28d66cf1ddce9a0910135b41, type: 2}
   artMode: 0
   cardImage: {fileID: 0}
   visualTemplate: {fileID: 0}

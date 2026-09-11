@@ -21,6 +21,6 @@ MonoBehaviour:
   collapseThreshold: 0
   warningThresholdPercent: 30
   warningCooldownCards: 5
-  speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
+  speaker: {fileID: 11400000, guid: bd422fef7c7a0976bcb3c39364963115, type: 2}
   collapseEndingFallbackEnglish: "The vaults stand open and echoing, swept clean. A king without coin is a beggar with better posture."
   collapseEndingFallbackArabic: "تردد صدى الصمت في خزائنك الخاوية بعد نفاد آخر دينار. الملك بلا مال كالمتسول في ثياب فاخرة."

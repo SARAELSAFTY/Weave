@@ -16,10 +16,10 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
+  speaker: {fileID: 11400000, guid: bd422fef7c7a0976bcb3c39364963115, type: 2}
   descriptionLocalized:
-    english: "Merchant: 'Sire, foreign merchants bought up our domestic reserves! Prices in the market are skyrocketing, and families demand bread.'"
-    arabic: "كبير التجار: «يا مولاي، اشترى تجار الغرب مخزوناتنا المحلية! أسعار الأسواق تلتهب، والأهالي يستغيثون من شح الخبز.»"
+    english: "Treasurer: 'Sire, Western merchants have bought out our domestic grain reserves. Market prices are spiraling upward — the treasury cannot absorb this. We must act before the city turns.'"
+    arabic: "أمين الخزينة: «يا مولاي، استنزف تجار الغرب احتياطياتنا المحلية! أسعار الأسواق تلتهب والخزينة عاجزة عن الاستيعاب، علينا التحرك قبل أن تنفجر المدينة.»"
   dayAdvance: 1
   leftChoiceLocalized:
     english: "Subsidize bakeries from the royal reserves."

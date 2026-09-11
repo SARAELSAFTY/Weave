@@ -18,21 +18,21 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 11400000, guid: 58e0d26dc32b25229dc4aef014036958, type: 2}
   descriptionLocalized:
-    english: "The Jester stands and bows deeply: 'The hour of your legacy has arrived, Sire. Will you seal the bond of blood, rule with absolute iron, or leave the golden cage behind?'"
-    arabic: "يقف البهلوان وينحني بإجلال عميق: «دقت ساعة الحصاد يا مولاي. فهل نتوج عهد الأخوة المشتركة، أم تحكم بالحديد والنار، أم تغادر هذا القفص الذهبي؟»"
+    english: "The Jester stands and bows deeply: 'The hour of your legacy has arrived, Sire. Will you lay the crown down and be Percy once more, or step forward alone and let history judge?'"
+    arabic: "يقف البهلوان وينحني بإجلال عميق: «دقت ساعة الحصاد يا مولاي. فهل تضع التاج وتعود بيرسي من جديد، أم تتقدم وحدك وتدع التاريخ يحكم على عهدك؟»"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: "Crown my brother beside me; two brothers upon one throne!"
-    arabic: "تتويج أخي شريكاً على العرش؛ أخوان على عرش واحد!"
+    english: "Lay down the crown; I choose to be just Percy."
+    arabic: "أضع التاج على وسادته برفق وأغادر... أريد أن أكون بيرسي الإنسان فقط."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
-      value: 10
+      value: -20
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
       value: 0
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: 15
-  leftNextCard: {fileID: 11400000, guid: 095847a3b777b777109671f82e422d08, type: 2}
+      value: 0
+  leftNextCard: {fileID: 11400000, guid: c498fb5fae193166969c9705b3d059ab, type: 2}
   rightChoiceLocalized:
     english: "Step forward alone and let history judge my reign."
     arabic: "أتقدم بمفردي لعرشي، وأدع التاريخ يحكم على عهدي."
@@ -46,24 +46,18 @@ MonoBehaviour:
       value: 5
   rightNextCard: {fileID: 11400000, guid: a4e177db000cd2b141084e1b8595c3d8, type: 2}
   middleChoiceLocalized:
-    english: "Lay down the crown; I choose to be just Percy."
-    arabic: "أضع التاج على وسادته برفق وأغادر... أريد أن أكون بيرسي الإنسان فقط."
+    english: ""
+    arabic: ""
   middleResourceChange:
     values:
-    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
-      value: -20
-    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
-      value: 0
-    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: 0
-  middleNextCard: {fileID: 11400000, guid: c498fb5fae193166969c9705b3d059ab, type: 2}
-  isThreeWayVerdict: 1
+  middleNextCard: {fileID: 0}
+  isThreeWayVerdict: 0
   isEndingEvaluator: 0
   leftSetFlags: 0
   rightSetFlags: 0
   middleSetFlags: 0
   continueSetFlags: 0
-  leftRequiresFlags: 1
+  leftRequiresFlags: 0
   rightRequiresFlags: 0
   middleRequiresFlags: 0
   alternateDescriptionIfFlags: 0
@@ -85,7 +79,7 @@ MonoBehaviour:
   petitionerSource: 0
   isChatCard: 0
   chatSeedOverride: ""
-  continueNextCard: {fileID: 11400000, guid: c498fb5fae193166969c9705b3d059ab, type: 2}
+  continueNextCard: {fileID: 0}
   artMode: 0
   cardImage: {fileID: 0}
   visualTemplate: {fileID: 0}

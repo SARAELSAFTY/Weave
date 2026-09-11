@@ -22,16 +22,14 @@ MonoBehaviour:
     arabic: "المملكة تحبس أنفاسها. سيمنحك التاريخ لقبه حسب الملك الذي كنته."
   dayAdvance: 1
   leftChoiceLocalized:
-    english: ""
-    arabic: ""
+    english: "Rule by decree; my word will be the realm's only law."
+    arabic: "أحكم بالمراسيم؛ كلمتي ستكون القانون الوحيد في المملكة."
   leftResourceChange:
     values:
   leftNextCard: {fileID: 11400000, guid: 2f065b843a2bc08964e199da1bed4b25, type: 2}
   rightChoiceLocalized:
-    english: ""
-    arabic: ""
-  rightResourceChange:
-    values:
+    english: "Let the ministers carry the crown's weight; I will smile and sign."
+    arabic: "دعوا الوزراء يتحملون عناء التاج؛ وسأبتسم وأوقّع."
   rightNextCard: {fileID: 11400000, guid: 0c62e04ba200d12495d57e61aeb121d4, type: 2}
   middleChoiceLocalized:
     english: ""

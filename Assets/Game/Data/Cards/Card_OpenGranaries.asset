@@ -16,10 +16,10 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
+  speaker: {fileID: 11400000, guid: bd422fef7c7a0976bcb3c39364963115, type: 2}
   descriptionLocalized:
-    english: "Merchant: 'Sire, grain wagons roll through every district. The people are weeping with joy, shouting blessings on your name! The riot has turned into a celebration.'"
-    arabic: "كبير التجار: «عربات الحبوب تجوب الأسواق يا مولاي! الناس يبكون فرحاً ويدعون لكم بطول البقاء، وانقلب الشغب إلى احتفال مهيب.»"
+    english: "Treasurer: 'Sire, grain wagons are moving through every district — the crowds are dispersing and the squares are calm. Tax collection should normalize within the week. A profitable outcome, I must say.'"
+    arabic: "أمين الخزينة: «يا مولاي، عربات الحبوب تجوب كل حي. الغضب يتراجع والساحات تهدأ، وتحصيل الضرائب سيعود أدراجه قريباً. نتيجة مربحة بكل المعايير.»"
   dayAdvance: 1
   leftChoiceLocalized:
     english: "Commission local guilds to organize autumn planting."

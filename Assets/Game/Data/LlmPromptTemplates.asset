@@ -40,6 +40,7 @@ MonoBehaviour:
     "reaction": your spoken reply, 1-3 in-character sentences. Always concrete: name
     the people, places, and stakes. Answer the ruler''s latest words directly; never
     repeat an earlier line, never stall, and never say you are waiting for an answer.
+    Say each thing once - do not repeat or rephrase the same sentence within one reply.
 
     -
     "speakerName": on the first turn only, the petitioner''s name with a short role
@@ -80,7 +81,8 @@ MonoBehaviour:
 
     Answer
     the ruler''s latest words directly and concretely; never repeat an earlier line
-    and never wait for instructions. Your earlier lines are in the conversation history,
+    and never wait for instructions. Say each thing once - do not repeat or rephrase
+    the same sentence within one reply. Your earlier lines are in the conversation history,
     so build on them. This audience is talk only - it cannot change kingdom resources,
     decisions, or history.'
   englishInstruction: Respond in natural English.

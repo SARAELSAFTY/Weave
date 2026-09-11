@@ -16,7 +16,7 @@ MonoBehaviour:
   displayNameLocalized:
     english: 
     arabic: 
-  speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
+  speaker: {fileID: 11400000, guid: bd422fef7c7a0976bcb3c39364963115, type: 2}
   descriptionLocalized:
     english: "A weather-beaten farmer's representative kneels before you: 'Sire, black rot has consumed half our grain fields. If you demand full taxes, our children will starve before winter sets in!'"
     arabic: "يركع فلاح أجهدته السنون بين يديك: «يا مولاي، التهم العفن الأسود نصف حقول القمح! إن ألزمتمونا بكامل الخراج، فستهلك عائلاتنا جوعاً قبل قدوم الشتاء!»"
