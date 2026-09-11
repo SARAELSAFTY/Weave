@@ -9,9 +9,6 @@ namespace Game.Scripts.Narrative
     /// <remarks>Initializes all resources to their defaultStartingValue in Awake. Disables itself if the catalog reference is missing.</remarks>
     public class ResourceState : MonoBehaviour
     {
-        public const int MinValue = 0;
-        public const int MaxValue = 100;
-
         [Tooltip("The resource catalog defining which resources exist and their starting values.")]
         [SerializeField] private ResourceCatalog catalog;
 
@@ -50,8 +47,7 @@ namespace Game.Scripts.Narrative
                     if (changeValue.resource != null)
                     {
                         values.TryGetValue(changeValue.resource, out int currentValue);
-                        values[changeValue.resource] = Mathf.Clamp(
-                            currentValue + changeValue.value, MinValue, MaxValue);
+                        values[changeValue.resource] = currentValue + changeValue.value;
                     }
                 }
             }

@@ -15,7 +15,7 @@ MonoBehaviour:
   groqModel: qwen/qwen3.8-27b
   temperature: 0.65
   reasoningEffort: none
-  maxTokensPerResponse: 600
+  maxTokensPerResponse: 300
   epilogueMaxTokens: 200
   reactionHistoryCount: 3
   petitionHistoryCount: 3

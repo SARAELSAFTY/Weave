@@ -37,12 +37,6 @@ namespace Game.Scripts.Editor
             CardGraphWindow window = GetWindow<CardGraphWindow>("Card Graph");
             window.minSize = new Vector2(900, 650);
             window.titleContent = new GUIContent("Card Graph");
-            if (window.currentDatabase == null)
-            {
-                window.currentDatabase = AssetDatabase.LoadAssetAtPath<NarrativeDatabase>("Assets/Game/Data/NarrativeDatabase.asset");
-                window.UpdateToolbarState();
-                window.PopulateGraph();
-            }
         }
 
         /// <summary>
@@ -78,10 +72,6 @@ namespace Game.Scripts.Editor
 
         private void OnEnable()
         {
-            if (currentDatabase == null)
-            {
-                currentDatabase = AssetDatabase.LoadAssetAtPath<NarrativeDatabase>("Assets/Game/Data/NarrativeDatabase.asset");
-            }
             ConstructUI();
         }
 

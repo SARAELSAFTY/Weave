@@ -61,76 +61,6 @@ namespace Game.Scripts.Definitions
         [Tooltip("Card shown after the right choice; null means this branch ends.")]
         public CardData rightNextCard;
 
-        [Header("Middle Choice (three-way verdict)")]
-        [Tooltip("Label for the down-swipe / middle option on three-way cards.")]
-        public LocalizedText middleChoiceLocalized;
-
-        [Tooltip("Resource deltas applied when the player picks the middle choice.")]
-        public ResourceChange middleResourceChange;
-
-        [Tooltip("Card shown after the middle choice. When null, continueNextCard is used.")]
-        public CardData middleNextCard;
-
-        [Tooltip("When true, left / down / right are all valid exits (Fool's Verdict).")]
-        public bool isThreeWayVerdict;
-
-        [Header("Ending Evaluator")]
-        [Tooltip("When true, this card is never shown; the runner picks an ending from its wired targets.")]
-        public bool isEndingEvaluator;
-
-        [Header("Story Flags")]
-        [Tooltip("Flags set when the player picks the left choice.")]
-        public StoryFlags leftSetFlags;
-
-        [Tooltip("Flags set when the player picks the right choice.")]
-        public StoryFlags rightSetFlags;
-
-        [Tooltip("Flags set when the player picks the middle choice.")]
-        public StoryFlags middleSetFlags;
-
-        [Tooltip("Flags set when this card is resolved via continue (reaction / petition / chat).")]
-        public StoryFlags continueSetFlags;
-
-        [Tooltip("Left choice is hidden unless these flags are set.")]
-        public StoryFlags leftRequiresFlags;
-
-        [Tooltip("Right choice is hidden unless these flags are set.")]
-        public StoryFlags rightRequiresFlags;
-
-        [Tooltip("Middle choice is hidden unless these flags are set.")]
-        public StoryFlags middleRequiresFlags;
-
-        [Tooltip("When these flags match (see Alternate If Missing), use alternateDescriptionLocalized.")]
-        public StoryFlags alternateDescriptionIfFlags;
-
-        [Tooltip("When true, show the alternate description if the flags above are NOT all set.")]
-        public bool alternateDescriptionIfMissing;
-
-        [Tooltip("Optional body text used instead of descriptionLocalized when the flag condition matches.")]
-        public LocalizedText alternateDescriptionLocalized;
-
-        [Header("Entry Gate")]
-        [Tooltip("Card is skipped unless these flags are set.")]
-        public StoryFlags entryRequiresFlags;
-
-        [Tooltip("When true, gateResource must sit between gateMinInclusive and gateMaxInclusive or the card is skipped.")]
-        public bool hasResourceGate;
-
-        [Tooltip("Resource checked by the entry gate.")]
-        public ResourceData gateResource;
-
-        [Tooltip("Inclusive minimum for the gated resource.")]
-        public int gateMinInclusive;
-
-        [Tooltip("Inclusive maximum for the gated resource.")]
-        public int gateMaxInclusive = 100;
-
-        [Tooltip("Card to show instead when the entry gate fails.")]
-        public CardData skipToCard;
-
-        [Tooltip("Alternate skip target; used when Gold is strictly greater than Army.")]
-        public CardData skipToAltCard;
-
         [Header("LLM Reaction")]
         [Tooltip("When true, this card uses an LLM-generated reaction instead of fixed choices.")]
         public bool isLlmReactionCard;
@@ -176,14 +106,12 @@ namespace Game.Scripts.Definitions
         public bool UsesContinueExit => isLlmReactionCard || isPetitionCard || isChatCard;
 
         /// <summary>True when no next card is reachable from this card's active exit path.</summary>
-        public bool IsEnding => isEndingEvaluator
-            ? false
-            : UsesContinueExit
-                ? continueNextCard == null
-                : leftNextCard == null && rightNextCard == null;
+        public bool IsEnding => UsesContinueExit
+            ? continueNextCard == null
+            : leftNextCard == null && rightNextCard == null;
 
         /// <summary>True when this is a standard choice card with exactly one null branch, indicating incomplete authoring.</summary>
-        public bool HasBrokenBranch => !UsesContinueExit && !IsEnding && !isEndingEvaluator && (leftNextCard == null || rightNextCard == null);
+        public bool HasBrokenBranch => !UsesContinueExit && !IsEnding && (leftNextCard == null || rightNextCard == null);
 
         /// <summary>Returns the localized card description for the given language.</summary>
         /// <param name="language">Target language.</param>
@@ -196,21 +124,6 @@ namespace Game.Scripts.Definitions
         /// <summary>Returns the localized right-choice label for the given language.</summary>
         /// <param name="language">Target language.</param>
         public string GetRightChoice(GameLanguage language) => rightChoiceLocalized.Get(language);
-
-        /// <summary>Returns the localized middle-choice label for the given language.</summary>
-        public string GetMiddleChoice(GameLanguage language) => middleChoiceLocalized.Get(language);
-
-        /// <summary>True when alternateDescriptionLocalized should replace the main body for the given flags.</summary>
-        public bool UsesAlternateDescription(StoryFlags currentFlags)
-        {
-            if (alternateDescriptionIfFlags == StoryFlags.None || alternateDescriptionLocalized.IsEmpty)
-            {
-                return false;
-            }
-
-            bool hasFlags = (currentFlags & alternateDescriptionIfFlags) == alternateDescriptionIfFlags;
-            return alternateDescriptionIfMissing ? !hasFlags : hasFlags;
-        }
 
         /// <summary>Returns the effective reaction seed prompt, using the override if set or falling back to the template default.</summary>
         /// <param name="templates">Prompt templates providing the default seed; may be null.</param>

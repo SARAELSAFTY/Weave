@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Game.Scripts.Definitions;
-using Game.Scripts.Localization;
 using UnityEngine;
 
 namespace Game.Scripts.Narrative
@@ -49,20 +48,9 @@ namespace Game.Scripts.Narrative
         private readonly NarrativeDatabase database;
         private readonly ResourceState resourceState;
         private readonly ResourceCatalog resourceCatalog;
-        private readonly StoryFlagState storyFlags = new StoryFlagState();
-        private CardPresentation currentPresentation;
 
         /// <summary>The card currently being presented to the player.</summary>
         public CardData CurrentCard { get; private set; }
-
-        /// <summary>Flags set so far this reign.</summary>
-        public StoryFlagState Flags => storyFlags;
-
-        /// <summary>Resolved labels and routing for <see cref="CurrentCard"/> after flag remaps.</summary>
-        public CardPresentation CurrentPresentation => currentPresentation;
-
-        /// <summary>When set, the next <see cref="Choose"/> uses this card instead of the usual exit. Cleared after use.</summary>
-        public CardData PendingNextCard { get; set; }
 
         /// <summary>The current in-game day, starting at 1 and incremented by each card's dayAdvance value.</summary>
         public int Day { get; private set; } = 1;
@@ -103,31 +91,14 @@ namespace Game.Scripts.Narrative
                 return false;
             }
 
-            storyFlags.Reset();
-            PendingNextCard = null;
-            SetCurrentCard(database.startingCard);
+            CurrentCard = database.startingCard;
             return true;
         }
 
-        /// <summary>Rebuilds <see cref="CurrentPresentation"/> for the current language (call after language changes).</summary>
-        public void RefreshPresentation(GameLanguage language, string swipeDownHint)
-        {
-            currentPresentation = CardPresentation.Resolve(CurrentCard, storyFlags, language, swipeDownHint);
-        }
-
         /// <summary>Resolves a player choice on the current card, applies resource changes, advances the day, and checks for collapse endings.</summary>
-        public NarrativeStepResult Choose(CardChoice choice)
-        {
-            return Choose(choice, applyChoiceResources: true);
-        }
-
-        /// <summary>Resolves the current card using <see cref="PendingNextCard"/> or the continue exit, without applying left/right deltas.</summary>
-        public NarrativeStepResult ContinueWithoutChoiceResources()
-        {
-            return Choose(CardChoice.Right, applyChoiceResources: false);
-        }
-
-        private NarrativeStepResult Choose(CardChoice choice, bool applyChoiceResources)
+        /// <param name="choseRight">True for the right branch, false for the left branch. Ignored when the card uses a continue exit.</param>
+        /// <returns>A <see cref="NarrativeStepResult"/> describing the outcome of this step.</returns>
+        public NarrativeStepResult Choose(bool choseRight)
         {
             if (CurrentCard == null)
             {
@@ -139,95 +110,32 @@ namespace Game.Scripts.Narrative
                 return new NarrativeStepResult(CurrentCard, null);
             }
 
-            CardData card = CurrentCard;
-            CardData nextCard;
-            StoryFlags setFlags = StoryFlags.None;
+            bool usesContinueExit = CurrentCard.UsesContinueExit;
+            CardData nextCard = usesContinueExit
+                ? CurrentCard.continueNextCard
+                : (choseRight ? CurrentCard.rightNextCard : CurrentCard.leftNextCard);
 
-            if (PendingNextCard != null)
+            if (!usesContinueExit)
             {
-                nextCard = PendingNextCard;
-                PendingNextCard = null;
-                setFlags = card.continueSetFlags;
-            }
-            else if (card.UsesContinueExit)
-            {
-                nextCard = card.continueNextCard;
-                setFlags = card.continueSetFlags;
-            }
-            else
-            {
-                CardPresentation presentation = currentPresentation.LeftNext != null || currentPresentation.RightNext != null
-                    ? currentPresentation
-                    : CardPresentation.Resolve(card, storyFlags, GameLanguage.English, string.Empty);
-
-                if (choice == CardChoice.Middle)
-                {
-                    if (!presentation.ShowMiddle || presentation.MiddleNext == null)
-                    {
-                        return new NarrativeStepResult(null, "No middle choice is available on this card.");
-                    }
-
-                    nextCard = presentation.MiddleNext;
-                    setFlags = presentation.MiddleSetFlags;
-                    if (applyChoiceResources)
-                    {
-                        resourceState.Apply(presentation.MiddleChange);
-                    }
-                }
-                else if (choice == CardChoice.Right)
-                {
-                    nextCard = presentation.RightNext;
-                    setFlags = presentation.RightSetFlags;
-                    if (applyChoiceResources)
-                    {
-                        resourceState.Apply(presentation.RightChange);
-                    }
-                }
-                else
-                {
-                    nextCard = presentation.LeftNext;
-                    setFlags = presentation.LeftSetFlags;
-                    if (applyChoiceResources)
-                    {
-                        resourceState.Apply(presentation.LeftChange);
-                    }
-                }
+                resourceState.Apply(choseRight ? CurrentCard.rightResourceChange : CurrentCard.leftResourceChange);
             }
 
-            storyFlags.Set(setFlags);
-
+            // An authored ending transition always plays its card: the story's final beat outranks a
+            // collapse that the same dramatic choice triggers (e.g. walking away from the crown costs
+            // every point of Crown by design).
             bool nextIsAuthoredEnding = nextCard != null && nextCard.IsEnding;
 
             if (!nextIsAuthoredEnding && TryGetCollapsedResource(out ResourceData collapsedResource))
             {
-                AdvanceDay(card.dayAdvance);
+                AdvanceDay(CurrentCard.dayAdvance);
                 return new NarrativeStepResult(null, null, isCollapseEnding: true, collapsedResource);
             }
 
-            AdvanceDay(card.dayAdvance);
+            AdvanceDay(CurrentCard.dayAdvance);
 
             if (nextCard == null)
             {
-                return new NarrativeStepResult(null, $"'{card.AssetName}' has no valid next card to show.");
-            }
-
-            nextCard = ResolveEntry(nextCard);
-
-            if (nextCard == null)
-            {
-                return new NarrativeStepResult(null, $"'{card.AssetName}' skipped to an empty gate.");
-            }
-
-            if (nextCard.isEndingEvaluator)
-            {
-                CardData ending = EndingEvaluator.Select(nextCard, resourceState, resourceCatalog, storyFlags);
-                AdvanceDay(nextCard.dayAdvance);
-                if (ending == null)
-                {
-                    return new NarrativeStepResult(null, $"'{nextCard.AssetName}' evaluator has no wired endings.");
-                }
-
-                return new NarrativeStepResult(ending, null);
+                return new NarrativeStepResult(null, $"'{CurrentCard.AssetName}' has no valid next card to show.");
             }
 
             if (nextCard.IsEnding)
@@ -235,65 +143,8 @@ namespace Game.Scripts.Narrative
                 return new NarrativeStepResult(nextCard, null);
             }
 
-            SetCurrentCard(nextCard);
+            CurrentCard = nextCard;
             return new NarrativeStepResult(null, null);
-        }
-
-        private void SetCurrentCard(CardData card)
-        {
-            CurrentCard = ResolveEntry(card);
-            currentPresentation = CardPresentation.Resolve(CurrentCard, storyFlags, GameLanguage.English, string.Empty);
-        }
-
-        /// <summary>Walks skip gates until a playable card remains, or null if the chain is empty.</summary>
-        public CardData ResolveEntry(CardData card)
-        {
-            int guard = 0;
-            while (card != null && !PassesEntry(card) && guard++ < 8)
-            {
-                card = PickSkipTarget(card);
-            }
-
-            return card;
-        }
-
-        private bool PassesEntry(CardData card)
-        {
-            if (card == null)
-            {
-                return false;
-            }
-
-            if (card.entryRequiresFlags != StoryFlags.None && !storyFlags.Has(card.entryRequiresFlags))
-            {
-                return false;
-            }
-
-            if (!card.hasResourceGate || card.gateResource == null)
-            {
-                return true;
-            }
-
-            int value = resourceState.Get(card.gateResource);
-            return value >= card.gateMinInclusive && value <= card.gateMaxInclusive;
-        }
-
-        private CardData PickSkipTarget(CardData card)
-        {
-            if (card.skipToCard != null && card.skipToAltCard != null && resourceCatalog != null)
-            {
-                int army = GetNamed("Army");
-                int gold = GetNamed("Gold");
-                return gold > army ? card.skipToAltCard : card.skipToCard;
-            }
-
-            return card.skipToCard != null ? card.skipToCard : card.skipToAltCard;
-        }
-
-        private int GetNamed(string assetName)
-        {
-            ResourceData resource = resourceCatalog != null ? resourceCatalog.FindByAssetName(assetName) : null;
-            return resource != null ? resourceState.Get(resource) : 0;
         }
 
         private bool TryGetCollapsedResource(out ResourceData collapsedResource)

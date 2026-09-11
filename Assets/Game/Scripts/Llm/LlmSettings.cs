@@ -31,7 +31,7 @@ namespace Game.Scripts.Llm
         [Header("Token Limits")]
         [Tooltip("Default maximum completion tokens for reaction and petition responses unless overridden per request.")]
         [Min(50)]
-        public int maxTokensPerResponse = 600;
+        public int maxTokensPerResponse = 300;
 
         [Tooltip("Maximum completion tokens reserved specifically for epilogue generation.")]
         [Min(20)]

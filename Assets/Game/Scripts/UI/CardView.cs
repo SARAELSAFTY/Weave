@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using Game.Scripts.Definitions;
 using Game.Scripts.Localization;
-using Game.Scripts.Narrative;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -102,8 +101,6 @@ namespace Game.Scripts.UI
         private SpeakerData currentSpeaker;
         private string currentDynamicDescription;
         private TMP_Text petitionConfirmLabel;
-        private CardPresentation currentPresentation;
-        private bool hasPresentation;
 
         /// <summary>Raised when the player clicks the restart button on an ending card.</summary>
         public event Action RestartRequested;
@@ -113,9 +110,6 @@ namespace Game.Scripts.UI
 
         /// <summary>Raised when the player clicks the petition confirm button after an LLM proposal.</summary>
         public event Action PetitionConfirmRequested;
-
-        /// <summary>Raised on language change so the owner can rebuild <see cref="CardPresentation"/> labels.</summary>
-        public event Action LanguageRefreshRequested;
 
         /// <summary>True when the card accepts drag gestures (not an ending or petition card).</summary>
         public bool AcceptsDrag => !isEndingCard && !isPetitionCard;
@@ -220,43 +214,11 @@ namespace Game.Scripts.UI
         /// <param name="speaker">The speaker whose portrait and name are displayed; may be null.</param>
         public void Show(CardData cardData, SpeakerData speaker)
         {
-            Show(cardData, speaker, default, hasResolvedPresentation: false);
-        }
-
-        /// <summary>Presents a choice card using already-resolved labels (resource tags, flag remaps, middle hint).</summary>
-        public void Show(CardData cardData, SpeakerData speaker, CardPresentation presentation)
-        {
-            Show(cardData, speaker, presentation, hasResolvedPresentation: true);
-        }
-
-        private void Show(CardData cardData, SpeakerData speaker, CardPresentation presentation, bool hasResolvedPresentation)
-        {
             ResetPresentation(cardData, speaker, ending: false, petition: false, llmReaction: false, dynamicDescription: null);
-            currentPresentation = presentation;
-            hasPresentation = hasResolvedPresentation;
 
             ApplySpeaker(speaker, cardData);
             ApplyCardVisuals(cardData);
             ApplyStaticCardText(cardData, useReactionFallbacks: false);
-        }
-
-        /// <summary>Re-applies resolved labels after a language change without resetting card pose.</summary>
-        public void ApplyPresentation(CardPresentation presentation)
-        {
-            currentPresentation = presentation;
-            hasPresentation = true;
-
-            if (isPetitionCard || isEndingCard)
-            {
-                return;
-            }
-
-            if (!HasDynamicDescription && !isLlmReactionPresentation)
-            {
-                SetLabel(descriptionText, presentation.Description);
-            }
-
-            ApplyChoiceTexts(currentCardData, useReactionFallbacks: isLlmReactionPresentation);
         }
 
         /// <summary>Presents a card showing an LLM reaction with empty description (populated later) and reaction-fallback choice labels.</summary>
@@ -380,21 +342,15 @@ namespace Game.Scripts.UI
             currentDynamicDescription = dynamicDescription;
             currentCardData = cardData;
             currentSpeaker = speaker;
-            currentPresentation = default;
-            hasPresentation = false;
             ResetCardPosition();
             restartButton.gameObject.SetActive(false);
             HidePetitionInput();
         }
 
-        /// <summary>Updates card position, rotation, and choice sub-card reveal based on drag progress.</summary>
+        /// <summary>Updates card position, rotation, and choice sub-card reveal based on horizontal drag progress.</summary>
+        /// <param name="horizontalDrag">Current horizontal drag displacement in pixels from center.</param>
+        /// <param name="swipeThreshold">The pixel distance at which drag is considered fully committed; clamped to minimum 1.</param>
         public void SetDragProgress(float horizontalDrag, float swipeThreshold)
-        {
-            SetDragProgress(horizontalDrag, 0f, swipeThreshold, allowMiddle: false);
-        }
-
-        /// <summary>Updates card pose for horizontal left/right swipes, or a downward middle swipe when allowed.</summary>
-        public void SetDragProgress(float horizontalDrag, float verticalDrag, float swipeThreshold, bool allowMiddle)
         {
             if (isEndingCard || isPetitionCard)
             {
@@ -402,19 +358,12 @@ namespace Game.Scripts.UI
             }
 
             float safeThreshold = Mathf.Max(1f, swipeThreshold);
-            bool middleDrag = allowMiddle && verticalDrag < 0f && Mathf.Abs(verticalDrag) >= Mathf.Abs(horizontalDrag);
-            if (middleDrag)
-            {
-                cardRectTransform.anchoredPosition = homePosition + new Vector2(0f, verticalDrag);
-                cardRectTransform.localRotation = homeRotation;
-                leftChoiceCardAnimator?.SetRevealProgress(0f);
-                rightChoiceCardAnimator?.SetRevealProgress(0f);
-                return;
-            }
-
             float progress = Mathf.Clamp(horizontalDrag / safeThreshold, -1f, 1f);
-            cardRectTransform.anchoredPosition = homePosition + new Vector2(horizontalDrag, 0f);
+            Vector2 visualDragOffset = new Vector2(horizontalDrag, 0f);
+
+            cardRectTransform.anchoredPosition = homePosition + visualDragOffset;
             cardRectTransform.localRotation = Quaternion.Euler(0f, 0f, progress * -exitRotationDegrees);
+
             leftChoiceCardAnimator?.SetRevealProgress(-progress);
             rightChoiceCardAnimator?.SetRevealProgress(progress);
         }
@@ -461,20 +410,6 @@ namespace Game.Scripts.UI
         /// <param name="choseRight">True to confirm the right choice card, false for the left.</param>
         public void PlayConfirmAnimation(bool choseRight)
         {
-            PlayConfirmAnimation(choseRight ? CardChoice.Right : CardChoice.Left);
-        }
-
-        /// <summary>Triggers confirm animation for a left, right, or middle commit.</summary>
-        public void PlayConfirmAnimation(CardChoice choice)
-        {
-            if (choice == CardChoice.Middle)
-            {
-                leftChoiceCardAnimator?.EaseBackToPark();
-                rightChoiceCardAnimator?.EaseBackToPark();
-                return;
-            }
-
-            bool choseRight = choice == CardChoice.Right;
             ChoiceCardAnimator chosen = choseRight ? rightChoiceCardAnimator : leftChoiceCardAnimator;
             ChoiceCardAnimator other = choseRight ? leftChoiceCardAnimator : rightChoiceCardAnimator;
             chosen?.PlayConfirm();
@@ -494,26 +429,10 @@ namespace Game.Scripts.UI
         /// <param name="duration">Total animation duration in seconds.</param>
         public IEnumerator AnimateCardExit(bool choseRight, float duration)
         {
-            yield return AnimateCardExit(choseRight ? CardChoice.Right : CardChoice.Left, duration);
-        }
-
-        /// <summary>Animates the card offscreen left, right, or down for a middle commit.</summary>
-        public IEnumerator AnimateCardExit(CardChoice choice, float duration)
-        {
             Vector2 startPosition = cardRectTransform.anchoredPosition;
-            Vector2 targetPosition;
-            Quaternion targetRotation;
-            if (choice == CardChoice.Middle)
-            {
-                targetPosition = startPosition + new Vector2(0f, -exitDistance);
-                targetRotation = homeRotation;
-            }
-            else
-            {
-                float direction = choice == CardChoice.Right ? 1f : -1f;
-                targetPosition = startPosition + new Vector2(direction * exitDistance, 0f);
-                targetRotation = Quaternion.Euler(0f, 0f, direction * -exitRotationDegrees);
-            }
+            float direction = choseRight ? 1f : -1f;
+            Vector2 targetPosition = startPosition + new Vector2(direction * exitDistance, 0f);
+            Quaternion targetRotation = Quaternion.Euler(0f, 0f, direction * -exitRotationDegrees);
 
             float elapsed = 0f;
             while (elapsed < duration)
@@ -828,12 +747,6 @@ namespace Game.Scripts.UI
                 return;
             }
 
-            LanguageRefreshRequested?.Invoke();
-            if (hasPresentation && LanguageRefreshRequested != null)
-            {
-                return;
-            }
-
             // Note: an EMPTY dynamic description (distinct from null) falls through to the card's own text.
             if (!string.IsNullOrEmpty(currentDynamicDescription))
             {
@@ -851,10 +764,7 @@ namespace Game.Scripts.UI
         {
             if (cardData != null)
             {
-                string description = hasPresentation
-                    ? currentPresentation.Description
-                    : cardData.GetDescription(CurrentLanguage);
-                SetLabel(descriptionText, description);
+                SetLabel(descriptionText, cardData.GetDescription(CurrentLanguage));
             }
 
             ApplyChoiceTexts(cardData, useReactionFallbacks);
@@ -867,8 +777,8 @@ namespace Game.Scripts.UI
                 return;
             }
 
-            string left = hasPresentation ? currentPresentation.LeftLabel : cardData.GetLeftChoice(CurrentLanguage);
-            string right = hasPresentation ? currentPresentation.RightLabel : cardData.GetRightChoice(CurrentLanguage);
+            string left = cardData.GetLeftChoice(CurrentLanguage);
+            string right = cardData.GetRightChoice(CurrentLanguage);
             if (useReactionFallbacks)
             {
                 if (string.IsNullOrWhiteSpace(left))

@@ -48,7 +48,7 @@ Answer the ruler's latest words directly and concretely; never repeat an earlier
         [Header("Language Instructions")]
         [Tooltip("SENT IN: appended as a section in every LLM request when the game language is English.")]
         [TextArea(1, 3)]
-        public string englishInstruction = "Respond in natural English. Do not write Arabic unless the player's latest message is in Arabic.";
+        public string englishInstruction = "Respond in natural English.";
 
         [Tooltip("SENT IN: appended as a section in every LLM request when the game language is Arabic.")]
         [TextArea(1, 3)]

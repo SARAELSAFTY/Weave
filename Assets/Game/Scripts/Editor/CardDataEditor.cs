@@ -120,49 +120,7 @@ namespace Game.Scripts.Editor
 
                 SerializedProperty rightNextCardProp = serializedObject.FindProperty("rightNextCard");
                 EditorGUILayout.PropertyField(rightNextCardProp, new GUIContent("Right Next Card"));
-
-                EditorGUILayout.Space(8);
-                SerializedProperty threeWayProp = serializedObject.FindProperty("isThreeWayVerdict");
-                EditorGUILayout.PropertyField(threeWayProp, new GUIContent("Three-Way Verdict"));
-                if (threeWayProp.boolValue)
-                {
-                    LocalizedTextGui.Draw(serializedObject.FindProperty("middleChoiceLocalized"), "Middle Choice");
-                    SerializedProperty middleChangeProp = serializedObject.FindProperty("middleResourceChange");
-                    if (middleChangeProp != null)
-                    {
-                        EditorGUILayout.PropertyField(middleChangeProp, true);
-                    }
-
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("middleNextCard"), new GUIContent("Middle Next Card"));
-                }
-
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("isEndingEvaluator"), new GUIContent("Ending Evaluator"));
             }
-
-            EditorGUILayout.Space(8);
-            EditorGUILayout.LabelField("Story Flags & Gates", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("leftSetFlags"), new GUIContent("Left Set Flags"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("rightSetFlags"), new GUIContent("Right Set Flags"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("middleSetFlags"), new GUIContent("Middle Set Flags"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("continueSetFlags"), new GUIContent("Continue Set Flags"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("leftRequiresFlags"), new GUIContent("Left Requires Flags"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("rightRequiresFlags"), new GUIContent("Right Requires Flags"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("middleRequiresFlags"), new GUIContent("Middle Requires Flags"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("alternateDescriptionIfFlags"), new GUIContent("Alternate If Flags"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("alternateDescriptionIfMissing"), new GUIContent("Alternate If Missing"));
-            LocalizedTextGui.DrawTextAreas(serializedObject.FindProperty("alternateDescriptionLocalized"), "Alternate Description");
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("entryRequiresFlags"), new GUIContent("Entry Requires Flags"));
-            SerializedProperty gateProp = serializedObject.FindProperty("hasResourceGate");
-            EditorGUILayout.PropertyField(gateProp, new GUIContent("Has Resource Gate"));
-            if (gateProp.boolValue)
-            {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("gateResource"), new GUIContent("Gate Resource"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("gateMinInclusive"), new GUIContent("Gate Min"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("gateMaxInclusive"), new GUIContent("Gate Max"));
-            }
-
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("skipToCard"), new GUIContent("Skip To Card"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("skipToAltCard"), new GUIContent("Skip To Alt Card"));
 
             if (GUI.changed)
             {

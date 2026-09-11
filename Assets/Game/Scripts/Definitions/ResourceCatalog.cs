@@ -22,11 +22,6 @@ namespace Game.Scripts.Definitions
                 return null;
             }
 
-            if (string.Equals(assetName, "Loyalty", StringComparison.OrdinalIgnoreCase))
-            {
-                assetName = "Army";
-            }
-
             foreach (ResourceData resource in resources)
             {
                 if (resource != null && string.Equals(resource.AssetName, assetName, StringComparison.OrdinalIgnoreCase))

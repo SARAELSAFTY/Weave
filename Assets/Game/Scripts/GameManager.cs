@@ -227,7 +227,6 @@ namespace Game.Scripts
                 cardView.RestartRequested += RestartRun;
                 cardView.PetitionCommandSubmitted += HandlePetitionSubmitted;
                 cardView.PetitionConfirmRequested += HandlePetitionConfirmed;
-                cardView.LanguageRefreshRequested += HandleCardLanguageRefresh;
             }
 
             if (startScreenView != null)
@@ -251,7 +250,6 @@ namespace Game.Scripts
                 cardView.RestartRequested -= RestartRun;
                 cardView.PetitionCommandSubmitted -= HandlePetitionSubmitted;
                 cardView.PetitionConfirmRequested -= HandlePetitionConfirmed;
-                cardView.LanguageRefreshRequested -= HandleCardLanguageRefresh;
             }
 
             if (startScreenView != null)
@@ -318,37 +316,22 @@ namespace Game.Scripts
             pauseMenuView.Hide();
         }
 
-        /// <summary>True when the current card offers a down-swipe / middle option.</summary>
-        public bool AcceptsMiddleChoice =>
-            AcceptsChoiceInput && !showingResourceWarning && narrativeRunner != null && narrativeRunner.CurrentPresentation.ShowMiddle;
-
         /// <summary>Handles a player's left/right choice, routing through resource-warning dismissal or normal card resolution.</summary>
         /// <param name="choseRight">True for right choice, false for left.</param>
         public void ChooseSide(bool choseRight)
-        {
-            Choose(choseRight ? CardChoice.Right : CardChoice.Left);
-        }
-
-        /// <summary>Handles a left, right, or middle commit on the current card.</summary>
-        public void Choose(CardChoice choice)
         {
             if (!AcceptsChoiceInput)
             {
                 return;
             }
 
-            if (choice == CardChoice.Middle && !AcceptsMiddleChoice)
-            {
-                return;
-            }
-
             if (showingResourceWarning)
             {
-                StartCoroutine(DismissResourceWarningRoutine(choice == CardChoice.Right));
+                StartCoroutine(DismissResourceWarningRoutine(choseRight));
                 return;
             }
 
-            StartCoroutine(ChooseRoutine(choice));
+            StartCoroutine(ChooseRoutine(choseRight));
         }
 
         private IEnumerator DismissResourceWarningRoutine(bool choseRight)
@@ -361,38 +344,19 @@ namespace Game.Scripts
             ShowCurrentCard();
         }
 
-        private IEnumerator ChooseRoutine(CardChoice choice)
+        private IEnumerator ChooseRoutine(bool choseRight)
         {
             inputEnabled = false;
-            cardView.PlayConfirmAnimation(choice);
+            cardView.PlayConfirmAnimation(choseRight);
 
+            // Capture choice text before Choose() advances the narrative, since CurrentCard will change.
             CardData currentCard = narrativeRunner.CurrentCard;
             bool isLlmCard = currentCard != null && currentCard.isLlmReactionCard;
-            string chosenChoiceText = null;
-            if (currentCard != null && !isLlmCard)
-            {
-                CardPresentation presentation = narrativeRunner.CurrentPresentation;
-                if (choice == CardChoice.Middle)
-                {
-                    chosenChoiceText = currentCard.GetMiddleChoice(CurrentLanguage);
-                }
-                else if (choice == CardChoice.Right)
-                {
-                    chosenChoiceText = currentCard.GetRightChoice(CurrentLanguage);
-                }
-                else if (currentCard.leftRequiresFlags != StoryFlags.None
-                         && !narrativeRunner.Flags.Has(currentCard.leftRequiresFlags)
-                         && presentation.ShowMiddle == false)
-                {
-                    chosenChoiceText = currentCard.GetMiddleChoice(CurrentLanguage);
-                }
-                else
-                {
-                    chosenChoiceText = currentCard.GetLeftChoice(CurrentLanguage);
-                }
-            }
+            string chosenChoiceText = currentCard != null && !isLlmCard
+                ? (choseRight ? currentCard.GetRightChoice(CurrentLanguage) : currentCard.GetLeftChoice(CurrentLanguage))
+                : null;
 
-            NarrativeStepResult result = narrativeRunner.Choose(choice);
+            NarrativeStepResult result = narrativeRunner.Choose(choseRight);
 
             if (result.HasError)
             {
@@ -406,7 +370,7 @@ namespace Game.Scripts
                 historyTracker.RecordChoice(chosenChoiceText);
             }
 
-            yield return cardView.AnimateCardExit(choice, cardExitDuration);
+            yield return cardView.AnimateCardExit(choseRight, cardExitDuration);
             yield return cardView.WaitForChoiceFlight();
             HandleStepResult(result);
         }
@@ -493,27 +457,6 @@ namespace Game.Scripts
                 });
         }
 
-        private void RefreshCurrentPresentation()
-        {
-            if (narrativeRunner == null)
-            {
-                return;
-            }
-
-            narrativeRunner.RefreshPresentation(CurrentLanguage, FallbackStrings.SwipeDownHint(CurrentLanguage));
-        }
-
-        private void HandleCardLanguageRefresh()
-        {
-            if (!runInProgress || narrativeRunner == null)
-            {
-                return;
-            }
-
-            RefreshCurrentPresentation();
-            cardView.ApplyPresentation(narrativeRunner.CurrentPresentation);
-        }
-
         private void ShowCurrentCard()
         {
             CardData card = narrativeRunner.CurrentCard;
@@ -521,9 +464,6 @@ namespace Game.Scripts
             {
                 return;
             }
-
-            RefreshCurrentPresentation();
-            CardPresentation presentation = narrativeRunner.CurrentPresentation;
 
             SpeakerData speaker = card.speaker;
             if (card.isChatCard)
@@ -561,7 +501,7 @@ namespace Game.Scripts
                 return;
             }
 
-            cardView.Show(card, speaker, presentation);
+            cardView.Show(card, speaker);
             inputEnabled = !card.IsEnding;
         }
 
@@ -604,7 +544,7 @@ namespace Game.Scripts
         {
             inputEnabled = false;
 
-            NarrativeStepResult result = narrativeRunner.ContinueWithoutChoiceResources();
+            NarrativeStepResult result = narrativeRunner.Choose(true);
             if (result.HasError)
             {
                 Debug.LogError(result.error, this);
@@ -612,7 +552,7 @@ namespace Game.Scripts
                 yield break;
             }
 
-            yield return cardView.AnimateCardExit(CardChoice.Right, cardExitDuration);
+            yield return cardView.AnimateCardExit(true, cardExitDuration);
             HandleStepResult(result);
         }
 

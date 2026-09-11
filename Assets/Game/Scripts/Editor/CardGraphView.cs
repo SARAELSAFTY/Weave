@@ -334,16 +334,6 @@ namespace Game.Scripts.Editor
                 {
                     TryConnect(sourceNode.LeftPort, card.leftNextCard, nodesByCard);
                     TryConnect(sourceNode.RightPort, card.rightNextCard, nodesByCard);
-                    if (card.isThreeWayVerdict)
-                    {
-                        CardData middleTarget = card.middleNextCard != null ? card.middleNextCard : card.continueNextCard;
-                        TryConnect(sourceNode.MiddlePort, middleTarget, nodesByCard);
-                    }
-
-                    if (card.isEndingEvaluator)
-                    {
-                        TryConnect(sourceNode.ContinuePort, card.continueNextCard, nodesByCard);
-                    }
                 }
             }
         }
@@ -351,12 +341,7 @@ namespace Game.Scripts.Editor
         /// <summary>Connects an output port to the input port of the target card's node if both exist in the graph.</summary>
         private void TryConnect(Port outputPort, CardData targetCard, Dictionary<CardData, CardNode> nodesByCard)
         {
-            if (outputPort == null || targetCard == null)
-            {
-                return;
-            }
-
-            if (nodesByCard.TryGetValue(targetCard, out CardNode targetNode) && targetNode != null && targetNode.InputPort != null)
+            if (targetCard != null && nodesByCard.TryGetValue(targetCard, out CardNode targetNode))
             {
                 AddElement(outputPort.ConnectTo(targetNode.InputPort));
             }
@@ -649,7 +634,7 @@ namespace Game.Scripts.Editor
             }
 
             Undo.RecordObject(sourceCard, "Connect Card Link");
-            if (edge.output == sourceNode.ContinuePort)
+            if (sourceCard.UsesContinueExit && edge.output == sourceNode.ContinuePort)
             {
                 sourceCard.continueNextCard = targetCard;
             }
@@ -660,10 +645,6 @@ namespace Game.Scripts.Editor
             else if (edge.output == sourceNode.RightPort)
             {
                 sourceCard.rightNextCard = targetCard;
-            }
-            else if (edge.output == sourceNode.MiddlePort)
-            {
-                sourceCard.middleNextCard = targetCard;
             }
             EditorUtility.SetDirty(sourceCard);
             return true;
@@ -726,7 +707,7 @@ namespace Game.Scripts.Editor
 
             CardData sourceCard = sourceNode.Card;
             Undo.RecordObject(sourceCard, "Clear Card Link");
-            if (edge.output == sourceNode.ContinuePort)
+            if (sourceCard.UsesContinueExit && edge.output == sourceNode.ContinuePort)
             {
                 sourceCard.continueNextCard = null;
             }
@@ -737,10 +718,6 @@ namespace Game.Scripts.Editor
             else if (edge.output == sourceNode.RightPort)
             {
                 sourceCard.rightNextCard = null;
-            }
-            else if (edge.output == sourceNode.MiddlePort)
-            {
-                sourceCard.middleNextCard = null;
             }
             EditorUtility.SetDirty(sourceCard);
             return true;
@@ -882,27 +859,6 @@ namespace Game.Scripts.Editor
                 {
                     Undo.RecordObject(other, "Clear Card Link");
                     other.continueNextCard = null;
-                    EditorUtility.SetDirty(other);
-                }
-
-                if (other.middleNextCard == cardToDelete)
-                {
-                    Undo.RecordObject(other, "Clear Card Link");
-                    other.middleNextCard = null;
-                    EditorUtility.SetDirty(other);
-                }
-
-                if (other.skipToCard == cardToDelete)
-                {
-                    Undo.RecordObject(other, "Clear Card Link");
-                    other.skipToCard = null;
-                    EditorUtility.SetDirty(other);
-                }
-
-                if (other.skipToAltCard == cardToDelete)
-                {
-                    Undo.RecordObject(other, "Clear Card Link");
-                    other.skipToAltCard = null;
                     EditorUtility.SetDirty(other);
                 }
             }
