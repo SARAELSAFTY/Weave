@@ -31,11 +31,11 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
       value: 0
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: 25
+      value: 15
   leftNextCard: {fileID: 11400000, guid: 095847a3b777b777109671f82e422d08, type: 2}
   rightChoiceLocalized:
-    english: "Assess the realm's balance and decree my final reign."
-    arabic: "استعرض حال المملكة وأصدر مرسوم الحكم النهائي."
+    english: "Step forward alone and let history judge my reign."
+    arabic: "أتقدم بمفردي لعرشي، وأدع التاريخ يحكم على عهدي."
   rightResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}

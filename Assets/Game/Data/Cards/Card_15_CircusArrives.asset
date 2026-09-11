@@ -31,7 +31,7 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
       value: -5
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: 10
+      value: 0
   leftNextCard: {fileID: 11400000, guid: ee91b0081dc5bb3c54b5e4ea5c4e21d1, type: 2}
   rightChoiceLocalized:
     english: "Turn them away! Wandering troupes harbor spies."
@@ -41,9 +41,9 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
       value: -5
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
-      value: 5
+      value: 0
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: -5
+      value: 5
   rightNextCard: {fileID: 11400000, guid: 3daa0dd6e0892e8e38d6911cecddb879, type: 2}
   middleChoiceLocalized:
     english: ""

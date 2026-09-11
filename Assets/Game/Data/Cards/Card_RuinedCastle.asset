@@ -27,11 +27,11 @@ MonoBehaviour:
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
-      value: 15
+      value: 10
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
       value: 0
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: -15
+      value: 0
   leftNextCard: {fileID: 11400000, guid: 09f85535c681ee9e5429d24c86cfb01a, type: 2}
   rightChoiceLocalized:
     english: "Embrace him as brother and name him co-ruler!"
@@ -41,9 +41,9 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
       value: -10
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
-      value: -5
+      value: 0
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: 25
+      value: 5
   rightNextCard: {fileID: 11400000, guid: f676046739f843ead55eb955b1b79e33, type: 2}
   middleChoiceLocalized:
     english: ""

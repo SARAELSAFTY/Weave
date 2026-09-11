@@ -18,7 +18,7 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 11400000, guid: 968d4d0248269710a22f4c7dabc6a9cd, type: 2}
   descriptionLocalized:
-    english: "General: 'Sire, Easternia's border raiders burned three of our grain mills. We must strike their garrisons before dawn!'"
+    english: "General: 'Sire, the Eastern Kingdom's border raiders burned three of our grain mills. We must strike their garrisons before dawn!'"
     arabic: "الجنرال: «يا مولاي، أحرقت غارات مملكة الشرق ثلاثة من طواحين قمحنا! لا بد من مباغتة ثكناتهم قبل بزوغ الفجر!»"
   dayAdvance: 1
   leftChoiceLocalized:

@@ -16,5 +16,5 @@ MonoBehaviour:
   displayNameLocalized:
     english: "The Treasurer"
     arabic: "أمين الخزينة"
-  portrait: {fileID: 21300000, guid: 09f5413882d741ed938f1ac53dcab077, type: 3}
+  portrait: {fileID: 21300000, guid: 4a7945b246c54ab5be0cf41a50bdb5ca, type: 3}
   llmPersonaPrompt: "You are the Treasurer, master of the royal vaults. You view every war, treaty, and crisis through gold and taxation. You quietly skim an administrative fee whenever possible. Speak with oily politeness and numerical precision. Calls king Sire. Keep replies under 30 words."

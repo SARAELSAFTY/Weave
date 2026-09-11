@@ -114,3 +114,5 @@ InitTestScene*.unity*
 *api_key_1
 Assets/Game/Scripts/Runtime/api_key_1.txt
 Assets/Game/Scripts/Runtime/api_key_1.txt.meta
+__pycache__/
+*.pyc

@@ -36,7 +36,7 @@ namespace Game.Scripts.Editor
         public Port RightPort { get; private set; }
         /// <summary>Output port for the continue exit, when the card has no choices.</summary>
         public Port ContinuePort { get; private set; }
-        /// <summary>Output port for the middle / down-swipe choice, or evaluator Merchant King target.</summary>
+        /// <summary>Output port for the middle / down-swipe choice.</summary>
         public Port MiddlePort { get; private set; }
 
         private readonly CardGraphView parentGraphView;
@@ -405,8 +405,6 @@ namespace Game.Scripts.Editor
                 RightPort = evalRight;
                 choices.Add(CreateContinueRow(out Port evalContinue));
                 ContinuePort = evalContinue;
-                choices.Add(CreateChoiceRow("M", "Merchant King", new Color(0.95f, 0.85f, 0.2f), card.middleResourceChange, out Port evalMiddle));
-                MiddlePort = evalMiddle;
                 return choices;
             }
 

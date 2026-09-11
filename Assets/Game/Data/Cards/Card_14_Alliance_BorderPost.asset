@@ -31,7 +31,7 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
       value: -5
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: 15
+      value: 5
   leftNextCard: {fileID: 11400000, guid: faf340748f6b6b872a9d5bce09203935, type: 2}
   rightChoiceLocalized:
     english: "Lock the profits away in the high vault."

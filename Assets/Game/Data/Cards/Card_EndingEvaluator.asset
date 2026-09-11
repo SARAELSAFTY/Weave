@@ -38,7 +38,7 @@ MonoBehaviour:
     arabic: ""
   middleResourceChange:
     values:
-  middleNextCard: {fileID: 11400000, guid: 2450e0d33d47f6e3ef87ebb6746102fc, type: 2}
+  middleNextCard: {fileID: 0}
   isThreeWayVerdict: 0
   isEndingEvaluator: 1
   leftSetFlags: 0

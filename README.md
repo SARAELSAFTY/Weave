@@ -46,8 +46,8 @@ The shipped story is **The Wicked King**: you are King Perceval, haunted by your
 needled by your bastard-half-brother jester, and surrounded by a blunt General, a silken
 Chancellor, and a Treasurer who adores you the way a tick adores a hound. A run spans roughly
 14–22 cards across three acts — the Eastern question, the circus season, and the Western threat —
-and ends in one of six authored endings (two brothers, abdication, tyrant, shadow king, warlords'
-peace, or merchant king) unless misrule empties a resource first and the realm writes your
+and ends in one of five authored endings (two brothers, abdication, tyrant, shadow king,
+or warlords' peace) unless misrule empties a resource first and the realm writes your
 epilogue for you. Which ending you get depends on Crown, Gold, Army, and the flags you set —
 burning the portrait, welcoming the circus, jailing the Chancellor.
 Every run includes a chat, a petition, and a generated reaction, woven into the plot.

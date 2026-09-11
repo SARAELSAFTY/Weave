@@ -93,12 +93,13 @@ catalog = load_asset(os.path.join(DATA, "ResourceCatalog.asset"))
 database = load_asset(os.path.join(DATA, "NarrativeDatabase.asset"))
 
 print("cards: %d, speakers: %d, resources: %d" % (len(cards), len(speakers), len(resources)))
-check(len(cards) == 48, "expected 48 cards, found %d" % len(cards))
+check(len(cards) == 47, "expected 47 cards, found %d" % len(cards))
 check(len(speakers) == 7, "expected 7 speakers, found %d" % len(speakers))
 check(len(resources) == 3, "expected 3 resources, found %d" % len(resources))
 check("Army" in resources, "Army resource missing")
 check("Loyalty" not in resources, "Loyalty resource should have been renamed to Army")
 check("Card_19_BlightDecree" not in cards, "Card_19_BlightDecree should have been cut")
+check("Card_40_End_MerchantKing" not in cards, "Card_40_End_MerchantKing should have been cut")
 check("Card_QuietCity" in cards, "Card_QuietCity missing")
 
 # ------------------------------------------------ guid index
@@ -136,8 +137,7 @@ ENDINGS = {
     "Card_35_End_Abdication",
     "Card_37_End_Tyrant",
     "Card_38_End_ShadowKing",
-    "Card_39_End_WarlordsPeace",
-    "Card_40_End_MerchantKing"
+    "Card_39_End_WarlordsPeace"
 }
 
 # Evaluator node: routes to state-driven endings; treated like a two-branch choice by the walker
@@ -174,11 +174,10 @@ for c in cards.values():
         check(ref_guid(c["continueNextCard"]) is None, "%s: ending must have no continue" % asset)
     elif asset in EVALUATOR:
         lg, rg = ref_guid(c["leftNextCard"]), ref_guid(c["rightNextCard"])
-        cg, mg = ref_guid(c.get("continueNextCard")), ref_guid(c.get("middleNextCard"))
+        cg = ref_guid(c.get("continueNextCard"))
         check(lg in guid_to_card, "%s: evaluator left target unresolved" % asset)
         check(rg in guid_to_card, "%s: evaluator right target unresolved" % asset)
         check(cg in guid_to_card, "%s: evaluator continue target unresolved" % asset)
-        check(mg in guid_to_card, "%s: evaluator middle target unresolved" % asset)
         check(bool(c.get("isEndingEvaluator")), "%s: evaluator flag missing" % asset)
     elif continue_exit:
         g = ref_guid(c["continueNextCard"])
@@ -253,7 +252,7 @@ def next_of(c):
         return []
     if c["assetName"] in EVALUATOR:
         outs = [ref_guid(c["leftNextCard"]), ref_guid(c["rightNextCard"]),
-                ref_guid(c.get("continueNextCard")), ref_guid(c.get("middleNextCard"))]
+                ref_guid(c.get("continueNextCard"))]
         return [g for g in outs if g]
     if c["assetName"] in VERDICT:
         middle = ref_guid(c.get("middleNextCard")) or ref_guid(c.get("continueNextCard"))
@@ -312,20 +311,17 @@ def select_ending(eval_card, res, story_flags):
     tyrant = ref_guid(eval_card["leftNextCard"])
     shadow = ref_guid(eval_card["rightNextCard"])
     warlords = ref_guid(eval_card.get("continueNextCard"))
-    merchant = ref_guid(eval_card.get("middleNextCard"))
     crown, gold, army = res.get("Crown", 0), res.get("Gold", 0), res.get("Army", 0)
     fallen = bool(story_flags & FLAG_CHANCELLOR)
     if army >= HEGEMONY and army >= gold and army >= crown and warlords:
         return warlords
-    if gold >= HEGEMONY and gold >= army and gold >= crown and merchant:
-        return merchant
     if fallen and crown >= IRON_CROWN and tyrant:
         return tyrant
     if not fallen and shadow:
         return shadow
     if crown >= gold and crown >= army and tyrant:
         return tyrant
-    return shadow or tyrant or warlords or merchant
+    return shadow or tyrant or warlords
 
 start = guid_to_card[start_guid]
 routes = []

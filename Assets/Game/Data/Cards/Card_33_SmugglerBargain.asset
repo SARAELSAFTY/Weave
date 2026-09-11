@@ -18,7 +18,7 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
   descriptionLocalized:
-    english: "Merchant: 'A guild of private smugglers offers to bring in foreign goods under Westernia's nose, provided we turn a blind eye to contraband.'"
+    english: "Merchant: 'A guild of private smugglers offers to bring in foreign goods under the Western Kingdom's nose, provided we turn a blind eye to contraband.'"
     arabic: "كبير التجار: «تعرض نقابة من المهربين جلب البضائع تحت أنوف أساطيل الغرب، شريطة أن نتغاضى عن بعض شحناتهم غير المرخصة.»"
   dayAdvance: 1
   leftChoiceLocalized:

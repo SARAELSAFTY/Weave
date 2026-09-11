@@ -2,10 +2,10 @@ using Game.Scripts.Definitions;
 
 namespace Game.Scripts.Narrative
 {
-    /// <summary>Picks an authored ending from the evaluator card's four wired targets using resources and flags.</summary>
+    /// <summary>Picks an authored ending from the evaluator card's three wired targets using resources and flags.</summary>
     /// <remarks>
     /// Wiring on the evaluator card: left = Tyrant, right = Shadow King,
-    /// continue = Warlords' Peace, middle = Merchant King.
+    /// continue = Warlords' Peace.
     /// </remarks>
     public static class EndingEvaluator
     {
@@ -27,7 +27,6 @@ namespace Game.Scripts.Narrative
             CardData tyrant = evaluatorCard.leftNextCard;
             CardData shadowKing = evaluatorCard.rightNextCard;
             CardData warlordsPeace = evaluatorCard.continueNextCard;
-            CardData merchantKing = evaluatorCard.middleNextCard;
 
             int crown = Get(resourceState, catalog, "Crown");
             int gold = Get(resourceState, catalog, "Gold");
@@ -37,11 +36,6 @@ namespace Game.Scripts.Narrative
             if (army >= HegemonyThreshold && army >= gold && army >= crown && warlordsPeace != null)
             {
                 return warlordsPeace;
-            }
-
-            if (gold >= HegemonyThreshold && gold >= army && gold >= crown && merchantKing != null)
-            {
-                return merchantKing;
             }
 
             if (chancellorFallen && crown >= IronCrownThreshold && tyrant != null)
@@ -59,7 +53,7 @@ namespace Game.Scripts.Narrative
                 return tyrant;
             }
 
-            return shadowKing ?? tyrant ?? warlordsPeace ?? merchantKing;
+            return shadowKing ?? tyrant ?? warlordsPeace;
         }
 
         private static int Get(ResourceState resourceState, ResourceCatalog catalog, string assetName)

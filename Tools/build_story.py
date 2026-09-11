@@ -40,7 +40,7 @@ SPEAKERS = {
     "Spk_Treasurer": {
         "guid": "bd422fef7c7a0976bcb3c39364963115",
         "en": "The Treasurer", "ar": "أمين الخزينة",
-        "portrait": "{fileID: 21300000, guid: 09f5413882d741ed938f1ac53dcab077, type: 3}",
+        "portrait": "{fileID: 21300000, guid: 4a7945b246c54ab5be0cf41a50bdb5ca, type: 3}",
         "prompt": "You are the Treasurer, master of the royal vaults. You view every war, treaty, and crisis through gold and taxation. You quietly skim an administrative fee whenever possible. Speak with oily politeness and numerical precision. Calls king Sire. Keep replies under 30 words."
     },
     "Spk_Jester": {
@@ -120,7 +120,7 @@ CARDS = [
     {
         "asset": "Card_02_EasternRaids", "speaker": "Spk_General",
         "desc": {
-            "en": "General: 'Sire, Easternia's border raiders burned three of our grain mills. We must strike their garrisons before dawn!'",
+            "en": "General: 'Sire, the Eastern Kingdom's border raiders burned three of our grain mills. We must strike their garrisons before dawn!'",
             "ar": "الجنرال: «يا مولاي، أحرقت غارات مملكة الشرق ثلاثة من طواحين قمحنا! لا بد من مباغتة ثكناتهم قبل بزوغ الفجر!»"
         },
         "left": {"en": "Mobilize the vanguard; burn their outposts.", "ar": "حرّك طليعة الجيش، وأشعل النار في حصونهم."},
@@ -203,9 +203,9 @@ CARDS = [
             "ar": "المستشار: «رحبت مملكة الشرق بسفيرنا يا مولاي! غير أن أقاليمهم الحدودية تعاني الجفاف. إرسال معونات قمح سيضمن صداقتهم.»"
         },
         "left": {"en": "Dispatch fifty wagons of royal grain.", "ar": "أرسل خمسين عربة قمح من مستودعاتنا فوراً."},
-        "left_res": {"Crown": 5, "Gold": -10, "Army": 10}, "left_next": "Card_10_Alliance_Pact",
+        "left_res": {"Crown": 10, "Gold": -10, "Army": 0}, "left_next": "Card_10_Alliance_Pact",
         "right": {"en": "Send words of sympathy and modest gifts.", "ar": "أرسل رسائل مواساة وهدايا رمزية فقط."},
-        "right_res": {"Crown": -5, "Gold": 5, "Army": -5}, "right_next": "Card_12_Alliance_Gifts"
+        "right_res": {"Crown": -5, "Gold": 0, "Army": 0}, "right_next": "Card_12_Alliance_Gifts"
     },
     {
         "asset": "Card_10_Alliance_Pact", "speaker": "Spk_Chancellor",
@@ -227,7 +227,7 @@ CARDS = [
         "left": {"en": "Increase the tariffs; fill the royal treasury.", "ar": "ارفع الرسوم الجمركية؛ لنملأ خزائن التاج بالذهب."},
         "left_res": {"Crown": -5, "Gold": 15, "Army": -5}, "left_next": "Card_14_Alliance_BorderPost",
         "right": {"en": "Keep tariffs low to encourage trade volume.", "ar": "أبقِ الرسوم منخفضة لتشجيع رواج التجارة."},
-        "right_res": {"Crown": 5, "Gold": 5, "Army": 10}, "right_next": "Card_14_Alliance_BorderPost"
+        "right_res": {"Crown": 5, "Gold": 10, "Army": 0}, "right_next": "Card_14_Alliance_BorderPost"
     },
     {
         "asset": "Card_12_Alliance_Gifts", "speaker": "Spk_General",
@@ -238,7 +238,7 @@ CARDS = [
         "left": {"en": "Stage a grand military parade at the frontier.", "ar": "أقم استعراضاً عسكرياً مهيباً على خط الحدود."},
         "left_res": {"Crown": 10, "Gold": -5, "Army": 5}, "left_next": "Card_13_Alliance_Sovereignty",
         "right": {"en": "Send a polished apology with fine royal wines.", "ar": "أرسل اعتذاراً دبلوماسياً رقيقاً مع خمور فاخرة."},
-        "right_res": {"Crown": -5, "Gold": -5, "Army": 5}, "right_next": "Card_14_Alliance_BorderPost"
+        "right_res": {"Crown": -5, "Gold": -5, "Army": 0}, "right_next": "Card_14_Alliance_BorderPost"
     },
     {
         "asset": "Card_13_Alliance_Sovereignty", "speaker": "Spk_Chancellor",
@@ -247,7 +247,7 @@ CARDS = [
             "ar": "المستشار: «اعترفت مملكة الشرق رسمياً بسيادتنا على وادي الحدود. حلّ السلام على الثغور يا مولاي.»"
         },
         "left": {"en": "Celebrate the diplomatic victory with a feast.", "ar": "أقم مأدبة ملكية كبرى احتفاءً بنصر الدبلوماسية."},
-        "left_res": {"Crown": 10, "Gold": -10, "Army": 10}, "left_next": "Card_15_CircusArrives",
+        "left_res": {"Crown": 10, "Gold": -10, "Army": 0}, "left_next": "Card_15_CircusArrives",
         "right": {"en": "Reallocate border garrisons to the capital.", "ar": "أعد توزيع حاميات الحدود لحماية العاصمة."},
         "right_res": {"Crown": -5, "Gold": 5, "Army": -5}, "right_next": "Card_15_CircusArrives"
     },
@@ -258,7 +258,7 @@ CARDS = [
             "ar": "أمين الخزينة: «نقطة العبور المشتركة تدر ثلاثين ديناراً أسبوعياً! تجار الشرق راضون ويثنون على عدالتكم.»"
         },
         "left": {"en": "Invest the revenue in royal road repairs.", "ar": "استثمر العائدات في تمهيد الطرق وحماية القوافل."},
-        "left_res": {"Crown": 5, "Gold": -5, "Army": 15}, "left_next": "Card_15_CircusArrives",
+        "left_res": {"Crown": 5, "Gold": -5, "Army": 5}, "left_next": "Card_15_CircusArrives",
         "right": {"en": "Lock the profits away in the high vault.", "ar": "أودع الأرباح في خزائن القصر كاحتياطي استراتيجي."},
         "right_res": {"Crown": 0, "Gold": 15, "Army": -5}, "right_next": "Card_15_CircusArrives"
     },
@@ -271,10 +271,10 @@ CARDS = [
             "ar": "يقفز البهلوان وتدق أجراسه: «سيرك عظيم نصب خيامه قرب أسوار المدينة يا بيرسي! بهلوانيون، نافثو لهب، وعرّافة عمياء تزعم أنها ترى الغد! أنأذن لهم بالعرض؟»"
         },
         "left": {"en": "Welcome the circus! The people need joy.", "ar": "مرحباً بالسيرك! يحتاج الشعب إلى البهجة والترويح."},
-        "left_res": {"Crown": 5, "Gold": -5, "Army": 10}, "left_next": "Card_16_CircusTents",
+        "left_res": {"Crown": 5, "Gold": -5, "Army": 0}, "left_next": "Card_16_CircusTents",
         "left_set_flags": FLAG_CIRCUS,
         "right": {"en": "Turn them away! Wandering troupes harbor spies.", "ar": "اطردوهم! فخلف أقنعة المهرجين يندس الجواسيس."},
-        "right_res": {"Crown": -5, "Gold": 5, "Army": -5}, "right_next": "Card_QuietCity"
+        "right_res": {"Crown": -5, "Gold": 0, "Army": 5}, "right_next": "Card_QuietCity"
     },
     {
         "asset": "Card_QuietCity", "speaker": "Spk_Jester",
@@ -283,9 +283,9 @@ CARDS = [
             "ar": "الساحة خلف البوابات تراب صامت بلا خيام. يدق البهلوان جرساً واحداً دون ابتسام: «لا سيرك، ولا عرّافة، ولا أغاني. سيتذكر أهل المدينة أنك طردت الفرح يا بيرسي.»"
         },
         "left": {"en": "Post a notice that the troupe was a nest of spies.", "ar": "علّقوا بياناً أن الفرقة وكر جواسيس."},
-        "left_res": {"Crown": 5, "Gold": 0, "Army": -5}, "left_next": "Card_18_BlightPetition",
+        "left_res": {"Crown": 5, "Gold": 0, "Army": 0}, "left_next": "Card_18_BlightPetition",
         "right": {"en": "Send a modest feast to the taverns to soothe the city.", "ar": "أرسلوا مأدبة متواضعة إلى الحانات تطييباً للخاطر."},
-        "right_res": {"Crown": -5, "Gold": -10, "Army": 10}, "right_next": "Card_18_BlightPetition"
+        "right_res": {"Crown": 5, "Gold": -10, "Army": 0}, "right_next": "Card_18_BlightPetition"
     },
 
     # Thread 1: Jester Bloodline & Ruined Castle
@@ -296,9 +296,9 @@ CARDS = [
             "ar": "بين عروض الأكروبات، يدنو البهلوان من عرشك ويهمس دون ابتسام: «بيرسي... انظر إلى أيدينا. ألم تتساءل يوماً لماذا حبس والدك الراحل رساماً في القلعة المهدمة خلف المستنقعات؟»"
         },
         "left": {"en": "Slip out tonight and investigate the Ruined Castle.", "ar": "تسلل الليلة وتحقق من أسرار القلعة المهدمة."},
-        "left_res": {"Crown": -5, "Gold": -5, "Army": 10}, "left_next": "Card_RuinedCastle",
+        "left_res": {"Crown": -5, "Gold": 0, "Army": 0}, "left_next": "Card_RuinedCastle",
         "right": {"en": "Silence, fool! Speak no insolence of my father.", "ar": "اصمت يا أحمق! لا تتفوه بوقاحة عن والدي الملك."},
-        "right_res": {"Crown": 10, "Gold": 0, "Army": -5}, "right_next": "Card_18_BlightPetition"
+        "right_res": {"Crown": 5, "Gold": 0, "Army": 0}, "right_next": "Card_18_BlightPetition"
     },
     {
         "asset": "Card_17_GallerySilence", "kind": "reaction", "speaker": "Spk_SpiritMother",
@@ -316,9 +316,9 @@ CARDS = [
             "ar": "في سرداب القلعة المهدمة، تعثر على حجرة سرية تخفي لوحة زيتية: والدك الراحل يحمل طفلاً رضيعاً إلى جانب امرأة بلباس البهلوانيين... إنها أم المهرج! البهلوان هو أخوك الأكبر الحقيقي!"
         },
         "left": {"en": "Burn the portrait to ash; keep the throne secure!", "ar": "احرق اللوحة حتى تصير رماداً؛ العرش لي وحدي!"},
-        "left_res": {"Crown": 15, "Gold": 0, "Army": -15}, "left_next": "Card_BurnPortrait",
+        "left_res": {"Crown": 10, "Gold": 0, "Army": 0}, "left_next": "Card_BurnPortrait",
         "right": {"en": "Embrace him as brother and name him co-ruler!", "ar": "اعترف به شقيقاً وشاركه حكم المملكة بالعدل!"},
-        "right_res": {"Crown": -10, "Gold": -5, "Army": 25}, "right_next": "Card_BrotherCoRuler",
+        "right_res": {"Crown": -10, "Gold": 0, "Army": 5}, "right_next": "Card_BrotherCoRuler",
         "right_set_flags": FLAG_BROTHER
     },
     {
@@ -328,9 +328,9 @@ CARDS = [
             "ar": "المستشار: «فعلت عين الصواب يا مولاي! تذرو الرياح رمادها، فحكم المملكة لا يحتمل شريكين، وإلا تمزق التاج إرباً.»"
         },
         "left": {"en": "Keep the Jester closely watched under guard.", "ar": "ضع البهلوان تحت مراقبة أمنية مشددة."},
-        "left_res": {"Crown": 5, "Gold": -5, "Army": -5}, "left_next": "Card_18_BlightPetition",
+        "left_res": {"Crown": 5, "Gold": -5, "Army": 5}, "left_next": "Card_18_BlightPetition",
         "right": {"en": "Grant him a generous estate far from court.", "ar": "امنحه ضيعة ريفية هادئة بعيداً عن البلاط."},
-        "right_res": {"Crown": -5, "Gold": -10, "Army": 10}, "right_next": "Card_18_BlightPetition"
+        "right_res": {"Crown": -5, "Gold": -15, "Army": 0}, "right_next": "Card_18_BlightPetition"
     },
     {
         "asset": "Card_BrotherCoRuler", "speaker": "Spk_Jester",
@@ -339,10 +339,10 @@ CARDS = [
             "ar": "يخلع البهلوان قبعته وعيناه تفيضان بالدموع: «يا بيرسي... لم أرد تاجك ولا ذهبك، بل أردت الحقيقة فقط. معاً، سنقود هذه المملكة بالسيف والحكمة معاً.»"
         },
         "left": {"en": "Affirm our secret pact; prepare to face the realm.", "ar": "ثبّت عهد الأخوة؛ واستعد لمواجهة أزمات المملكة معاً."},
-        "left_res": {"Crown": 10, "Gold": 5, "Army": 15}, "left_next": "Card_18_BlightPetition",
+        "left_res": {"Crown": 10, "Gold": 0, "Army": 10}, "left_next": "Card_18_BlightPetition",
         "left_set_flags": FLAG_BROTHER,
         "right": {"en": "Prepare the royal decree of joint succession.", "ar": "أعد مرسوماً ملكياً بوراثة مشتركة للعرش."},
-        "right_res": {"Crown": 5, "Gold": -5, "Army": 20}, "right_next": "Card_18_BlightPetition",
+        "right_res": {"Crown": 5, "Gold": -5, "Army": 15}, "right_next": "Card_18_BlightPetition",
         "right_set_flags": FLAG_BROTHER
     },
 
@@ -376,9 +376,9 @@ CARDS = [
             "ar": "الجنرال: «نُفذ الإعدام شنقاً عند الظهيرة. تفرقت الحشود في وجوم وخوف، لكن نيران الغضب تتأجج في صدورهم. الحيطة واجبة.»"
         },
         "left": {"en": "Double the palace night watches.", "ar": "ضاعف حراسات القصر الليلية تحسباً للغدر."},
-        "left_res": {"Crown": 5, "Gold": -5, "Army": -5}, "left_next": "Card_20_HoodedBandit",
+        "left_res": {"Crown": 5, "Gold": -5, "Army": 5}, "left_next": "Card_20_HoodedBandit",
         "right": {"en": "Offer a minor bread dole to calm the widows.", "ar": "وزّع صدقات خبز خفيفة لتهدئة الأرامل والمحتاجين."},
-        "right_res": {"Crown": 0, "Gold": -5, "Army": 10}, "right_next": "Card_20_HoodedBandit"
+        "right_res": {"Crown": 5, "Gold": -5, "Army": 0}, "right_next": "Card_20_HoodedBandit"
     },
     {
         "asset": "Card_OpenGranaries", "speaker": "Spk_Merchant",
@@ -387,7 +387,7 @@ CARDS = [
             "ar": "كبير التجار: «عربات الحبوب تجوب الأسواق يا مولاي! الناس يبكون فرحاً ويدعون لكم بطول البقاء، وانقلب الشغب إلى احتفال مهيب.»"
         },
         "left": {"en": "Commission local guilds to organize autumn planting.", "ar": "كلّف النقابات بتنظيم مواسم البذر القادمة."},
-        "left_res": {"Crown": 5, "Gold": -5, "Army": 10}, "left_next": "Card_20_HoodedBandit",
+        "left_res": {"Crown": 5, "Gold": -5, "Army": 0}, "left_next": "Card_20_HoodedBandit",
         "right": {"en": "Enlist grateful young farmers into the royal militia.", "ar": "جنّد شبابهم الراغبين في الدفاع عن العرش."},
         "right_res": {"Crown": 5, "Gold": -5, "Army": 15}, "right_next": "Card_20_HoodedBandit"
     },
@@ -542,25 +542,25 @@ CARDS = [
             "ar": "كبير التجار: «يا مولاي، اشترى تجار الغرب مخزوناتنا المحلية! أسعار الأسواق تلتهب، والأهالي يستغيثون من شح الخبز.»"
         },
         "left": {"en": "Subsidize bakeries from the royal reserves.", "ar": "ادعم المخابز بالدقيق فوراً من الاحتياطي الملكي."},
-        "left_res": {"Crown": 5, "Gold": -15, "Army": 15}, "left_next": "Card_17_GallerySilence",
+        "left_res": {"Crown": 10, "Gold": -15, "Army": 0}, "left_next": "Card_17_GallerySilence",
         "right": {"en": "Ban the export of all edible grains immediately.", "ar": "امنع تصدير الحبوب والقمح إلى الخارج كلياً."},
-        "right_res": {"Crown": 5, "Gold": -5, "Army": 10}, "right_next": "Card_17_GallerySilence"
+        "right_res": {"Crown": 5, "Gold": -5, "Army": 5}, "right_next": "Card_17_GallerySilence"
     },
     {
         "asset": "Card_32_GrainWar", "speaker": "Spk_Treasurer",
         "desc": {
-            "en": "Treasurer: 'In retaliation for the rejected deal, Westernia has halted all salt shipments to our kingdom. We must source salt elsewhere!'",
+            "en": "Treasurer: 'In retaliation for the rejected deal, the Western Kingdom has halted all salt shipments to our kingdom. We must source salt elsewhere!'",
             "ar": "أمين الخزينة: «رداً على رفض الاتفاق، قطعت مملكة الغرب شحنات الملح عن أسواقنا! لا بد من تدبير بديل سريعاً.»"
         },
         "left": {"en": "Buy salt from the Eastern Kingdom at premium prices.", "ar": "اشترِ الملح من مملكة الشرق ولو بأسعار مضاعفة."},
-        "left_res": {"Crown": 5, "Gold": -15, "Army": 10}, "left_next": "Card_33_SmugglerBargain",
+        "left_res": {"Crown": 5, "Gold": -15, "Army": 0}, "left_next": "Card_33_SmugglerBargain",
         "right": {"en": "Ration domestic salt and commission sea salt pans.", "ar": "رشّد استهلاك الملح واستصلح ملاحات بحرية خاصة."},
-        "right_res": {"Crown": -5, "Gold": 5, "Army": -5}, "right_next": "Card_33_SmugglerBargain"
+        "right_res": {"Crown": -5, "Gold": 5, "Army": 0}, "right_next": "Card_33_SmugglerBargain"
     },
     {
         "asset": "Card_33_SmugglerBargain", "speaker": "Spk_Merchant",
         "desc": {
-            "en": "Merchant: 'A guild of private smugglers offers to bring in foreign goods under Westernia's nose, provided we turn a blind eye to contraband.'",
+            "en": "Merchant: 'A guild of private smugglers offers to bring in foreign goods under the Western Kingdom's nose, provided we turn a blind eye to contraband.'",
             "ar": "كبير التجار: «تعرض نقابة من المهربين جلب البضائع تحت أنوف أساطيل الغرب، شريطة أن نتغاضى عن بعض شحناتهم غير المرخصة.»"
         },
         "left": {"en": "License the smugglers quietly; survival requires cunning.", "ar": "رخّص لهم سراً؛ فالبقاء في الأزمات يتطلب الدهاء."},
@@ -586,11 +586,11 @@ CARDS = [
             "ar": "يقف البهلوان وينحني بإجلال عميق: «دقت ساعة الحصاد يا مولاي. فهل نتوج عهد الأخوة المشتركة، أم تحكم بالحديد والنار، أم تغادر هذا القفص الذهبي؟»"
         },
         "left": {"en": "Crown my brother beside me; two brothers upon one throne!", "ar": "تتويج أخي شريكاً على العرش؛ أخوان على عرش واحد!"},
-        "left_res": {"Crown": 10, "Gold": 0, "Army": 25}, "left_next": "Card_End_TwoBrothers",
+        "left_res": {"Crown": 10, "Gold": 0, "Army": 15}, "left_next": "Card_End_TwoBrothers",
         "left_requires_flags": FLAG_BROTHER,
         "middle": {"en": "Lay down the crown; I choose to be just Percy.", "ar": "أضع التاج على وسادته برفق وأغادر... أريد أن أكون بيرسي الإنسان فقط."},
         "middle_res": {"Crown": -20, "Gold": 0, "Army": 0}, "middle_next": "Card_35_End_Abdication",
-        "right": {"en": "Assess the realm's balance and decree my final reign.", "ar": "استعرض حال المملكة وأصدر مرسوم الحكم النهائي."},
+        "right": {"en": "Step forward alone and let history judge my reign.", "ar": "أتقدم بمفردي لعرشي، وأدع التاريخ يحكم على عهدي."},
         "right_res": {"Crown": 5, "Gold": 5, "Army": 5}, "right_next": "Card_EndingEvaluator"
     },
     {
@@ -599,8 +599,8 @@ CARDS = [
             "en": "The realm holds its breath. History will name you by the king you became.",
             "ar": "المملكة تحبس أنفاسها. سيمنحك التاريخ لقبه حسب الملك الذي كنته."
         },
-        # Unity reads these four outgoing links and routes to the one matching the player's resource/flag state
-        "endings": ["Card_37_End_Tyrant", "Card_38_End_ShadowKing", "Card_39_End_WarlordsPeace", "Card_40_End_MerchantKing"]
+        # Unity reads these three outgoing links and routes to the one matching the player's resource/flag state
+        "endings": ["Card_37_End_Tyrant", "Card_38_End_ShadowKing", "Card_39_End_WarlordsPeace"]
     },
 
     # Endings (Terminal)
@@ -637,13 +637,6 @@ CARDS = [
         "desc": {
             "en": "With three victorious campaigns behind you, your borders stretch across mountain and sea. Foreign kings pay tribute; your generals stand like pillars of iron around your throne.",
             "ar": "بثلاث حملات ظافرة، امتدت حدود مملكتك عبر الجبال والبحار. يدفع الملوك الجزية طائعين، ويقف جنرالاتك كأعمدة من حديد حماية لعرشك العظيم."
-        }
-    },
-    {
-        "asset": "Card_40_End_MerchantKing", "kind": "ending", "speaker": "Spk_Treasurer",
-        "desc": {
-            "en": "Gold overflows from every vault into grand public fountains. Your merchant navy dominates the known seas. You bought peace where steel failed, and your coins bear your smiling face.",
-            "ar": "فاض الذهب من الخزائن ليزيّن نوافير المدن العظمى، وسيطر أسطولك التجاري على بحار العالم المعروف. اشتريت السلام بالرخاء حيث عجزت السيوف، وصار وجهك المبتسم منقوشاً على كل دينار."
         }
     }
 ]
@@ -700,7 +693,6 @@ GRAPH_LAYOUT = {
     "Card_37_End_Tyrant": (17, 2),
     "Card_38_End_ShadowKing": (17, 3),
     "Card_39_End_WarlordsPeace": (17, 4),
-    "Card_40_End_MerchantKing": (17, 5),
 }
 
 
@@ -753,7 +745,7 @@ def generate_card_asset(c, card_guids):
         left_ref = card_ref(card_guids, endings[0])
         right_ref = card_ref(card_guids, endings[1])
         cont_ref = card_ref(card_guids, endings[2])
-        middle_ref = card_ref(card_guids, endings[3])
+        middle_ref = "{fileID: 0}"
     elif kind in ("reaction", "petition", "chat"):
         left_ref = "{fileID: 0}"
         right_ref = "{fileID: 0}"
@@ -1174,6 +1166,8 @@ def main():
     stale = [
         os.path.join(CARDS_DIR, "Card_19_BlightDecree.asset"),
         os.path.join(CARDS_DIR, "Card_19_BlightDecree.asset.meta"),
+        os.path.join(CARDS_DIR, "Card_40_End_MerchantKing.asset"),
+        os.path.join(CARDS_DIR, "Card_40_End_MerchantKing.asset.meta"),
         os.path.join(RESOURCES_DIR, "Loyalty.asset"),
         os.path.join(RESOURCES_DIR, "Loyalty.asset.meta"),
     ]

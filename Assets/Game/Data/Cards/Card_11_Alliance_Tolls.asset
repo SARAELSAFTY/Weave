@@ -41,9 +41,9 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
       value: 5
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
-      value: 5
-    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
       value: 10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 0
   rightNextCard: {fileID: 11400000, guid: af2769d780a22fee94fe12dd0f993e96, type: 2}
   middleChoiceLocalized:
     english: ""

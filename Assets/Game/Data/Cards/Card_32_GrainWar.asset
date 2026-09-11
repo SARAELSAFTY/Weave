@@ -18,7 +18,7 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 11400000, guid: bd422fef7c7a0976bcb3c39364963115, type: 2}
   descriptionLocalized:
-    english: "Treasurer: 'In retaliation for the rejected deal, Westernia has halted all salt shipments to our kingdom. We must source salt elsewhere!'"
+    english: "Treasurer: 'In retaliation for the rejected deal, the Western Kingdom has halted all salt shipments to our kingdom. We must source salt elsewhere!'"
     arabic: "أمين الخزينة: «رداً على رفض الاتفاق، قطعت مملكة الغرب شحنات الملح عن أسواقنا! لا بد من تدبير بديل سريعاً.»"
   dayAdvance: 1
   leftChoiceLocalized:
@@ -31,7 +31,7 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
       value: -15
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: 10
+      value: 0
   leftNextCard: {fileID: 11400000, guid: 4599e301fe5a891fd224cbcd335e51dc, type: 2}
   rightChoiceLocalized:
     english: "Ration domestic salt and commission sea salt pans."
@@ -43,7 +43,7 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
       value: 5
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-      value: -5
+      value: 0
   rightNextCard: {fileID: 11400000, guid: 4599e301fe5a891fd224cbcd335e51dc, type: 2}
   middleChoiceLocalized:
     english: ""
