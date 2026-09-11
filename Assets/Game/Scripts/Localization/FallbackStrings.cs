@@ -72,6 +72,10 @@ namespace Game.Scripts.Localization
         public static string Continue(GameLanguage language) =>
             language == GameLanguage.Arabic ? "متابعة" : "Continue";
 
+        /// <summary>Hint prepended to the down-swipe / middle option on three-way cards.</summary>
+        public static string SwipeDownHint(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "اسحب للأسفل / S:" : "Swipe down / S:";
+
         /// <summary>Returns the localized label for the petition proposal confirm button.</summary>
         /// <param name="language">Target language.</param>
         public static string Confirm(GameLanguage language) =>

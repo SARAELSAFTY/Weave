@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_18_BlightPetition
+  m_EditorClassIdentifier: 
+  assetName: Card_18_BlightPetition
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
+  descriptionLocalized:
+    english: "A weather-beaten farmer's representative kneels before you: 'Sire, black rot has consumed half our grain fields. If you demand full taxes, our children will starve before winter sets in!'"
+    arabic: "يركع فلاح أجهدته السنون بين يديك: «يا مولاي، التهم العفن الأسود نصف حقول القمح! إن ألزمتمونا بكامل الخراج، فستهلك عائلاتنا جوعاً قبل قدوم الشتاء!»"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: ""
+    arabic: ""
+  leftResourceChange:
+    values:
+  leftNextCard: {fileID: 0}
+  rightChoiceLocalized:
+    english: ""
+    arabic: ""
+  rightResourceChange:
+    values:
+  rightNextCard: {fileID: 0}
+  middleChoiceLocalized:
+    english: ""
+    arabic: ""
+  middleResourceChange:
+    values:
+  middleNextCard: {fileID: 0}
+  isThreeWayVerdict: 0
+  isEndingEvaluator: 0
+  leftSetFlags: 0
+  rightSetFlags: 0
+  middleSetFlags: 0
+  continueSetFlags: 0
+  leftRequiresFlags: 0
+  rightRequiresFlags: 0
+  middleRequiresFlags: 0
+  alternateDescriptionIfFlags: 0
+  alternateDescriptionIfMissing: 0
+  alternateDescriptionLocalized:
+    english: ""
+    arabic: ""
+  entryRequiresFlags: 0
+  hasResourceGate: 0
+  gateResource: {fileID: 0}
+  gateMinInclusive: 0
+  gateMaxInclusive: 100
+  skipToCard: {fileID: 0}
+  skipToAltCard: {fileID: 0}
+  isLlmReactionCard: 0
+  reactionSeedOverride: "A commoner petitions the king for grain relief after crop blight destroys the harvest."
+  isPetitionCard: 1
+  petitionSeedOverride: "A commoner petitions the king for grain relief after crop blight destroys the harvest."
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: "A commoner petitions the king for grain relief after crop blight destroys the harvest."
+  continueNextCard: {fileID: 11400000, guid: 793d6ce09aabb3f1d7bd3bd677b8bec6, type: 2}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

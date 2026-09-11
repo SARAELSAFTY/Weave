@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_BurnPortrait
+  m_EditorClassIdentifier: 
+  assetName: Card_BurnPortrait
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 220c64b1d598ddf41bc3f43bc6849160, type: 2}
+  descriptionLocalized:
+    english: "Chancellor: 'Wisely done, Sire. The cinders are scattered to the winds. The sovereign right to rule must never be divided, lest the kingdom tear itself apart.'"
+    arabic: "المستشار: «فعلت عين الصواب يا مولاي! تذرو الرياح رمادها، فحكم المملكة لا يحتمل شريكين، وإلا تمزق التاج إرباً.»"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: "Keep the Jester closely watched under guard."
+    arabic: "ضع البهلوان تحت مراقبة أمنية مشددة."
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -5
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -5
+  leftNextCard: {fileID: 11400000, guid: 6248617e6f8afba7058ffebd578de357, type: 2}
+  rightChoiceLocalized:
+    english: "Grant him a generous estate far from court."
+    arabic: "امنحه ضيعة ريفية هادئة بعيداً عن البلاط."
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -5
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 10
+  rightNextCard: {fileID: 11400000, guid: 6248617e6f8afba7058ffebd578de357, type: 2}
+  middleChoiceLocalized:
+    english: ""
+    arabic: ""
+  middleResourceChange:
+    values:
+  middleNextCard: {fileID: 0}
+  isThreeWayVerdict: 0
+  isEndingEvaluator: 0
+  leftSetFlags: 0
+  rightSetFlags: 0
+  middleSetFlags: 0
+  continueSetFlags: 0
+  leftRequiresFlags: 0
+  rightRequiresFlags: 0
+  middleRequiresFlags: 0
+  alternateDescriptionIfFlags: 0
+  alternateDescriptionIfMissing: 0
+  alternateDescriptionLocalized:
+    english: ""
+    arabic: ""
+  entryRequiresFlags: 0
+  hasResourceGate: 0
+  gateResource: {fileID: 0}
+  gateMinInclusive: 0
+  gateMaxInclusive: 100
+  skipToCard: {fileID: 0}
+  skipToAltCard: {fileID: 0}
+  isLlmReactionCard: 0
+  reactionSeedOverride: ""
+  isPetitionCard: 0
+  petitionSeedOverride: ""
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: ""
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

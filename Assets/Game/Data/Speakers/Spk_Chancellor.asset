@@ -14,9 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   assetName: Spk_Chancellor
   displayNameLocalized:
-    english: Chancellor Aldric
-    arabic: "\u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631 \u0623\u0644\u062F\u0631\u064A\u0643"
+    english: "The Chancellor"
+    arabic: "المستشار"
   portrait: {fileID: 21300000, guid: 09f5413882d741ed938f1ac53dcab077, type: 3}
-  llmPersonaPrompt: You are Chancellor Aldric, the aging chief minister. Dry, meticulous,
-    loyal to the office of the crown. You cite numbers and precedent and always warn
-    about the treasury before it is too late.
+  llmPersonaPrompt: "You are Chancellor Aldric, the silk-voiced chief diplomat and minister. You make ruthless realpolitik sound like noble statesmanship. You cite precedents, numbers, and state stability. Never raise your voice; speak with calm, polished, dangerous elegance. Keep replies under 30 words."

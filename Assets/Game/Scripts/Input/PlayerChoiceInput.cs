@@ -1,4 +1,5 @@
 using Game.Scripts;
+using Game.Scripts.Narrative;
 using Game.Scripts.UI;
 using TMPro;
 using UnityEngine;
@@ -40,7 +41,9 @@ namespace Game.Scripts.Input
 
         private Vector2 dragStartScreenPosition;
         private float currentDragX;
+        private float currentDragY;
         private float targetDragX;
+        private float targetDragY;
         private bool isDragging;
         private Camera eventCamera;
 
@@ -102,11 +105,16 @@ namespace Game.Scripts.Input
 
             if (keyboard.aKey.wasPressedThisFrame || keyboard.leftArrowKey.wasPressedThisFrame)
             {
-                SubmitChoice(false);
+                SubmitChoice(CardChoice.Left);
             }
             else if (keyboard.dKey.wasPressedThisFrame || keyboard.rightArrowKey.wasPressedThisFrame)
             {
-                SubmitChoice(true);
+                SubmitChoice(CardChoice.Right);
+            }
+            else if (gameManager.AcceptsMiddleChoice &&
+                     (keyboard.sKey.wasPressedThisFrame || keyboard.downArrowKey.wasPressedThisFrame))
+            {
+                SubmitChoice(CardChoice.Middle);
             }
         }
 
@@ -137,6 +145,7 @@ namespace Game.Scripts.Input
 
                 Vector2 screenDelta = screenPosition - dragStartScreenPosition;
                 targetDragX = ConvertScreenDeltaToCanvas(screenDelta.x);
+                targetDragY = ConvertScreenDeltaToCanvas(screenDelta.y);
             }
         }
 
@@ -154,20 +163,32 @@ namespace Game.Scripts.Input
 
             dragStartScreenPosition = screenPosition;
             currentDragX = 0f;
+            currentDragY = 0f;
             targetDragX = 0f;
+            targetDragY = 0f;
             isDragging = true;
         }
 
         private void EndDrag(float dragX)
         {
+            float dragY = targetDragY;
             isDragging = false;
             currentDragX = 0f;
+            currentDragY = 0f;
             targetDragX = 0f;
+            targetDragY = 0f;
 
             float thresholdInCanvas = ConvertScreenDeltaToCanvas(swipeThreshold);
-            if (Mathf.Abs(dragX) >= thresholdInCanvas)
+            bool middleSwipe = gameManager.AcceptsMiddleChoice &&
+                               dragY <= -thresholdInCanvas &&
+                               Mathf.Abs(dragY) >= Mathf.Abs(dragX);
+            if (middleSwipe)
             {
-                SubmitChoice(dragX > 0f);
+                SubmitChoice(CardChoice.Middle);
+            }
+            else if (Mathf.Abs(dragX) >= thresholdInCanvas)
+            {
+                SubmitChoice(dragX > 0f ? CardChoice.Right : CardChoice.Left);
             }
             else
             {
@@ -184,7 +205,9 @@ namespace Game.Scripts.Input
 
             isDragging = false;
             currentDragX = 0f;
+            currentDragY = 0f;
             targetDragX = 0f;
+            targetDragY = 0f;
 
             if (resetVisual)
             {
@@ -203,19 +226,25 @@ namespace Game.Scripts.Input
 
             float blendAmount = 1f - Mathf.Pow(1f - dragSmooth, Time.unscaledDeltaTime * TargetFrameRate);
             currentDragX = Mathf.Lerp(currentDragX, targetDragX, blendAmount);
+            currentDragY = Mathf.Lerp(currentDragY, targetDragY, blendAmount);
             if (Mathf.Abs(currentDragX - targetDragX) < SnapThreshold)
             {
                 currentDragX = targetDragX;
             }
 
+            if (Mathf.Abs(currentDragY - targetDragY) < SnapThreshold)
+            {
+                currentDragY = targetDragY;
+            }
+
             float thresholdInCanvas = ConvertScreenDeltaToCanvas(swipeThreshold);
-            cardView.SetDragProgress(currentDragX, thresholdInCanvas);
+            cardView.SetDragProgress(currentDragX, currentDragY, thresholdInCanvas, gameManager.AcceptsMiddleChoice);
         }
 
-        private void SubmitChoice(bool choseRight)
+        private void SubmitChoice(CardChoice choice)
         {
             CancelDrag(resetVisual: false);
-            gameManager.ChooseSide(choseRight);
+            gameManager.Choose(choice);
         }
 
         // Divides screen pixels by the canvas scale factor to get canvas-unit distance,

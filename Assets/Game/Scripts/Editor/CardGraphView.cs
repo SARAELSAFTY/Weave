@@ -334,6 +334,17 @@ namespace Game.Scripts.Editor
                 {
                     TryConnect(sourceNode.LeftPort, card.leftNextCard, nodesByCard);
                     TryConnect(sourceNode.RightPort, card.rightNextCard, nodesByCard);
+                    if (card.isThreeWayVerdict)
+                    {
+                        CardData middleTarget = card.middleNextCard != null ? card.middleNextCard : card.continueNextCard;
+                        TryConnect(sourceNode.MiddlePort, middleTarget, nodesByCard);
+                    }
+
+                    if (card.isEndingEvaluator)
+                    {
+                        TryConnect(sourceNode.ContinuePort, card.continueNextCard, nodesByCard);
+                        TryConnect(sourceNode.MiddlePort, card.middleNextCard, nodesByCard);
+                    }
                 }
             }
         }
@@ -634,7 +645,7 @@ namespace Game.Scripts.Editor
             }
 
             Undo.RecordObject(sourceCard, "Connect Card Link");
-            if (sourceCard.UsesContinueExit && edge.output == sourceNode.ContinuePort)
+            if (edge.output == sourceNode.ContinuePort)
             {
                 sourceCard.continueNextCard = targetCard;
             }
@@ -645,6 +656,10 @@ namespace Game.Scripts.Editor
             else if (edge.output == sourceNode.RightPort)
             {
                 sourceCard.rightNextCard = targetCard;
+            }
+            else if (edge.output == sourceNode.MiddlePort)
+            {
+                sourceCard.middleNextCard = targetCard;
             }
             EditorUtility.SetDirty(sourceCard);
             return true;
@@ -707,7 +722,7 @@ namespace Game.Scripts.Editor
 
             CardData sourceCard = sourceNode.Card;
             Undo.RecordObject(sourceCard, "Clear Card Link");
-            if (sourceCard.UsesContinueExit && edge.output == sourceNode.ContinuePort)
+            if (edge.output == sourceNode.ContinuePort)
             {
                 sourceCard.continueNextCard = null;
             }
@@ -718,6 +733,10 @@ namespace Game.Scripts.Editor
             else if (edge.output == sourceNode.RightPort)
             {
                 sourceCard.rightNextCard = null;
+            }
+            else if (edge.output == sourceNode.MiddlePort)
+            {
+                sourceCard.middleNextCard = null;
             }
             EditorUtility.SetDirty(sourceCard);
             return true;
@@ -859,6 +878,27 @@ namespace Game.Scripts.Editor
                 {
                     Undo.RecordObject(other, "Clear Card Link");
                     other.continueNextCard = null;
+                    EditorUtility.SetDirty(other);
+                }
+
+                if (other.middleNextCard == cardToDelete)
+                {
+                    Undo.RecordObject(other, "Clear Card Link");
+                    other.middleNextCard = null;
+                    EditorUtility.SetDirty(other);
+                }
+
+                if (other.skipToCard == cardToDelete)
+                {
+                    Undo.RecordObject(other, "Clear Card Link");
+                    other.skipToCard = null;
+                    EditorUtility.SetDirty(other);
+                }
+
+                if (other.skipToAltCard == cardToDelete)
+                {
+                    Undo.RecordObject(other, "Clear Card Link");
+                    other.skipToAltCard = null;
                     EditorUtility.SetDirty(other);
                 }
             }

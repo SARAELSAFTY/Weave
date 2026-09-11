@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_16_CircusTents
+  m_EditorClassIdentifier: 
+  assetName: Card_16_CircusTents
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 58e0d26dc32b25229dc4aef014036958, type: 2}
+  descriptionLocalized:
+    english: "Between fiery acrobatic flips, the Jester leans over your throne and whispers without smiling: 'Percy... look at our hands. Have you ever wondered why your late father kept an artist locked away in the Ruined Castle across the marshes?'"
+    arabic: "بين عروض الأكروبات، يدنو البهلوان من عرشك ويهمس دون ابتسام: «بيرسي... انظر إلى أيدينا. ألم تتساءل يوماً لماذا حبس والدك الراحل رساماً في القلعة المهدمة خلف المستنقعات؟»"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: "Slip out tonight and investigate the Ruined Castle."
+    arabic: "تسلل الليلة وتحقق من أسرار القلعة المهدمة."
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -5
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -5
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 10
+  leftNextCard: {fileID: 11400000, guid: 39d09566b34bbba51cac26819334e977, type: 2}
+  rightChoiceLocalized:
+    english: "Silence, fool! Speak no insolence of my father."
+    arabic: "اصمت يا أحمق! لا تتفوه بوقاحة عن والدي الملك."
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 10
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: 0
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -5
+  rightNextCard: {fileID: 11400000, guid: 6248617e6f8afba7058ffebd578de357, type: 2}
+  middleChoiceLocalized:
+    english: ""
+    arabic: ""
+  middleResourceChange:
+    values:
+  middleNextCard: {fileID: 0}
+  isThreeWayVerdict: 0
+  isEndingEvaluator: 0
+  leftSetFlags: 0
+  rightSetFlags: 0
+  middleSetFlags: 0
+  continueSetFlags: 0
+  leftRequiresFlags: 0
+  rightRequiresFlags: 0
+  middleRequiresFlags: 0
+  alternateDescriptionIfFlags: 0
+  alternateDescriptionIfMissing: 0
+  alternateDescriptionLocalized:
+    english: ""
+    arabic: ""
+  entryRequiresFlags: 0
+  hasResourceGate: 0
+  gateResource: {fileID: 0}
+  gateMinInclusive: 0
+  gateMaxInclusive: 100
+  skipToCard: {fileID: 0}
+  skipToAltCard: {fileID: 0}
+  isLlmReactionCard: 0
+  reactionSeedOverride: ""
+  isPetitionCard: 0
+  petitionSeedOverride: ""
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: ""
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

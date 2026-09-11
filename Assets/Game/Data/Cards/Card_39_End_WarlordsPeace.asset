@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_39_End_WarlordsPeace
+  m_EditorClassIdentifier: 
+  assetName: Card_39_End_WarlordsPeace
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 968d4d0248269710a22f4c7dabc6a9cd, type: 2}
+  descriptionLocalized:
+    english: "With three victorious campaigns behind you, your borders stretch across mountain and sea. Foreign kings pay tribute; your generals stand like pillars of iron around your throne."
+    arabic: "بثلاث حملات ظافرة، امتدت حدود مملكتك عبر الجبال والبحار. يدفع الملوك الجزية طائعين، ويقف جنرالاتك كأعمدة من حديد حماية لعرشك العظيم."
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: ""
+    arabic: ""
+  leftResourceChange:
+    values:
+  leftNextCard: {fileID: 0}
+  rightChoiceLocalized:
+    english: ""
+    arabic: ""
+  rightResourceChange:
+    values:
+  rightNextCard: {fileID: 0}
+  middleChoiceLocalized:
+    english: ""
+    arabic: ""
+  middleResourceChange:
+    values:
+  middleNextCard: {fileID: 0}
+  isThreeWayVerdict: 0
+  isEndingEvaluator: 0
+  leftSetFlags: 0
+  rightSetFlags: 0
+  middleSetFlags: 0
+  continueSetFlags: 0
+  leftRequiresFlags: 0
+  rightRequiresFlags: 0
+  middleRequiresFlags: 0
+  alternateDescriptionIfFlags: 0
+  alternateDescriptionIfMissing: 0
+  alternateDescriptionLocalized:
+    english: ""
+    arabic: ""
+  entryRequiresFlags: 0
+  hasResourceGate: 0
+  gateResource: {fileID: 0}
+  gateMinInclusive: 0
+  gateMaxInclusive: 100
+  skipToCard: {fileID: 0}
+  skipToAltCard: {fileID: 0}
+  isLlmReactionCard: 0
+  reactionSeedOverride: ""
+  isPetitionCard: 0
+  petitionSeedOverride: ""
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: ""
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

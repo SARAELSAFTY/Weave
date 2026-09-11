@@ -36,6 +36,8 @@ namespace Game.Scripts.Editor
         public Port RightPort { get; private set; }
         /// <summary>Output port for the continue exit, when the card has no choices.</summary>
         public Port ContinuePort { get; private set; }
+        /// <summary>Output port for the middle / down-swipe choice, or evaluator Merchant King target.</summary>
+        public Port MiddlePort { get; private set; }
 
         private readonly CardGraphView parentGraphView;
         private bool isStartCardCached;
@@ -128,6 +130,18 @@ namespace Game.Scripts.Editor
             {
                 badges.Add(MakeBadge("CHAT",
                     new Color(1f, 0.8f, 0.5f), new Color(0.35f, 0.22f, 0.02f)));
+            }
+
+            if (card.isEndingEvaluator)
+            {
+                badges.Add(MakeBadge("EVALUATOR",
+                    new Color(1f, 0.55f, 0.75f), new Color(0.40f, 0.10f, 0.22f)));
+            }
+
+            if (card.isThreeWayVerdict)
+            {
+                badges.Add(MakeBadge("3-WAY",
+                    new Color(0.7f, 0.95f, 0.4f), new Color(0.18f, 0.32f, 0.05f)));
             }
 
             if ((card.isPetitionCard || card.isChatCard) && card.petitionerSource == PetitionerSource.GeneratedCommoner)
@@ -383,8 +397,27 @@ namespace Game.Scripts.Editor
                 return choices;
             }
 
+            if (card.isEndingEvaluator)
+            {
+                choices.Add(CreateChoiceRow("L", "Tyrant", LeftAccent, card.leftResourceChange, out Port evalLeft));
+                LeftPort = evalLeft;
+                choices.Add(CreateChoiceRow("R", "Shadow King", RightAccent, card.rightResourceChange, out Port evalRight));
+                RightPort = evalRight;
+                choices.Add(CreateContinueRow(out Port evalContinue));
+                ContinuePort = evalContinue;
+                choices.Add(CreateChoiceRow("M", "Merchant King", new Color(0.95f, 0.85f, 0.2f), card.middleResourceChange, out Port evalMiddle));
+                MiddlePort = evalMiddle;
+                return choices;
+            }
+
             choices.Add(CreateChoiceRow("L", card.GetLeftChoice(GameLanguage.English), LeftAccent, card.leftResourceChange, out Port leftPort));
             LeftPort = leftPort;
+
+            if (card.isThreeWayVerdict)
+            {
+                choices.Add(CreateChoiceRow("M", card.GetMiddleChoice(GameLanguage.English), new Color(0.95f, 0.85f, 0.2f), card.middleResourceChange, out Port middlePort));
+                MiddlePort = middlePort;
+            }
 
             choices.Add(CreateChoiceRow("R", card.GetRightChoice(GameLanguage.English), RightAccent, card.rightResourceChange, out Port rightPort));
             RightPort = rightPort;

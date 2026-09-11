@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6ce3d4284c7ed74ca7fb22aa2548095, type: 3}
+  m_Name: Spk_Seer
+  m_EditorClassIdentifier: 
+  assetName: Spk_Seer
+  displayNameLocalized:
+    english: "The Seer"
+    arabic: "العرّافة"
+  portrait: {fileID: 21300000, guid: d737a477c6e94ab28bec29563bc1adcd, type: 3}
+  llmPersonaPrompt: "You are the blind Seer of the traveling circus. You speak in chilling, rhythmic omens drawn from domestic metaphors like salt, thread, and smoke. You demand coin or sacrifice for insight. Addresses ruler as little king. Keep replies under 30 words."

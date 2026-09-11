@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_32_GrainWar
+  m_EditorClassIdentifier: 
+  assetName: Card_32_GrainWar
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: bd422fef7c7a0976bcb3c39364963115, type: 2}
+  descriptionLocalized:
+    english: "Treasurer: 'In retaliation for the rejected deal, Westernia has halted all salt shipments to our kingdom. We must source salt elsewhere!'"
+    arabic: "أمين الخزينة: «رداً على رفض الاتفاق، قطعت مملكة الغرب شحنات الملح عن أسواقنا! لا بد من تدبير بديل سريعاً.»"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: "Buy salt from the Eastern Kingdom at premium prices."
+    arabic: "اشترِ الملح من مملكة الشرق ولو بأسعار مضاعفة."
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -15
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 10
+  leftNextCard: {fileID: 11400000, guid: 4599e301fe5a891fd224cbcd335e51dc, type: 2}
+  rightChoiceLocalized:
+    english: "Ration domestic salt and commission sea salt pans."
+    arabic: "رشّد استهلاك الملح واستصلح ملاحات بحرية خاصة."
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -5
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -5
+  rightNextCard: {fileID: 11400000, guid: 4599e301fe5a891fd224cbcd335e51dc, type: 2}
+  middleChoiceLocalized:
+    english: ""
+    arabic: ""
+  middleResourceChange:
+    values:
+  middleNextCard: {fileID: 0}
+  isThreeWayVerdict: 0
+  isEndingEvaluator: 0
+  leftSetFlags: 0
+  rightSetFlags: 0
+  middleSetFlags: 0
+  continueSetFlags: 0
+  leftRequiresFlags: 0
+  rightRequiresFlags: 0
+  middleRequiresFlags: 0
+  alternateDescriptionIfFlags: 0
+  alternateDescriptionIfMissing: 0
+  alternateDescriptionLocalized:
+    english: ""
+    arabic: ""
+  entryRequiresFlags: 0
+  hasResourceGate: 0
+  gateResource: {fileID: 0}
+  gateMinInclusive: 0
+  gateMaxInclusive: 100
+  skipToCard: {fileID: 0}
+  skipToAltCard: {fileID: 0}
+  isLlmReactionCard: 0
+  reactionSeedOverride: ""
+  isPetitionCard: 0
+  petitionSeedOverride: ""
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: ""
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

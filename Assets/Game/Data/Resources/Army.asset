@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a3714b3e4c4278ac399d60c86fa534, type: 3}
+  m_Name: Army
+  m_EditorClassIdentifier: 
+  assetName: Army
+  displayNameLocalized:
+    english: "Army"
+    arabic: "الجيش"
+  icon: {fileID: -509447706214915325, guid: 007a64651e7261241b30c259e7fd2957, type: 3}
+  defaultStartingValue: 50
+  collapseThreshold: 0
+  warningThresholdPercent: 30
+  warningCooldownCards: 5
+  speaker: {fileID: 11400000, guid: 968d4d0248269710a22f4c7dabc6a9cd, type: 2}
+  collapseEndingFallbackEnglish: "The garrison stacks pikes in the yard and goes home. The General salutes the empty throne out of habit before leaving."
+  collapseEndingFallbackArabic: "ألقى الجنود أسلحتهم وانصرفوا إلى بيوتهم؛ فحاكم بلا ولاء حقيقي لا يملك سوى خارطة بلا جنود."

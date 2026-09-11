@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dff4a16108ee42109dcd0205c4184641, type: 3}
   m_Name: ResourceCatalog
   m_EditorClassIdentifier: 
+  assetName: ResourceCatalog
   resources:
-  - {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
   - {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+  - {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
   - {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
