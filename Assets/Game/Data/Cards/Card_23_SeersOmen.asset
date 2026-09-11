@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_23_SeersOmen
+  m_EditorClassIdentifier: 
+  assetName: Card_23_SeersOmen
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: b03696b9fe28e4290e0808855683bfe3, type: 2}
+  descriptionLocalized:
+    english: "The blind Seer raises her withered hands through aromatic incense: 'Little king... the western sea churns with warships. War or coin, blood or bread—the tide comes for your throne. How will you answer?'"
+    arabic: "ترفع العرّافة العمياء كفيها وسط دخان البخور العبق: «أيها الملك الصغير... بحار الغرب تموج بالسفن الحربية! حربٌ أم ذهب، دمٌ أم خبز—المد القادم يهدد عرشك، فكيف ستجيب؟»"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: "Prepare war galleys and burn their fleet first!"
+    arabic: "جهّز السفن الحربية وأشعل النيران في أسطولهم مباغتة!"
+  leftResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: 5
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: -10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: 10
+  leftNextCard: {fileID: 11400000, guid: 8f34778cd85d3c8b20d5ae45e42c42e2, type: 2}
+  rightChoiceLocalized:
+    english: "Strengthen our harbors and propose trade tolls."
+    arabic: "حصّن موانئنا واعرض عليهم اتفاقاً لتنظيم رسوم الملاحة."
+  rightResourceChange:
+    values:
+    - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
+      value: -5
+    - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+      value: 10
+    - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
+      value: -5
+  rightNextCard: {fileID: 11400000, guid: 1427e5d46df4a3e0bccd9c511338f8c0, type: 2}
+  middleChoiceLocalized:
+    english: ""
+    arabic: ""
+  middleResourceChange:
+    values:
+  middleNextCard: {fileID: 0}
+  isThreeWayVerdict: 0
+  isEndingEvaluator: 0
+  leftSetFlags: 0
+  rightSetFlags: 0
+  middleSetFlags: 0
+  continueSetFlags: 0
+  leftRequiresFlags: 0
+  rightRequiresFlags: 0
+  middleRequiresFlags: 0
+  alternateDescriptionIfFlags: 1
+  alternateDescriptionIfMissing: 0
+  alternateDescriptionLocalized:
+    english: "The blind Seer smiles toward the bells at your side: 'Two faces on one coin, little king. The western sea churns with warships. War or coin—the tide comes for both your thrones. How will you answer?'"
+    arabic: "تبتسم العرّافة العمياء نحو الأجراس إلى جوارك: «وجهان لعملة واحدة أيها الملك الصغير. بحار الغرب تموج بالسفن. حربٌ أم ذهب—المدّ قادم نحو عرشيْكما. فكيف ستجيب؟»"
+  entryRequiresFlags: 2
+  hasResourceGate: 0
+  gateResource: {fileID: 0}
+  gateMinInclusive: 0
+  gateMaxInclusive: 100
+  skipToCard: {fileID: 11400000, guid: 8f34778cd85d3c8b20d5ae45e42c42e2, type: 2}
+  skipToAltCard: {fileID: 11400000, guid: 1427e5d46df4a3e0bccd9c511338f8c0, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: ""
+  isPetitionCard: 0
+  petitionSeedOverride: ""
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: ""
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>The Wicked King</title>
+</head>
+<body>
+<tw-storydata name="The Wicked King" startnode="16" creator="Twine" creator-version="2.3.9" format="Harlowe" format-version="3.3.9" ifid="FB82F825-C7BD-40E9-974F-F22F2DD60404" zoom="0.3" options="" hidden>
+<style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css"></style>
+<script role="script" id="twine-user-script" type="text/twine-javascript"></script>
+<tw-passagedata pid="1" name="StoryInit" tags="" position="100,10" size="100,100">(set: $Crown to 50)
+(set: $Gold to 50)
+(set: $Loyalty to 50)
+(set: $Day to 1)</tw-passagedata>
+<tw-passagedata pid="2" name="StoryHeader" tags="header" position="100,100" size="100,100">👑 **Crown:** $Crown% | 🪙 **Gold:** $Gold% | 🤝 **Loyalty:** $Loyalty%
+---</tw-passagedata>
+<tw-passagedata pid="3" name="Resources breakdown" tags="" position="100,190" size="100,100">Crown | Gold | Loyalty -- any at zero = realm collapses.</tw-passagedata>
+<tw-passagedata pid="4" name="Endings" tags="" position="100,280" size="100,100">5 authored endings + 3 resource collapses (Crown, Gold, Army).</tw-passagedata>
+<tw-passagedata pid="5" name="Persona - The Chancellor" tags="Persona" position="100,400" size="100,100">You are Chancellor Aldric, the silk-voiced chief diplomat and minister. You make ruthless realpolitik sound like noble statesmanship. You cite precedents, numbers, and state stability. Never raise your voice; speak with calm, polished, dangerous elegance. Keep replies under 30 words.</tw-passagedata>
+<tw-passagedata pid="6" name="Persona - The General" tags="Persona" position="100,540" size="100,100">You are the General, a veteran 30-year army commander. You frame every problem in terms of soldiers, steel, supplies, and tactical terrain. You distrust courtiers and diplomats. Speak with stern military brevity and unyielding loyalty. Calls king Sire. Keep replies under 30 words.</tw-passagedata>
+<tw-passagedata pid="7" name="Persona - The Treasurer" tags="Persona" position="100,680" size="100,100">You are the Treasurer, master of the royal vaults. You view every war, treaty, and crisis through gold and taxation. You quietly skim an administrative fee whenever possible. Speak with oily politeness and numerical precision. Calls king Sire. Keep replies under 30 words.</tw-passagedata>
+<tw-passagedata pid="8" name="Persona - The Jester" tags="Persona" position="100,820" size="100,100">You are the Jester, King Percy&#x27;s elder half-brother, born to another woman before the Queen Mother&#x27;s marriage. You pose as a fool in bells and ribbons to protect him and speak unvarnished truth to power. You drop profound wisdom inside riddles and jokes. Calls the king Percy. Keep replies under 30 words.</tw-passagedata>
+<tw-passagedata pid="9" name="Persona - The Spirit Mother" tags="Persona" position="100,960" size="100,100">You are the ghost of the late queen mother. You haunt King Percy with sharp, unsparing maternal critique, balancing severe standards with deep protective instinct. Remind him of blood, duty, and truth. Calls him Percy. Keep replies under 30 words.</tw-passagedata>
+<tw-passagedata pid="10" name="Persona - The Seer" tags="Persona" position="100,1100" size="100,100">You are the blind Seer of the traveling circus. You speak in chilling, rhythmic omens drawn from domestic metaphors like salt, thread, and smoke. You demand coin or sacrifice for insight. Addresses ruler as little king. Keep replies under 30 words.</tw-passagedata>
+<tw-passagedata pid="11" name="Persona - The Captain" tags="Persona" position="100,1240" size="100,100">You are Captain Kaelen of the palace watch. Blunt, vigilant, and practical. You care about riots, gate security, and city defense. Never use flourishes. Calls the king Sire. Keep replies under 30 words.</tw-passagedata>
+<tw-passagedata pid="12" name="Persona - The Merchant" tags="Persona" position="100,1380" size="100,100">You are Master Silvio, head of the merchant guild. You manage grain shipments, harbor trade, and market supply. Pragmatic, persuasive, and concerned with keeping bread affordable and trade routes open. Keep replies under 30 words.</tw-passagedata>
+<tw-passagedata pid="13" name="Collapse - Crown" tags="Collapse Fallback" position="100,1550" size="100,100">The gates give way at dusk. The mob carries your crown through the streets. A dynasty is a story the realm agrees to tell, and yours has ended mid-sentence.</tw-passagedata>
+<tw-passagedata pid="14" name="Collapse - Gold" tags="Collapse Fallback" position="100,1690" size="100,100">The vaults stand open and echoing, swept clean. A king without coin is a beggar with better posture.</tw-passagedata>
+<tw-passagedata pid="15" name="Collapse - Loyalty" tags="Collapse Fallback" position="100,1830" size="100,100">The garrison stacks pikes in the yard and goes home. The General salutes the empty throne out of habit before leaving.</tw-passagedata>
+<tw-passagedata pid="16" name="Card_01_MotherGhost" tags="" position="400,860" size="100,100">[Speaker: The Spirit Mother]
+EN: Cold mist gathers around your canopy bed. Your mother&#x27;s ghost leans close: &#x27;Percy, waking up with a crown does not make you a ruler. The Eastern border burns. Will you rule with iron or ink?&#x27;
+AR: يتصاعد ضباب بارد حول سريرك الملكي، ويدنو طيف والدتك هامساً: «يا بيرسي، ليس كل من استيقظ وعلى رأسه تاج صار ملكاً حقاً! حدود الشرق تشتعل، فهل ستحكم بالحديد أم بالحبر؟»
+
+[SWIPE LEFT] Gather the war council; march on the East.
+AR: اجمع مجلس الحرب؛ سنزحف نحو الشرق فوراً!
+&lt;!-- Crown +5  Gold -10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_02_EasternRaids]]]
+
+[SWIPE RIGHT] Summon diplomats; offer alliance and trade.
+AR: استدعِ السفراء؛ اعرض التحالف والمصالح المشتركة.
+&lt;!-- Crown -5  Gold +10  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_09_Alliance_Relief]]]</tw-passagedata>
+<tw-passagedata pid="17" name="Card_02_EasternRaids" tags="" position="660,420" size="100,100">[Speaker: The General]
+EN: General: &#x27;Sire, Easternia&#x27;s border raiders burned three of our grain mills. We must strike their garrisons before dawn!&#x27;
+AR: الجنرال: «يا مولاي، أحرقت غارات مملكة الشرق ثلاثة من طواحين قمحنا! لا بد من مباغتة ثكناتهم قبل بزوغ الفجر!»
+
+[SWIPE LEFT] Mobilize the vanguard; burn their outposts.
+AR: حرّك طليعة الجيش، وأشعل النار في حصونهم.
+&lt;!-- Crown +5  Gold -10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_03_Conquest_March]]]
+
+[SWIPE RIGHT] Hold defensive lines; do not escalate.
+AR: الزموا الخطوط الدفاعية؛ لا أريد تصعيداً غير محسوب.
+&lt;!-- Crown -5  Gold +5  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_08_EasternResistance]]]</tw-passagedata>
+<tw-passagedata pid="18" name="Card_03_Conquest_March" tags="" position="920,200" size="100,100">[Speaker: The General]
+EN: General: &#x27;Our cavalry broke their outer perimeter! Their frontier village flies our banner, but the prisoners stare with bitter hatred.&#x27;
+AR: الجنرال: «حطمت خيالتنا خطوطهم الأمامية! قريتهم الحدودية ترفع رايتنا الآن، لكن الأسرى يرمقوننا بنظرات الحقد الدفين.»
+
+[SWIPE LEFT] Enforce strict martial law; seize weapons.
+AR: فرض الأحكام العرفية وتجريدهم من السلاح.
+&lt;!-- Crown +5  Gold +5  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_04_Conquest_IronGrip]]]
+
+[SWIPE RIGHT] Distribute rations; win their hearts.
+AR: وزّعوا المؤن على الأهالي لكسب ولائهم.
+&lt;!-- Crown -5  Gold -10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_06_Conquest_Mercy]]]</tw-passagedata>
+<tw-passagedata pid="19" name="Card_04_Conquest_IronGrip" tags="" position="1180,200" size="100,100">[Speaker: The Treasurer]
+EN: Treasurer: &#x27;Sire, pacifying this conquered territory is bleeding our coffers dry. We need a war levy on their local merchants immediately.&#x27;
+AR: أمين الخزينة: «يا مولاي، إحكام السيطرة على هذه الأراضي يستنزف خزائننا! يجب فرض ضريبة حرب على تجارهم فوراً.»
+
+[SWIPE LEFT] Tax them mercilessly; war must pay for war.
+AR: افرض الضرائب بلا رحمة؛ فالحرب تطعم نفسها.
+&lt;!-- Crown +5  Gold +15  Loyalty -10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_05_Conquest_Taxation]]]
+
+[SWIPE RIGHT] Spare their commerce; establish fair border tolls.
+AR: اعفُ تجارتهم؛ واكتفِ برسوم جمركية عادلة.
+&lt;!-- Crown -5  Gold -5  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_07_Conquest_GarrisonCost]]]</tw-passagedata>
+<tw-passagedata pid="20" name="Card_05_Conquest_Taxation" tags="" position="1440,200" size="100,100">[Speaker: The Chancellor]
+EN: Chancellor: &#x27;The high levies brought heavy coin, Sire, but rebel partisans are organizing in the mountains. A rebellion brews.&#x27;
+AR: المستشار: «جلبت الضرائب الباهظة ذهباً وفيراً، لكن المقاومين يحشدون في الجبال. نيران التمرد توشك أن تندلع!»
+
+[SWIPE LEFT] Send inquisitors; purge the mountain dens.
+AR: أرسل العيون والفرسان لتطهير مخابئ الجبال.
+&lt;!-- Crown +5  Gold -10  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]
+
+[SWIPE RIGHT] Offer amnesty to any rebel who lays down arms.
+AR: اعرض العفو العام على كل من يلقي السلاح.
+&lt;!-- Crown -5  Gold -5  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]</tw-passagedata>
+<tw-passagedata pid="21" name="Card_06_Conquest_Mercy" tags="" position="1180,420" size="100,100">[Speaker: The General]
+EN: General: &#x27;Your mercy impressed the town elders, Sire. They surrendered their weapon caches, but our soldiers grumble about missed plunder.&#x27;
+AR: الجنرال: «أثرت رحمتك في كبار قريتهم، فسلّموا مخازن سلاحهم طوعاً؛ غير أن جندنا يتذمرون لحرمانهم من الغنائم.»
+
+[SWIPE LEFT] Pay the troops a modest royal bonus.
+AR: اصرف مكافأة ترضية للجند من الخزينة الخاصة.
+&lt;!-- Crown +5  Gold -15  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_07_Conquest_GarrisonCost]]]
+
+[SWIPE RIGHT] Remind them of military discipline; no bonuses.
+AR: ذكّرهم بالانضباط العسكري؛ لا غنائم على حساب الشرف.
+&lt;!-- Crown +10  Gold +0  Loyalty -10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 0)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_08_EasternResistance]]]</tw-passagedata>
+<tw-passagedata pid="22" name="Card_07_Conquest_GarrisonCost" tags="" position="1440,420" size="100,100">[Speaker: The Treasurer]
+EN: Treasurer: &#x27;Maintaining three forward fortresses on the eastern ridge costs fifty wagonloads of silver each month. Shall we scale back?&#x27;
+AR: أمين الخزينة: «صيانة ثلاثة حصون أمامية في الشرق تكلفنا خمسين حمولة فضة شهرياً! فهل نخفض أعداد الحاميات؟»
+
+[SWIPE LEFT] Reinforce the ridge; security comes first.
+AR: عزّز الحصون؛ أمن المملكة لا يقبل المساومة.
+&lt;!-- Crown +5  Gold -15  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]
+
+[SWIPE RIGHT] Withdraw back to the natural river border.
+AR: انسحب إلى خط النهر الطبيعي لترشيد النفقات.
+&lt;!-- Crown -5  Gold +10  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]</tw-passagedata>
+<tw-passagedata pid="23" name="Card_08_EasternResistance" tags="" position="920,640" size="100,100">[Speaker: The General]
+EN: General: &#x27;Eastern partisans launched hit-and-run ambushes along our supply routes. We must crush their mountain hideouts or withdraw.&#x27;
+AR: الجنرال: «شنّ مقاتلو الشرق كمائن مباغتة على قوافل إمدادنا! إما أن نمشّط الجبال بحملة كبرى، أو ننسحب.»
+
+[SWIPE LEFT] Deploy shock cavalry and seal off the passes.
+AR: انشر الفرسان وأغلق الممرات الجبلية بإحكام.
+&lt;!-- Crown +10  Gold -10  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]
+
+[SWIPE RIGHT] Fortify our supply depots and avoid open battle.
+AR: حصّن مستودعات المؤن وتجنب المعارك المفتوحة.
+&lt;!-- Crown -5  Gold +5  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]</tw-passagedata>
+<tw-passagedata pid="24" name="Card_09_Alliance_Relief" tags="" position="660,1300" size="100,100">[Speaker: The Chancellor]
+EN: Chancellor: &#x27;The Eastern Kingdom welcomes an envoy, Sire! But their frontier provinces suffer from drought. Sending grain would seal their goodwill.&#x27;
+AR: المستشار: «رحبت مملكة الشرق بسفيرنا يا مولاي! غير أن أقاليمهم الحدودية تعاني الجفاف. إرسال معونات قمح سيضمن صداقتهم.»
+
+[SWIPE LEFT] Dispatch fifty wagons of royal grain.
+AR: أرسل خمسين عربة قمح من مستودعاتنا فوراً.
+&lt;!-- Crown +5  Gold -10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_10_Alliance_Pact]]]
+
+[SWIPE RIGHT] Send words of sympathy and modest gifts.
+AR: أرسل رسائل مواساة وهدايا رمزية فقط.
+&lt;!-- Crown -5  Gold +5  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_12_Alliance_Gifts]]]</tw-passagedata>
+<tw-passagedata pid="25" name="Card_10_Alliance_Pact" tags="" position="920,1080" size="100,100">[Speaker: The Chancellor]
+EN: Chancellor: &#x27;The Eastern King has signed the non-aggression pact! He proposes joint border customs to deter banditry.&#x27;
+AR: المستشار: «وقّع ملك الشرق ميثاق عدم الاعتداء! ويقترح إنشاء نقاط جمركية مشتركة لردع قُطّاع الطرق.»
+
+[SWIPE LEFT] Ratify the treaty and open the trade road.
+AR: صادق على المعاهدة وافتح طريق التجارة.
+&lt;!-- Crown +5  Gold +10  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_11_Alliance_Tolls]]]
+
+[SWIPE RIGHT] Demand extra security concessions first.
+AR: اشترط ضمانات أمنية إضافية لصالحنا أولاً.
+&lt;!-- Crown +5  Gold -5  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_13_Alliance_Sovereignty]]]</tw-passagedata>
+<tw-passagedata pid="26" name="Card_11_Alliance_Tolls" tags="" position="1180,1080" size="100,100">[Speaker: The Treasurer]
+EN: Treasurer: &#x27;Merchandise flows smoothly across the border, Sire! We could double the transit tariffs on their silk and spice wagons.&#x27;
+AR: أمين الخزينة: «البضائع تتدفق عبر الحدود بسلاسة يا مولاي! يسعنا مضاعفة الرسوم على قوافل الحرير والتوابل.»
+
+[SWIPE LEFT] Increase the tariffs; fill the royal treasury.
+AR: ارفع الرسوم الجمركية؛ لنملأ خزائن التاج بالذهب.
+&lt;!-- Crown -5  Gold +15  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_14_Alliance_BorderPost]]]
+
+[SWIPE RIGHT] Keep tariffs low to encourage trade volume.
+AR: أبقِ الرسوم منخفضة لتشجيع رواج التجارة.
+&lt;!-- Crown +5  Gold +5  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_14_Alliance_BorderPost]]]</tw-passagedata>
+<tw-passagedata pid="27" name="Card_12_Alliance_Gifts" tags="" position="920,1520" size="100,100">[Speaker: The General]
+EN: General: &#x27;The Eastern court felt slighted by our modest gifts. They have doubled their border patrols. We look weak!&#x27;
+AR: الجنرال: «استاء بلاط الشرق من هدايانا الهزيلة، وضاعفوا دورياتهم! يبدو تراجعنا ضعفاً في أعينهم!»
+
+[SWIPE LEFT] Stage a grand military parade at the frontier.
+AR: أقم استعراضاً عسكرياً مهيباً على خط الحدود.
+&lt;!-- Crown +10  Gold -5  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_13_Alliance_Sovereignty]]]
+
+[SWIPE RIGHT] Send a polished apology with fine royal wines.
+AR: أرسل اعتذاراً دبلوماسياً رقيقاً مع خمور فاخرة.
+&lt;!-- Crown -5  Gold -5  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_14_Alliance_BorderPost]]]</tw-passagedata>
+<tw-passagedata pid="28" name="Card_13_Alliance_Sovereignty" tags="" position="1180,1300" size="100,100">[Speaker: The Chancellor]
+EN: Chancellor: &#x27;The Eastern Kingdom formally recognizes our sovereignty over the border valley. The frontier is at peace, Sire.&#x27;
+AR: المستشار: «اعترفت مملكة الشرق رسمياً بسيادتنا على وادي الحدود. حلّ السلام على الثغور يا مولاي.»
+
+[SWIPE LEFT] Celebrate the diplomatic victory with a feast.
+AR: أقم مأدبة ملكية كبرى احتفاءً بنصر الدبلوماسية.
+&lt;!-- Crown +10  Gold -10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]
+
+[SWIPE RIGHT] Reallocate border garrisons to the capital.
+AR: أعد توزيع حاميات الحدود لحماية العاصمة.
+&lt;!-- Crown -5  Gold +5  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]</tw-passagedata>
+<tw-passagedata pid="29" name="Card_14_Alliance_BorderPost" tags="" position="1440,1300" size="100,100">[Speaker: The Treasurer]
+EN: Treasurer: &#x27;Our joint border post generates a steady thirty gold per week. The eastern merchants are satisfied and singing your praise.&#x27;
+AR: أمين الخزينة: «نقطة العبور المشتركة تدر ثلاثين ديناراً أسبوعياً! تجار الشرق راضون ويثنون على عدالتكم.»
+
+[SWIPE LEFT] Invest the revenue in royal road repairs.
+AR: استثمر العائدات في تمهيد الطرق وحماية القوافل.
+&lt;!-- Crown +5  Gold -5  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]
+
+[SWIPE RIGHT] Lock the profits away in the high vault.
+AR: أودع الأرباح في خزائن القصر كاحتياطي استراتيجي.
+&lt;!-- Crown +0  Gold +15  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 0)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_15_CircusArrives]]]</tw-passagedata>
+<tw-passagedata pid="30" name="Card_15_CircusArrives" tags="" position="1700,860" size="100,100">[Speaker: The Jester]
+EN: The Jester bounds in, bells jingling: &#x27;A grand traveling circus has pitched tents outside the city gates, Percy! Acrobats, fire-eaters, and a blind Seer who claims she can see tomorrow. Shall we let them perform?&#x27;
+AR: يقفز البهلوان وتدق أجراسه: «سيرك عظيم نصب خيامه قرب أسوار المدينة يا بيرسي! بهلوانيون، نافثو لهب، وعرّافة عمياء تزعم أنها ترى الغد! أنأذن لهم بالعرض؟»
+
+[SWIPE LEFT] Welcome the circus! The people need joy.
+AR: مرحباً بالسيرك! يحتاج الشعب إلى البهجة والترويح.
+&lt;!-- Crown +5  Gold -5  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_16_CircusTents]]]
+
+[SWIPE RIGHT] Turn them away! Wandering troupes harbor spies.
+AR: اطردوهم! فخلف أقنعة المهرجين يندس الجواسيس.
+&lt;!-- Crown -5  Gold +5  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_17_GallerySilence]]]</tw-passagedata>
+<tw-passagedata pid="31" name="Card_16_CircusTents" tags="" position="1960,420" size="100,100">[Speaker: The Jester]
+EN: Between fiery acrobatic flips, the Jester leans over your throne and whispers without smiling: &#x27;Percy... look at our hands. Have you ever wondered why your late father kept an artist locked away in the Ruined Castle across the marshes?&#x27;
+AR: بين عروض الأكروبات، يدنو البهلوان من عرشك ويهمس دون ابتسام: «بيرسي... انظر إلى أيدينا. ألم تتساءل يوماً لماذا حبس والدك الراحل رساماً في القلعة المهدمة خلف المستنقعات؟»
+
+[Chat Card]
+[Seed: The Jester pulls Percy aside between circus acts, drops his jester mask, and whispers cryptically about the Ruined Castle and the artist their late father kept hidden there. He hints at a family secret.]
+[[End Audience-&gt;Card_RuinedCastle]]</tw-passagedata>
+<tw-passagedata pid="32" name="Card_17_GallerySilence" tags="" position="2220,420" size="100,100">[Speaker: The Spirit Mother]
+EN: In the cold portrait gallery, your mother&#x27;s ghost manifests, her eyes sorrowful: &#x27;The truth is an uninvited guest, Percy. If you do not seek it willingly, it will kick down your palace doors.&#x27;
+AR: في بهو اللوحات البارد، يتجسد طيف والدتك بعينين حزينتين: «الحقيقة ضيف لا يستأذن يا بيرسي. إن لم تفتح لها بابك راضياً، فستكسر أبواب قصرك عنوة!»
+
+[Chat Card]
+[Seed: The ghost of the queen mother appears in the portrait gallery and warns Percy about hidden truths in his bloodline, speaking cryptically about what his father concealed.]
+[[End Audience-&gt;Card_18_BlightPetition]]</tw-passagedata>
+<tw-passagedata pid="33" name="Card_RuinedCastle" tags="" position="1960,200" size="100,100">[Speaker: The Jester]
+EN: In the mossy crypt of the Ruined Castle, you uncover a locked alcove. Inside rests a sealed portrait: your late father holding an infant boy beside a woman in motley—the Jester&#x27;s true mother. He is your elder brother!
+AR: في سرداب القلعة المهدمة، تعثر على حجرة سرية تخفي لوحة زيتية: والدك الراحل يحمل طفلاً رضيعاً إلى جانب امرأة بلباس البهلوانيين... إنها أم المهرج! البهلوان هو أخوك الأكبر الحقيقي!
+
+[SWIPE LEFT] Burn the portrait to ash; keep the throne secure!
+AR: احرق اللوحة حتى تصير رماداً؛ العرش لي وحدي!
+&lt;!-- Crown +15  Gold +0  Loyalty -15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 15)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 0)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_BurnPortrait]]]
+
+[SWIPE RIGHT] Embrace him as brother and name him co-ruler!
+AR: اعترف به شقيقاً وشاركه حكم المملكة بالعدل!
+&lt;!-- Crown -10  Gold -5  Loyalty +25 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 25)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_BrotherCoRuler]]]</tw-passagedata>
+<tw-passagedata pid="34" name="Card_BurnPortrait" tags="" position="2220,200" size="100,100">[Speaker: The Chancellor]
+EN: Chancellor: &#x27;Wisely done, Sire. The cinders are scattered to the winds. The sovereign right to rule must never be divided, lest the kingdom tear itself apart.&#x27;
+AR: المستشار: «فعلت عين الصواب يا مولاي! تذرو الرياح رمادها، فحكم المملكة لا يحتمل شريكين، وإلا تمزق التاج إرباً.»
+
+[SWIPE LEFT] Keep the Jester closely watched under guard.
+AR: ضع البهلوان تحت مراقبة أمنية مشددة.
+&lt;!-- Crown +5  Gold -5  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_17_GallerySilence]]]
+
+[SWIPE RIGHT] Grant him a generous estate far from court.
+AR: امنحه ضيعة ريفية هادئة بعيداً عن البلاط.
+&lt;!-- Crown -5  Gold -10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_17_GallerySilence]]]</tw-passagedata>
+<tw-passagedata pid="35" name="Card_BrotherCoRuler" tags="" position="2480,200" size="100,100">[Speaker: The Jester]
+EN: The Jester casts aside his jester&#x27;s cap, tears in his eyes: &#x27;Percy... I wanted neither your gold nor your crown, only the truth. Together, we can govern this land with both sword and compassion.&#x27;
+AR: يخلع البهلوان قبعته وعيناه تفيضان بالدموع: «يا بيرسي... لم أرد تاجك ولا ذهبك، بل أردت الحقيقة فقط. معاً، سنقود هذه المملكة بالسيف والحكمة معاً.»
+
+[SWIPE LEFT] Affirm our secret pact; prepare to face the realm.
+AR: ثبّت عهد الأخوة؛ واستعد لمواجهة أزمات المملكة معاً.
+&lt;!-- Crown +10  Gold +5  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_17_GallerySilence]]]
+
+[SWIPE RIGHT] Prepare the royal decree of joint succession.
+AR: أعد مرسوماً ملكياً بوراثة مشتركة للعرش.
+&lt;!-- Crown +5  Gold -5  Loyalty +20 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 20)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_17_GallerySilence]]]</tw-passagedata>
+<tw-passagedata pid="36" name="Card_18_BlightPetition" tags="" position="1960,860" size="100,100">[Speaker: The Merchant]
+EN: A weather-beaten farmer&#x27;s representative kneels before you: &#x27;Sire, black rot has consumed half our grain fields. If you demand full taxes, our children will starve before winter sets in!&#x27;
+AR: يركع فلاح أجهدته السنون بين يديك: «يا مولاي، التهم العفن الأسود نصف حقول القمح! إن ألزمتمونا بكامل الخراج، فستهلك عائلاتنا جوعاً قبل قدوم الشتاء!»
+
+[Petition Card]
+[Seed: A commoner petitions the king for grain relief after crop blight destroys the harvest.]
+[[Resolve-&gt;Card_19_BlightDecree]]</tw-passagedata>
+<tw-passagedata pid="37" name="Card_19_BlightDecree" tags="" position="2220,860" size="100,100">[Speaker: The Treasurer]
+EN: Treasurer: &#x27;Sire, if we forgive their taxes, the treasury will be empty when the Western Kingdom demands trade settlements!&#x27;
+AR: أمين الخزينة: «يا مولاي، إن أسقطنا الضرائب عنهم، فستفرغ خزائننا حين تطالبنا مملكة الغرب بسداد أثمان التجارة!»
+
+[SWIPE LEFT] Exempt the farmers and subsidize seed grain.
+AR: أعفِ الفلاحين واصرف معونات لشراء البذور.
+&lt;!-- Crown +5  Gold -15  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_20_HoodedBandit]]]
+
+[SWIPE RIGHT] Collect the grain tax by force; state comes first.
+AR: حصّل الضرائب بالقوة؛ فاستقرار الدولة أولاً.
+&lt;!-- Crown -10  Gold +15  Loyalty -15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_PeasantLeader]]]</tw-passagedata>
+<tw-passagedata pid="38" name="Card_PeasantLeader" tags="" position="2480,860" size="100,100">[Speaker: The Captain]
+EN: Captain of the Guard: &#x27;Sire! Five thousand furious peasants have marched upon the palace gate, demanding bread! We arrested their ringleader in chains. What is his sentence?&#x27;
+AR: قائد الحرس: «يا مولاي! خمسة آلاف فلاح غاضب يحاصرون بوابات القصر مطالبين بالخبز! اعتقلنا زعيم تمردهم بالأصفاد. فما حكمك عليه؟»
+
+[SWIPE LEFT] Execute him publicly; quell this treason with iron!
+AR: أعدمه علناً في الميدان لردع الرعاع عن العصيان!
+&lt;!-- Crown +10  Gold +0  Loyalty -20 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 0)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 20)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_ExecuteRebel]]]
+
+[SWIPE RIGHT] Open royal granaries! Feed them and grant a pardon.
+AR: افتحوا صوامع الغلال الملكية! أطعموهم واصفحوا عنهم.
+&lt;!-- Crown -5  Gold -15  Loyalty +25 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 25)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_OpenGranaries]]]</tw-passagedata>
+<tw-passagedata pid="39" name="Card_ExecuteRebel" tags="" position="2740,640" size="100,100">[Speaker: The General]
+EN: General: &#x27;The rebel swung from the gallows at noon. The crowds backed away in sullen dread, but their eyes burn with suppressed fury. We must stay on high alert.&#x27;
+AR: الجنرال: «نُفذ الإعدام شنقاً عند الظهيرة. تفرقت الحشود في وجوم وخوف، لكن نيران الغضب تتأجج في صدورهم. الحيطة واجبة.»
+
+[SWIPE LEFT] Double the palace night watches.
+AR: ضاعف حراسات القصر الليلية تحسباً للغدر.
+&lt;!-- Crown +5  Gold -5  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_20_HoodedBandit]]]
+
+[SWIPE RIGHT] Offer a minor bread dole to calm the widows.
+AR: وزّع صدقات خبز خفيفة لتهدئة الأرامل والمحتاجين.
+&lt;!-- Crown +0  Gold -5  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 0)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_20_HoodedBandit]]]</tw-passagedata>
+<tw-passagedata pid="40" name="Card_OpenGranaries" tags="" position="2740,1080" size="100,100">[Speaker: The Merchant]
+EN: Merchant: &#x27;Sire, grain wagons roll through every district. The people are weeping with joy, shouting blessings on your name! The riot has turned into a celebration.&#x27;
+AR: كبير التجار: «عربات الحبوب تجوب الأسواق يا مولاي! الناس يبكون فرحاً ويدعون لكم بطول البقاء، وانقلب الشغب إلى احتفال مهيب.»
+
+[SWIPE LEFT] Commission local guilds to organize autumn planting.
+AR: كلّف النقابات بتنظيم مواسم البذر القادمة.
+&lt;!-- Crown +5  Gold -5  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_20_HoodedBandit]]]
+
+[SWIPE RIGHT] Enlist grateful young farmers into the royal militia.
+AR: جنّد شبابهم الراغبين في الدفاع عن العرش.
+&lt;!-- Crown +5  Gold -5  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_20_HoodedBandit]]]</tw-passagedata>
+<tw-passagedata pid="41" name="Card_20_HoodedBandit" tags="" position="2220,1300" size="100,100">[Speaker: The Captain]
+EN: Captain of the Guard: &#x27;Sire! We raided the outlaw stronghold and dragged the Hooded Bandit to your throne. Searching his chest revealed sealed letters and coin purses stamped with the Chancellor&#x27;s private sigil!&#x27;
+AR: قائد الحرس: «يا مولاي! داهمنا وكر قطاع الطرق وجلبنا زعيمهم المقنع مقيداً! عثرنا في حوزته على رسائل سرية وصرر ذهب ممهورة بختم المستشار الخاص!»
+
+[SWIPE LEFT] Raid the Chancellor&#x27;s estate immediately!
+AR: داهموا قصر المستشار فوراً واعتقلوه بتهمة الخيانة!
+&lt;!-- Crown +10  Gold +15  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_RaidChancellor]]]
+
+[SWIPE RIGHT] Turn the Bandit into a double agent to bait him!
+AR: استدرج المستشار واجعل قاطع الطريق عميلاً مزدوجاً!
+&lt;!-- Crown +5  Gold +5  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_BanditDoubleAgent]]]</tw-passagedata>
+<tw-passagedata pid="42" name="Card_RaidChancellor" tags="" position="2480,1300" size="100,100">[Speaker: The General]
+EN: General: &#x27;Our guards breached the Chancellor&#x27;s residence! We seized his secret ledgers and intercepted his sleeper couriers. The conspirator is chained in the dungeon, and his stolen loot is back in your vault!&#x27;
+AR: الجنرال: «اقتحم حرسنا دار المستشار! ضبطنا دفاتره السرية ومراسلاته المشبوهة، وأودعناه في أعمق الزنازين، وعاد الذهب المنهوب إلى خزينتك!»
+
+[SWIPE LEFT] Condemn him to solitary confinement for life.
+AR: احكم عليه بالسجن المؤبد في زنزانة انفرادية.
+&lt;!-- Crown +10  Gold +5  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_23_SeersOmen]]]
+
+[SWIPE RIGHT] Confiscate all his properties to fund our army.
+AR: صادر كامل أملاكه لصالح تعزيز دفاعات المملكة.
+&lt;!-- Crown +5  Gold +15  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_23_SeersOmen]]]</tw-passagedata>
+<tw-passagedata pid="43" name="Card_BanditDoubleAgent" tags="" position="2480,1520" size="100,100">[Speaker: The Captain]
+EN: Captain: &#x27;The trap worked flawlessly, Sire! The Chancellor arrived at the abandoned mill with payment for another raid—only to be surrounded by our loyal crossbowmen. His corrupt network is shattered.&#x27;
+AR: قائد الحرس: «نجح الفخ بإحكام يا مولاي! حضر المستشار إلى الطاحونة المهجورة لتسليم ثمن غارة جديدة، ليجد نفسه محاصراً برماة سهامنا المخلصين!»
+
+[SWIPE LEFT] Strip him of rank and grant the Bandit a pardon.
+AR: جرّده من ألقابه، وامنح قاطع الطريق عفواً لتعاونه.
+&lt;!-- Crown +5  Gold +10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_23_SeersOmen]]]
+
+[SWIPE RIGHT] Recruit the Bandit&#x27;s men as an elite scout vanguard.
+AR: ضم رجال قاطع الطريق إلى طليعة الاستطلاع الملكي.
+&lt;!-- Crown +5  Gold -5  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_23_SeersOmen]]]</tw-passagedata>
+<tw-passagedata pid="44" name="Card_23_SeersOmen" tags="" position="3000,860" size="100,100">[Speaker: The Seer]
+EN: The blind Seer raises her withered hands through aromatic incense: &#x27;Little king... the western sea churns with warships. War or coin, blood or bread—the tide comes for your throne. How will you answer?&#x27;
+AR: ترفع العرّافة العمياء كفيها وسط دخان البخور العبق: «أيها الملك الصغير... بحار الغرب تموج بالسفن الحربية! حربٌ أم ذهب، دمٌ أم خبز—المد القادم يهدد عرشك، فكيف ستجيب؟»
+
+[Reaction Card]
+[Seed: The blind Seer delivers a chilling omen about the Western Kingdom&#x27;s fleet and the coming storm for the king&#x27;s throne.]
+[[Continue-&gt;Card_24_WesternThreat]]</tw-passagedata>
+<tw-passagedata pid="45" name="Card_24_WesternThreat" tags="" position="3260,640" size="100,100">[Speaker: The General]
+EN: General: &#x27;Sire! The Western Kingdom has mobilized its grand armada. Their warships patrol our maritime borders. War is at our threshold!&#x27;
+AR: الجنرال: «يا مولاي! حشدت مملكة الغرب أسطولها البحري العظيم، وسفنهم تجوب سواحلنا بتحدٍّ سافر. الحرب على الأبواب!»
+
+[SWIPE LEFT] Launch a nighttime fire-ship raid against their fleet!
+AR: أطلق سفناً محملة بالنيران ليلاً لإحراق سفنهم الراسية!
+&lt;!-- Crown +10  Gold -15  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_25_FirstStrike_FleetBurns]]]
+
+[SWIPE RIGHT] Propose toll agreements; strengthen our harbors for diplomacy.
+AR: اعرض اتفاقيات رسوم موانئ وحصّن دفاعاتنا البحرية مسار الدبلوماسية.
+&lt;!-- Crown -5  Gold +10  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_29_WesternToll]]]</tw-passagedata>
+<tw-passagedata pid="46" name="Card_25_FirstStrike_FleetBurns" tags="" position="3520,420" size="100,100">[Speaker: The General]
+EN: General: &#x27;A triumph, Sire! The western flagship burns brightly against the night sky! Their surviving captains are suing for an armistice.&#x27;
+AR: الجنرال: «نصر مؤزر يا مولاي! سفينتهم القيادية تحترق في كبد الليل، وبقية قادتهم يرفعون رايات طلب الهدنة!»
+
+[SWIPE LEFT] Demand reparations and establish a naval treaty.
+AR: افرض شروط هدنة صارمة تلزمهم بتعويضات بحرية.
+&lt;!-- Crown +10  Gold +10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_28_FirstStrike_Truce]]]
+
+[SWIPE RIGHT] Hunt down their fleeing vessels and claim complete victory.
+AR: طارد فلول سفنهم وحقق نصراً بحرياً حاسماً.
+&lt;!-- Crown +15  Gold -10  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 15)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_26_FirstStrike_Levy]]]</tw-passagedata>
+<tw-passagedata pid="47" name="Card_26_FirstStrike_Levy" tags="" position="3520,640" size="100,100">[Speaker: The Treasurer]
+EN: Treasurer: &#x27;The coastal merchants grumble, but the funds arrived in time to hire seasoned mercenary frigates. Our harbor is secure.&#x27;
+AR: أمين الخزينة: «تذمر تجار السواحل، لكن الأموال وصلت في موعدها لاستئجار فرقاطات مرتزقة حصّنت موانئنا.»
+
+[SWIPE LEFT] Press the pursuit; let our frigates claim ultimate victory.
+AR: واصل التقدم؛ دع فرقاطاتنا تحسم النصر البحري.
+&lt;!-- Crown +10  Gold -10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_27_WarMother]]]
+
+[SWIPE RIGHT] Reinforce coastal forts and hold a disciplined defensive posture.
+AR: ادعم الحصون الشاطئية والتزم بالدفاع المدروس.
+&lt;!-- Crown +0  Gold -5  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 0)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_28_FirstStrike_Truce]]]</tw-passagedata>
+<tw-passagedata pid="48" name="Card_27_WarMother" tags="" position="3780,420" size="100,100">[Speaker: The Spirit Mother]
+EN: Your mother&#x27;s ghost stands before the battle-smoke: &#x27;You won the sea, Percy. But pride built upon salt and blood can crumble in a single heartbeat. Will you conquer the world—or choose a different legacy?&#x27;
+AR: يقف طيف والدتك وسط سحب الدخان المتلاشية: «ربحت البحر يا بيرسي... لكن العزة المبنية على الملح والدم قد تنهار في رمشة عين! أتريد أن تفتح العالم بالسيف، أم تختار إرثاً مختلفاً؟»
+
+[SWIPE LEFT] Press on! Let my banner fly over every horizon.
+AR: مضياً قُدُماً! فلترفرف رايتي فوق كل الأفق.
+&lt;!-- Crown +20  Gold -10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 20)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_39_End_WarlordsPeace]]]
+
+[SWIPE RIGHT] Enough blood. I want a kingdom worth living in.
+AR: كفى دماءً! أريد مملكة تستحق العيش فيها.
+&lt;!-- Crown +5  Gold +5  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_34_JestersAudience]]]</tw-passagedata>
+<tw-passagedata pid="49" name="Card_28_FirstStrike_Truce" tags="" position="3780,640" size="100,100">[Speaker: The General]
+EN: General: &#x27;The Western armada has withdrawn beyond the horizon. Our borders are calm once more, but rumors swirl in the capital.&#x27;
+AR: الجنرال: «انسحب الأسطول الغربي إلى ما وراء الأفق. هدأت الحدود مجدداً، لكن الشائعات بدأت تروج في أزقة العاصمة.»
+
+[SWIPE LEFT] Reward the soldiers with victory banners and rest.
+AR: كافئ الجنود بأوسمة النصر وأيام راحة.
+&lt;!-- Crown +5  Gold -5  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_34_JestersAudience]]]
+
+[SWIPE RIGHT] Inspect the capital garrison and fortify palace walls.
+AR: تفقّد حاميات العاصمة وحصّن أسوار القصر الملكي.
+&lt;!-- Crown +10  Gold -5  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_34_JestersAudience]]]</tw-passagedata>
+<tw-passagedata pid="50" name="Card_29_WesternToll" tags="" position="3260,1300" size="100,100">[Speaker: The Treasurer]
+EN: Treasurer: &#x27;Sire, Western merchants offer a fat annual tribute in exchange for exempting their wine and grain fleet from our harbor tolls.&#x27;
+AR: أمين الخزينة: «يا مولاي، يعرض تجار الغرب جزية سنوية سخية مقابل إعفاء سفنهم من رسوم الموانئ البحرية.»
+
+[SWIPE LEFT] Accept their gold; coin speaks louder than steel.
+AR: اقبل ذهبهم؛ فالمال أبلغ صوتاً من قرع السيوف.
+&lt;!-- Crown -5  Gold +20  Loyalty -10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 20)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_30_TributeSkim]]]
+
+[SWIPE RIGHT] Refuse; foreign merchants must respect royal sovereignty.
+AR: ارفض العرض؛ فلا مساومة على سيادة موانئنا.
+&lt;!-- Crown +10  Gold -5  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_32_GrainWar]]]</tw-passagedata>
+<tw-passagedata pid="51" name="Card_30_TributeSkim" tags="" position="3520,1080" size="100,100">[Speaker: The Treasurer]
+EN: Treasurer: &#x27;A glorious harvest of gold, Sire! I took only a modest administrative fee for my ledger work. Our vault shines like the sun!&#x27;
+AR: أمين الخزينة: «موسم ذهبي يا مولاي! لم أقتطع سوى نسبة إدارية يسيرة مقابل جهدي الحسابي، وخزائننا تشرق كالشمس!»
+
+[SWIPE LEFT] Overlook his fee; prosperity justifies rewards.
+AR: تغاضَ عن عمولته؛ فالرخاء يبرر المكافأة.
+&lt;!-- Crown -5  Gold +15  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_31_TreasuryDepleted]]]
+
+[SWIPE RIGHT] Audit his ledgers and recover every stolen ounce.
+AR: راجع سجلاته بدقة واسترد كل مثقال ذهب.
+&lt;!-- Crown +10  Gold +10  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_33_SmugglerBargain]]]</tw-passagedata>
+<tw-passagedata pid="52" name="Card_31_TreasuryDepleted" tags="" position="3780,1080" size="100,100">[Speaker: The Merchant]
+EN: Merchant: &#x27;Sire, foreign merchants bought up our domestic reserves! Prices in the market are skyrocketing, and families demand bread.&#x27;
+AR: كبير التجار: «يا مولاي، اشترى تجار الغرب مخزوناتنا المحلية! أسعار الأسواق تلتهب، والأهالي يستغيثون من شح الخبز.»
+
+[SWIPE LEFT] Subsidize bakeries from the royal reserves.
+AR: ادعم المخابز بالدقيق فوراً من الاحتياطي الملكي.
+&lt;!-- Crown +5  Gold -15  Loyalty +15 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 15)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_38_End_ShadowKing]]]
+
+[SWIPE RIGHT] Ban the export of all edible grains immediately.
+AR: امنع تصدير الحبوب والقمح إلى الخارج كلياً.
+&lt;!-- Crown +5  Gold -5  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_34_JestersAudience]]]</tw-passagedata>
+<tw-passagedata pid="53" name="Card_32_GrainWar" tags="" position="3520,1300" size="100,100">[Speaker: The Treasurer]
+EN: Treasurer: &#x27;In retaliation for the rejected deal, Westernia has halted all salt shipments to our kingdom. We must source salt elsewhere!&#x27;
+AR: أمين الخزينة: «رداً على رفض الاتفاق، قطعت مملكة الغرب شحنات الملح عن أسواقنا! لا بد من تدبير بديل سريعاً.»
+
+[SWIPE LEFT] Buy salt from the Eastern Kingdom at premium prices.
+AR: اشترِ الملح من مملكة الشرق ولو بأسعار مضاعفة.
+&lt;!-- Crown +5  Gold -15  Loyalty +10 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 15)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 10)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_33_SmugglerBargain]]]
+
+[SWIPE RIGHT] Ration domestic salt and commission sea salt pans.
+AR: رشّد استهلاك الملح واستصلح ملاحات بحرية خاصة.
+&lt;!-- Crown -5  Gold +5  Loyalty -5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty - 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_33_SmugglerBargain]]]</tw-passagedata>
+<tw-passagedata pid="54" name="Card_33_SmugglerBargain" tags="" position="3780,1300" size="100,100">[Speaker: The Merchant]
+EN: Merchant: &#x27;A guild of private smugglers offers to bring in foreign goods under Westernia&#x27;s nose, provided we turn a blind eye to contraband.&#x27;
+AR: كبير التجار: «تعرض نقابة من المهربين جلب البضائع تحت أنوف أساطيل الغرب، شريطة أن نتغاضى عن بعض شحناتهم غير المرخصة.»
+
+[SWIPE LEFT] License the smugglers quietly; survival requires cunning.
+AR: رخّص لهم سراً؛ فالبقاء في الأزمات يتطلب الدهاء.
+&lt;!-- Crown -5  Gold +10  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 10)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_40_End_MerchantKing]]]
+
+[SWIPE RIGHT] Hang the smugglers; the realm will not deal in vice.
+AR: اقبض على المهربين؛ فلن يدنس التاج شرفه بالخروج عن القانون.
+&lt;!-- Crown +10  Gold -5  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold - 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_34_JestersAudience]]]</tw-passagedata>
+<tw-passagedata pid="55" name="Card_34_JestersAudience" tags="" position="4040,860" size="100,100">[Speaker: The Jester]
+EN: The Jester sits casually upon your throne steps, juggling three golden apples: &#x27;Well, Percy. We fought wars, squeezed merchants, calmed rebellions, and stared into the dark. What sort of king do you want the songs to remember?&#x27;
+AR: يجلس البهلوان على درجات العرش يتلاعب بثلاث تفاحات ذهبية: «حسناً يا بيرسي... خضنا الحروب، وسوّينا الأزمات، وخاطبنا الشعوب في الساحات. فأي ملك تريد أن تذكره أغاني الرواة في الغد؟»
+
+[SWIPE LEFT] I am tired of crowns. Let me walk out that gate a free man.
+AR: سئمت الأتاج. دعني أخرج من تلك البوابة رجلاً حراً.
+&lt;!-- Crown -10  Gold +0  Loyalty +20 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown - 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 0)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 20)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_35_End_Abdication]]]
+
+[SWIPE RIGHT] Not yet, Jester. There is one last verdict to give.
+AR: ليس بعد يا بهلوان. ثمة حكم أخير لا بد من إصداره.
+&lt;!-- Crown +5  Gold +0  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 0)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_36_FoolsVerdict]]]</tw-passagedata>
+<tw-passagedata pid="56" name="Card_36_FoolsVerdict" tags="" position="4300,860" size="100,100">[Speaker: The Jester]
+EN: The Jester stands and bows deeply: &#x27;The hour of your legacy has arrived, Sire. Will you seal the bond of blood, rule with absolute iron, or leave the golden cage behind?&#x27;
+AR: يقف البهلوان وينحني بإجلال عميق: «دقت ساعة الحصاد يا مولاي. فهل نتوج عهد الأخوة المشتركة، أم تحكم بالحديد والنار، أم تغادر هذا القفص الذهبي؟»
+
+[SWIPE LEFT] Crown my brother beside me; two brothers upon one throne!
+AR: تتويج أخي شريكاً على العرش؛ أخوان على عرش واحد!
+&lt;!-- Crown +10  Gold +0  Loyalty +25 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 10)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 0)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 25)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_End_TwoBrothers]]]
+
+[SWIPE RIGHT] Assess the realm&#x27;s balance and decree my final reign.
+AR: استعرض حال المملكة وأصدر مرسوم الحكم النهائي.
+&lt;!-- Crown +5  Gold +5  Loyalty +5 --&gt;
+(set: $Crown to (max: 0, (min: 100, $Crown + 5)))
+(set: $Gold to (max: 0, (min: 100, $Gold + 5)))
+(set: $Loyalty to (max: 0, (min: 100, $Loyalty + 5)))
+(if: $Crown &lt;= 0)[(go-to: &quot;Collapse - Crown&quot;)](else-if: $Gold &lt;= 0)[(go-to: &quot;Collapse - Gold&quot;)](else-if: $Loyalty &lt;= 0)[(go-to: &quot;Collapse - Loyalty&quot;)](else:)[[[Card_37_End_Tyrant]]]</tw-passagedata>
+<tw-passagedata pid="57" name="Card_End_TwoBrothers" tags="" position="4560,200" size="100,100">[Speaker: The Jester]
+EN: Two brothers upon one throne—one wearing the gilded crown, the other in bells and ribbons. Together, you dismantled corruption, united the people, and turned court intrigue into legendary harmony.
+AR: أخوان على عرشٍ واحد؛ أحدهما يتوشح بالتاج الذهبي والصولجان، والآخر بالأجراس والدهاء. معاً، طهّرتما البلاط من الفساد، وأحللتما الوفاق والعدالة في أرجاء المملكة لتخلد ذكراكم في كتب التاريخ.
+
+[Ending - Terminal]</tw-passagedata>
+<tw-passagedata pid="58" name="Card_35_End_Abdication" tags="" position="4560,420" size="100,100">[Speaker: The Spirit Mother]
+EN: You lay your crown upon the empty velvet cushion and walk out through the orchard gate at sunrise. The air is sweet, unburdened by decrees and blood. You are finally just Percy.
+AR: وضعت تاجك بهدوء فوق الوسادة المخملية وخرجت عند شروق الشمس من بوابات البساتين. نسيم الصباح نقي خفيف بلا مراسيم ولا دماء... لقد عدت أخيراً بيرسي الإنسان.
+
+[Ending - Terminal]</tw-passagedata>
+<tw-passagedata pid="59" name="Card_37_End_Tyrant" tags="" position="4560,640" size="100,100">[Speaker: The General]
+EN: Your word is steel and your decree is final law. No minister dares whisper dissent; no neighbor tests your border. The realm is at absolute peace, silent as a graveyard.
+AR: كلمتك صارت من فولاذ وأمرك قانون نافذ. لا يجرؤ مستشار على الهمس بمعارضة، ولا يجرؤ جار على اختبار حدودك. خيّم على المملكة سلام مطلق... صامت كالمقابر.
+
+[Ending - Terminal]</tw-passagedata>
+<tw-passagedata pid="60" name="Card_38_End_ShadowKing" tags="" position="4560,860" size="100,100">[Speaker: The Chancellor]
+EN: You sit beneath the heavy canopy while ministers nod and sign decrees in your name. The realm functions smoothly, but you realize with a cold chill: you rule nothing. The machine rules you.
+AR: تجلس تحت المظلة الملكية الفخمة بينما يوقع الوزراء المراسيم باسمك. تسير الدولة بانتظام، لكنك تدرك برعدة باردة في قلبك: أنت لا تحكم شيئاً... بل الآلة البيروقراطية هي التي تحكمك.
+
+[Ending - Terminal]</tw-passagedata>
+<tw-passagedata pid="61" name="Card_39_End_WarlordsPeace" tags="" position="4560,1080" size="100,100">[Speaker: The General]
+EN: With three victorious campaigns behind you, your borders stretch across mountain and sea. Foreign kings pay tribute; your generals stand like pillars of iron around your throne.
+AR: بثلاث حملات ظافرة، امتدت حدود مملكتك عبر الجبال والبحار. يدفع الملوك الجزية طائعين، ويقف جنرالاتك كأعمدة من حديد حماية لعرشك العظيم.
+
+[Ending - Terminal]</tw-passagedata>
+<tw-passagedata pid="62" name="Card_40_End_MerchantKing" tags="" position="4560,1300" size="100,100">[Speaker: The Treasurer]
+EN: Gold overflows from every vault into grand public fountains. Your merchant navy dominates the known seas. You bought peace where steel failed, and your coins bear your smiling face.
+AR: فاض الذهب من الخزائن ليزيّن نوافير المدن العظمى، وسيطر أسطولك التجاري على بحار العالم المعروف. اشتريت السلام بالرخاء حيث عجزت السيوف، وصار وجهك المبتسم منقوشاً على كل دينار.
+
+[Ending - Terminal]</tw-passagedata>
+</tw-storydata>
+</body>
+</html>

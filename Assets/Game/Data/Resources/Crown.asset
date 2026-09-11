@@ -14,23 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   assetName: Crown
   displayNameLocalized:
-    english: Crown
-    arabic: "\u062A\u0627\u062C"
+    english: "Crown"
+    arabic: "التاج"
   icon: {fileID: -1512851089295447720, guid: df8ab9ec8126d8148a4242e7d8b17249, type: 3}
   defaultStartingValue: 50
-  collapseThreshold: -20
-  warningThresholdPercent: 20
+  collapseThreshold: 0
+  warningThresholdPercent: 30
   warningCooldownCards: 5
   speaker: {fileID: 11400000, guid: 220c64b1d598ddf41bc3f43bc6849160, type: 2}
-  collapseEndingFallbackEnglish: The crown sits heavier than ever, Majesty, and no
-    one is left who bows to it. A symbol rules only while the realm believes in it
-    - and belief has run out. (Test fallback text.)
-  collapseEndingFallbackArabic: "\u0627\u0644\u062A\u0627\u062C \u0623\u0635\u0628\u062D
-    \u0623\u062B\u0642\u0644 \u0645\u0646 \u0623\u064A \u0648\u0642\u062A \u0645\u0636\u0649
-    \u064A\u0627 \u0645\u0648\u0644\u0627\u064A\u060C \u0648\u0644\u0645 \u064A\u0639\u062F
-    \u0647\u0646\u0627\u0643 \u0645\u0646 \u064A\u0646\u062D\u0646\u064A \u0644\u0647.
-    \u0627\u0644\u0631\u0645\u0632 \u0644\u0627 \u064A\u062D\u0643\u0645 \u0625\u0644\u0627
-    \u0645\u0627 \u062F\u0627\u0645\u062A \u0627\u0644\u0645\u0645\u0644\u0643\u0629
-    \u062A\u0624\u0645\u0646 \u0628\u0647 - \u0648\u0642\u062F \u0646\u0641\u062F
-    \u0627\u0644\u0625\u064A\u0645\u0627\u0646. (\u0646\u0635 \u0627\u062D\u062A\u064A\u0627\u0637\u064A
-    \u0644\u0644\u0627\u062E\u062A\u0628\u0627\u0631.)"
+  collapseEndingFallbackEnglish: "The gates give way at dusk. The mob carries your crown through the streets. A dynasty is a story the realm agrees to tell, and yours has ended mid-sentence."
+  collapseEndingFallbackArabic: "سقطت بوابات القصر عند الغسق، وحملت الجموع تاجك عبر الشوارع. الملك هيبة يرتضيها الناس، وهيبتك تبددت للأبد."

@@ -14,9 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   assetName: Spk_Merchant
   displayNameLocalized:
-    english: Master Silvio
-    arabic: "\u0627\u0644\u0633\u064A\u062F \u0633\u064A\u0644\u0641\u064A\u0648"
+    english: "The Merchant"
+    arabic: "كبير التجار"
   portrait: {fileID: 21300000, guid: 4a7945b246c54ab5be0cf41a50bdb5ca, type: 3}
-  llmPersonaPrompt: You are Master Silvio, a silk merchant with fingers in every
-    port. Warm, flattering, always negotiating; every story ends near a deal. You
-    fear nothing except empty vaults.
+  llmPersonaPrompt: "You are Master Silvio, head of the merchant guild. You manage grain shipments, harbor trade, and market supply. Pragmatic, persuasive, and concerned with keeping bread affordable and trade routes open. Keep replies under 30 words."

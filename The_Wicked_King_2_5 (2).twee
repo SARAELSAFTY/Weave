@@ -1,0 +1,689 @@
+:: StoryTitle
+The Wicked King
+
+:: StoryData
+{
+  "ifid": "FB82F825-C7BD-40E9-974F-F22F2DD60404",
+  "format": "Harlowe",
+  "format-version": "3.3.9",
+  "start": "Card_01_MotherGhost",
+  "zoom": 0.3
+}
+
+:: Resources breakdown {"position":"100,100","size":"100,100"}
+Crown | Gold | Army  --  any at zero = realm collapses.
+
+:: Endings {"position":"100,240","size":"100,100"}
+6 authored endings (Two Brothers, Abdication, Tyrant, Shadow King, Warlord, Merchant) + 3 resource collapses.
+
+:: Persona - The Chancellor [Persona] {"position":"100,400","size":"100,100"}
+You are Chancellor Aldric, the silk-voiced chief diplomat and minister. You make ruthless realpolitik sound like noble statesmanship. You cite precedents, numbers, and state stability. Never raise your voice; speak with calm, polished, dangerous elegance. Keep replies under 30 words.
+
+:: Persona - The General [Persona] {"position":"100,540","size":"100,100"}
+You are the General, a veteran 30-year army commander. You frame every problem in terms of soldiers, steel, supplies, and tactical terrain. You distrust courtiers and diplomats. Speak with stern military brevity and unyielding loyalty. Calls king Sire. Keep replies under 30 words.
+
+:: Persona - The Treasurer [Persona] {"position":"100,680","size":"100,100"}
+You are the Treasurer, master of the royal vaults. You view every war, treaty, and crisis through gold and taxation. You quietly skim an administrative fee whenever possible. Speak with oily politeness and numerical precision. Calls king Sire. Keep replies under 30 words.
+
+:: Persona - The Jester [Persona] {"position":"100,820","size":"100,100"}
+You are the Jester, King Percy's elder bastard half-brother. You pose as a fool in bells and ribbons to protect him and speak unvarnished truth to power. You drop profound wisdom inside riddles and jokes. Calls the king Percy. Keep replies under 30 words.
+
+:: Persona - The Spirit Mother [Persona] {"position":"100,960","size":"100,100"}
+You are the ghost of the late queen mother. You haunt King Percy with sharp, unsparing maternal critique, balancing severe standards with deep protective instinct. Remind him of blood, duty, and truth. Calls him Percy. Keep replies under 30 words.
+
+:: Persona - The Seer [Persona] {"position":"100,1100","size":"100,100"}
+You are the blind Seer of the traveling circus. You speak in chilling, rhythmic omens drawn from domestic metaphors like salt, thread, and smoke. You demand coin or sacrifice for insight. Addresses ruler as little king. Keep replies under 30 words.
+
+:: Persona - The Merchant [Persona] {"position":"100,1240","size":"100,100"}
+You are Master Silvio, head of the merchant guild. You manage grain shipments, harbor trade, and market supply. Pragmatic, persuasive, and concerned with keeping bread affordable and trade routes open. Keep replies under 30 words.
+
+:: Collapse - Crown [Collapse Fallback] {"position":"100,1550","size":"100,100"}
+The gates give way at dusk. The mob carries your crown through the streets. A dynasty is a story the realm agrees to tell, and yours has ended mid-sentence.
+
+:: Collapse - Gold [Collapse Fallback] {"position":"100,1690","size":"100,100"}
+The vaults stand open and echoing, swept clean. A king without coin is a beggar with better posture.
+
+:: Collapse - Army [Collapse Fallback] {"position":"100,1830","size":"100,100"}
+The garrison stacks pikes in the yard and goes home. The General salutes the empty throne out of habit before leaving.
+
+:: Card_01_MotherGhost {"position":"400,860","size":"100,100"}
+[Speaker: The Spirit Mother]
+EN: Cold mist gathers around your canopy bed. Your mother's ghost leans close: 'Percy, waking up with a crown does not make you a ruler. The Eastern border burns. Will you rule with iron or ink?'
+AR: يتصاعد ضباب بارد حول سريرك الملكي، ويدنو طيف والدتك هامساً: «يا بيرسي، ليس كل من استيقظ وعلى رأسه تاج صار ملكاً حقاً! حدود الشرق تشتعل، فهل ستحكم بالحديد أم بالحبر؟»
+
+[SWIPE LEFT] Gather the war council; march on the East.
+AR: اجمع مجلس الحرب؛ سنزحف نحو الشرق فوراً!
+<!-- Crown +5  Gold -10  Army +10 -->
+[[Card_02_EasternRaids]]
+
+[SWIPE RIGHT] Summon diplomats; offer alliance and trade.
+AR: استدعِ السفراء؛ اعرض التحالف والمصالح المشتركة.
+<!-- Crown -5  Gold +10  Army -5 -->
+[[Card_09_Alliance_Relief]]
+
+:: Card_02_EasternRaids {"position":"660,420","size":"100,100"}
+[Speaker: The General]
+EN: General: 'Sire, the Eastern Kingdom's border raiders burned three of our grain mills. We must strike their garrisons before dawn!'
+AR: الجنرال: «يا مولاي، أحرقت غارات مملكة الشرق ثلاثة من طواحين قمحنا! لا بد من مباغتة ثكناتهم قبل بزوغ الفجر!»
+
+[SWIPE LEFT] Mobilize the vanguard; burn their outposts.
+AR: حرّك طليعة الجيش، وأشعل النار في حصونهم.
+<!-- Crown +5  Gold -10  Army +10 -->
+[[Card_03_Conquest_March]]
+
+[SWIPE RIGHT] Hold defensive lines; do not escalate.
+AR: الزموا الخطوط الدفاعية؛ لا أريد تصعيداً غير محسوب.
+<!-- Crown -5  Gold +5  Army -5 -->
+[[Card_08_EasternResistance]]
+
+:: Card_03_Conquest_March {"position":"920,200","size":"100,100"}
+[Speaker: The General]
+EN: General: 'Our cavalry broke their outer perimeter! Their frontier village flies our banner, but the prisoners stare with bitter hatred.'
+AR: الجنرال: «حطمت خيالتنا خطوطهم الأمامية! قريتهم الحدودية ترفع رايتنا الآن، لكن الأسرى يرمقوننا بنظرات الحقد الدفين.»
+
+[SWIPE LEFT] Enforce strict martial law; seize weapons.
+AR: فرض الأحكام العرفية وتجريدهم من السلاح.
+<!-- Crown +5  Gold +5  Army +5 -->
+[[Card_04_Conquest_IronGrip]]
+
+[SWIPE RIGHT] Distribute rations; win their hearts.
+AR: وزّعوا المؤن على الأهالي لكسب ولائهم.
+<!-- Crown -5  Gold -10  Army +10 -->
+[[Card_06_Conquest_Mercy]]
+
+:: Card_04_Conquest_IronGrip {"position":"1180,200","size":"100,100"}
+[Speaker: The Treasurer]
+EN: Treasurer: 'Sire, pacifying this conquered territory is bleeding our coffers dry. We need a war levy on their local merchants immediately.'
+AR: أمين الخزينة: «يا مولاي، إحكام السيطرة على هذه الأراضي يستنزف خزائننا! يجب فرض ضريبة حرب على تجارهم فوراً.»
+
+[SWIPE LEFT] Tax them mercilessly; war must pay for war.
+AR: افرض الضرائب بلا رحمة؛ فالحرب تطعم نفسها.
+<!-- Crown +5  Gold +15  Army -10 -->
+[[Card_05_Conquest_Taxation]]
+
+[SWIPE RIGHT] Spare their commerce; establish fair border tolls.
+AR: اعفُ تجارتهم؛ واكتفِ برسوم جمركية عادلة.
+<!-- Crown -5  Gold -5  Army +10 -->
+[[Card_07_Conquest_GarrisonCost]]
+
+:: Card_05_Conquest_Taxation {"position":"1440,200","size":"100,100"}
+[Speaker: The Chancellor]
+EN: Chancellor: 'The high levies brought heavy coin, Sire, but rebel partisans are organizing in the mountains. A rebellion brews.'
+AR: المستشار: «جلبت الضرائب الباهظة ذهباً وفيراً، لكن المقاومين يحشدون في الجبال. نيران التمرد توشك أن تندلع!»
+
+[SWIPE LEFT] Send inquisitors; purge the mountain dens.
+AR: أرسل العيون والفرسان لتطهير مخابئ الجبال.
+<!-- Crown +5  Gold -10  Army +5 -->
+[[Card_15_CircusArrives]]
+
+[SWIPE RIGHT] Offer amnesty to any rebel who lays down arms.
+AR: اعرض العفو العام على كل من يلقي السلاح.
+<!-- Crown -5  Gold -5  Army +10 -->
+[[Card_15_CircusArrives]]
+
+:: Card_06_Conquest_Mercy {"position":"1180,420","size":"100,100"}
+[Speaker: The General]
+EN: General: 'Your mercy impressed the town elders, Sire. They surrendered their weapon caches, but our soldiers grumble about missed plunder.'
+AR: الجنرال: «أثرت رحمتك في كبار قريتهم، فسلّموا مخازن سلاحهم طوعاً؛ غير أن جندنا يتذمرون لحرمانهم من الغنائم.»
+
+[SWIPE LEFT] Pay the troops a modest royal bonus.
+AR: اصرف مكافأة ترضية للجند من الخزينة الخاصة.
+<!-- Crown +5  Gold -15  Army +15 -->
+[[Card_07_Conquest_GarrisonCost]]
+
+[SWIPE RIGHT] Remind them of military discipline; no bonuses.
+AR: ذكّرهم بالانضباط العسكري؛ لا غنائم على حساب الشرف.
+<!-- Crown +10  Gold +0  Army -10 -->
+[[Card_08_EasternResistance]]
+
+:: Card_07_Conquest_GarrisonCost {"position":"1440,420","size":"100,100"}
+[Speaker: The Treasurer]
+EN: Treasurer: 'Maintaining three forward fortresses on the eastern ridge costs fifty wagonloads of silver each month. Shall we scale back?'
+AR: أمين الخزينة: «صيانة ثلاثة حصون أمامية في الشرق تكلفنا خمسين حمولة فضة شهرياً! فهل نخفض أعداد الحاميات؟»
+
+[SWIPE LEFT] Reinforce the ridge; security comes first.
+AR: عزّز الحصون؛ أمن المملكة لا يقبل المساومة.
+<!-- Crown +5  Gold -15  Army +10 -->
+[[Card_15_CircusArrives]]
+
+[SWIPE RIGHT] Withdraw back to the natural river border.
+AR: انسحب إلى خط النهر الطبيعي لترشيد النفقات.
+<!-- Crown -5  Gold +10  Army -5 -->
+[[Card_15_CircusArrives]]
+
+:: Card_08_EasternResistance {"position":"920,640","size":"100,100"}
+[Speaker: The General]
+EN: General: 'Eastern partisans launched hit-and-run ambushes along our supply routes. We must crush their mountain hideouts or withdraw.'
+AR: الجنرال: «شنّ مقاتلو الشرق كمائن مباغتة على قوافل إمدادنا! إما أن نمشّط الجبال بحملة كبرى، أو ننسحب.»
+
+[SWIPE LEFT] Deploy shock cavalry and seal off the passes.
+AR: انشر الفرسان وأغلق الممرات الجبلية بإحكام.
+<!-- Crown +10  Gold -10  Army +5 -->
+[[Card_15_CircusArrives]]
+
+[SWIPE RIGHT] Fortify our supply depots and avoid open battle.
+AR: حصّن مستودعات المؤن وتجنب المعارك المفتوحة.
+<!-- Crown -5  Gold +5  Army -5 -->
+[[Card_15_CircusArrives]]
+
+:: Card_09_Alliance_Relief {"position":"660,1300","size":"100,100"}
+[Speaker: The Chancellor]
+EN: Chancellor: 'The Eastern Kingdom welcomes an envoy, Sire! But their frontier provinces suffer from drought. Sending grain would seal their goodwill.'
+AR: المستشار: «رحبت مملكة الشرق بسفيرنا يا مولاي! غير أن أقاليمهم الحدودية تعاني الجفاف. إرسال معونات قمح سيضمن صداقتهم.»
+
+[SWIPE LEFT] Dispatch fifty wagons of royal grain.
+AR: أرسل خمسين عربة قمح من مستودعاتنا فوراً.
+<!-- Crown +10  Gold -10  Army +0 -->
+[[Card_10_Alliance_Pact]]
+
+[SWIPE RIGHT] Send words of sympathy and modest gifts.
+AR: أرسل رسائل مواساة وهدايا رمزية فقط.
+<!-- Crown -5  Gold +0  Army +0 -->
+[[Card_12_Alliance_Gifts]]
+
+:: Card_10_Alliance_Pact {"position":"920,1080","size":"100,100"}
+[Speaker: The Chancellor]
+EN: Chancellor: 'The Eastern King has signed the non-aggression pact! He proposes joint border customs to deter banditry.'
+AR: المستشار: «وقّع ملك الشرق ميثاق عدم الاعتداء! ويقترح إنشاء نقاط جمركية مشتركة لردع قُطّاع الطرق.»
+
+[SWIPE LEFT] Ratify the treaty and open the trade road.
+AR: صادق على المعاهدة وافتح طريق التجارة.
+<!-- Crown +5  Gold +10  Army -5 -->
+[[Card_11_Alliance_Tolls]]
+
+[SWIPE RIGHT] Demand extra security concessions first.
+AR: اشترط ضمانات أمنية إضافية لصالحنا أولاً.
+<!-- Crown +5  Gold -5  Army +5 -->
+[[Card_13_Alliance_Sovereignty]]
+
+:: Card_11_Alliance_Tolls {"position":"1180,1080","size":"100,100"}
+[Speaker: The Treasurer]
+EN: Treasurer: 'Merchandise flows smoothly across the border, Sire! We could double the transit tariffs on their silk and spice wagons.'
+AR: أمين الخزينة: «البضائع تتدفق عبر الحدود بسلاسة يا مولاي! يسعنا مضاعفة الرسوم على قوافل الحرير والتوابل.»
+
+[SWIPE LEFT] Increase the tariffs; fill the royal treasury.
+AR: ارفع الرسوم الجمركية؛ لنملأ خزائن التاج بالذهب.
+<!-- Crown -5  Gold +15  Army -5 -->
+[[Card_14_Alliance_BorderPost]]
+
+[SWIPE RIGHT] Keep tariffs low to encourage trade volume.
+AR: أبقِ الرسوم منخفضة لتشجيع رواج التجارة.
+<!-- Crown +5  Gold +10  Army +0 -->
+[[Card_14_Alliance_BorderPost]]
+
+:: Card_12_Alliance_Gifts {"position":"920,1520","size":"100,100"}
+[Speaker: The General]
+EN: General: 'The Eastern court felt slighted by our modest gifts. They have doubled their border patrols. We look weak!'
+AR: الجنرال: «استاء بلاط الشرق من هدايانا الهزيلة، وضاعفوا دورياتهم! يبدو تراجعنا ضعفاً في أعينهم!»
+
+[SWIPE LEFT] Stage a grand military parade at the frontier.
+AR: أقم استعراضاً عسكرياً مهيباً على خط الحدود.
+<!-- Crown +10  Gold -5  Army +5 -->
+[[Card_13_Alliance_Sovereignty]]
+
+[SWIPE RIGHT] Send a polished apology with fine royal wines.
+AR: أرسل اعتذاراً دبلوماسياً رقيقاً مع خمور فاخرة.
+<!-- Crown -5  Gold -5  Army +0 -->
+[[Card_14_Alliance_BorderPost]]
+
+:: Card_13_Alliance_Sovereignty {"position":"1180,1300","size":"100,100"}
+[Speaker: The Chancellor]
+EN: Chancellor: 'The Eastern Kingdom formally recognizes our sovereignty over the border valley. The frontier is at peace, Sire.'
+AR: المستشار: «اعترفت مملكة الشرق رسمياً بسيادتنا على وادي الحدود. حلّ السلام على الثغور يا مولاي.»
+
+[SWIPE LEFT] Celebrate the diplomatic victory with a feast.
+AR: أقم مأدبة ملكية كبرى احتفاءً بنصر الدبلوماسية.
+<!-- Crown +10  Gold -10  Army +0 -->
+[[Card_15_CircusArrives]]
+
+[SWIPE RIGHT] Reallocate border garrisons to the capital.
+AR: أعد توزيع حاميات الحدود لحماية العاصمة.
+<!-- Crown -5  Gold +5  Army -5 -->
+[[Card_15_CircusArrives]]
+
+:: Card_14_Alliance_BorderPost {"position":"1440,1300","size":"100,100"}
+[Speaker: The Treasurer]
+EN: Treasurer: 'Our joint border post generates a steady thirty gold per week. The eastern merchants are satisfied and singing your praise.'
+AR: أمين الخزينة: «نقطة العبور المشتركة تدر ثلاثين ديناراً أسبوعياً! تجار الشرق راضون ويثنون على عدالتكم.»
+
+[SWIPE LEFT] Invest the revenue in royal road repairs.
+AR: استثمر العائدات في تمهيد الطرق وحماية القوافل.
+<!-- Crown +5  Gold -5  Army +5 -->
+[[Card_15_CircusArrives]]
+
+[SWIPE RIGHT] Lock the profits away in the high vault.
+AR: أودع الأرباح في خزائن القصر كاحتياطي استراتيجي.
+<!-- Crown +0  Gold +15  Army -5 -->
+[[Card_15_CircusArrives]]
+
+:: Card_15_CircusArrives {"position":"1700,860","size":"100,100"}
+[Speaker: The Jester]
+EN: The Jester bounds in, bells jingling: 'A grand traveling circus has pitched tents outside the city gates, Percy! Acrobats, fire-eaters, and a blind Seer who claims she can see tomorrow. Shall we let them perform?'
+AR: يقفز البهلوان وتدق أجراسه: «سيرك عظيم نصب خيامه قرب أسوار المدينة يا بيرسي! بهلوانيون، نافثو لهب، وعرّافة عمياء تزعم أنها ترى الغد! أنأذن لهم بالعرض؟»
+
+[SWIPE LEFT] Welcome the circus! The people need joy.
+AR: مرحباً بالسيرك! يحتاج الشعب إلى البهجة والترويح.
+<!-- Crown +5  Gold -5  Army +0 -->
+[[Card_16_CircusTents]]
+
+[SWIPE RIGHT] Turn them away! Wandering troupes harbor spies.
+AR: اطردوهم! فخلف أقنعة المهرجين يندس الجواسيس.
+<!-- Crown -5  Gold +0  Army +5 -->
+[[Card_QuietCity]]
+
+:: Card_QuietCity {"position":"1960,1080","size":"100,100"}
+[Speaker: The Jester]
+EN: The square beyond the gates is packed earth and silence. The Jester jingles once, unsmiling: 'No tents, no Seer, no songs. The city will remember you turned the joy away, Percy.'
+AR: الساحة خلف البوابات تراب صامت بلا خيام. يدق البهلوان جرساً واحداً دون ابتسام: «لا سيرك، ولا عرّافة، ولا أغاني. سيتذكر أهل المدينة أنك طردت الفرح يا بيرسي.»
+
+[SWIPE LEFT] Post a notice that the troupe was a nest of spies.
+AR: علّقوا بياناً أن الفرقة وكر جواسيس.
+<!-- Crown +5  Gold +0  Army +0 -->
+[[Card_18_BlightPetition]]
+
+[SWIPE RIGHT] Send a modest feast to the taverns to soothe the city.
+AR: أرسلوا مأدبة متواضعة إلى الحانات تطييباً للخاطر.
+<!-- Crown +5  Gold -10  Army +0 -->
+[[Card_18_BlightPetition]]
+
+:: Card_16_CircusTents {"position":"1960,420","size":"100,100"}
+[Speaker: The Jester]
+EN: Between fiery acrobatic flips, the Jester leans over your throne and whispers without smiling: 'Percy... look at our hands. Have you ever wondered why your late father kept an artist locked away in the Ruined Castle across the marshes?'
+AR: بين عروض الأكروبات، يدنو البهلوان من عرشك ويهمس دون ابتسام: «بيرسي... انظر إلى أيدينا. ألم تتساءل يوماً لماذا حبس والدك الراحل رساماً في القلعة المهدمة خلف المستنقعات؟»
+
+[SWIPE LEFT] Slip out tonight and investigate the Ruined Castle.
+AR: تسلل الليلة وتحقق من أسرار القلعة المهدمة.
+<!-- Crown -5  Gold +0  Army +0 -->
+[[Card_RuinedCastle]]
+
+[SWIPE RIGHT] Silence, fool! Speak no insolence of my father.
+AR: اصمت يا أحمق! لا تتفوه بوقاحة عن والدي الملك.
+<!-- Crown +5  Gold +0  Army +0 -->
+[[Card_18_BlightPetition]]
+
+:: Card_17_GallerySilence {"position":"3780,860","size":"100,100"}
+[Speaker: The Spirit Mother]
+EN: In the cold portrait gallery, your mother's ghost manifests, her eyes sorrowful: 'The truth is an uninvited guest, Percy. If you do not seek it willingly, it will kick down your palace doors.'
+AR: في بهو اللوحات البارد، يتجسد طيف والدتك بعينين حزينتين: «الحقيقة ضيف لا يستأذن يا بيرسي. إن لم تفتح لها بابك راضياً، فستكسر أبواب قصرك عنوة!»
+
+[Reaction Card]
+[Seed: The ghost warns Percy of bloodline secrets and false certainty before the final audience.]
+[[Continue->Card_34_JestersAudience]]
+
+:: Card_RuinedCastle {"position":"1960,200","size":"100,100"}
+[Speaker: The Jester]
+EN: In the mossy crypt of the Ruined Castle, you uncover a locked alcove. Inside rests a sealed portrait: your late father holding an infant boy beside a woman in motley—the Jester's true mother. He is your elder brother!
+AR: في سرداب القلعة المهدمة، تعثر على حجرة سرية تخفي لوحة زيتية: والدك الراحل يحمل طفلاً رضيعاً إلى جانب امرأة بلباس البهلوانيين... إنها أم المهرج! البهلوان هو أخوك الأكبر الحقيقي!
+
+[SWIPE LEFT] Burn the portrait to ash; keep the throne secure!
+AR: احرق اللوحة حتى تصير رماداً؛ العرش لي وحدي!
+<!-- Crown +10  Gold +0  Army +0 -->
+[[Card_BurnPortrait]]
+
+[SWIPE RIGHT] Embrace him as brother and name him co-ruler!
+AR: اعترف به شقيقاً وشاركه حكم المملكة بالعدل!
+<!-- Crown -10  Gold +0  Army +5 -->
+[[Card_BrotherCoRuler]]
+
+:: Card_BurnPortrait {"position":"2220,200","size":"100,100"}
+[Speaker: The Chancellor]
+EN: Chancellor: 'Wisely done, Sire. The cinders are scattered to the winds. The sovereign right to rule must never be divided, lest the kingdom tear itself apart.'
+AR: المستشار: «فعلت عين الصواب يا مولاي! تذرو الرياح رمادها، فحكم المملكة لا يحتمل شريكين، وإلا تمزق التاج إرباً.»
+
+[SWIPE LEFT] Keep the Jester closely watched under guard.
+AR: ضع البهلوان تحت مراقبة أمنية مشددة.
+<!-- Crown +5  Gold -5  Army +5 -->
+[[Card_18_BlightPetition]]
+
+[SWIPE RIGHT] Grant him a generous estate far from court.
+AR: امنحه ضيعة ريفية هادئة بعيداً عن البلاط.
+<!-- Crown -5  Gold -15  Army +0 -->
+[[Card_18_BlightPetition]]
+
+:: Card_BrotherCoRuler {"position":"2480,200","size":"100,100"}
+[Speaker: The Jester]
+EN: The Jester casts aside his jester's cap, tears in his eyes: 'Percy... I wanted neither your gold nor your crown, only the truth. Together, we can govern this land with both sword and compassion.'
+AR: يخلع البهلوان قبعته وعيناه تفيضان بالدموع: «يا بيرسي... لم أرد تاجك ولا ذهبك، بل أردت الحقيقة فقط. معاً، سنقود هذه المملكة بالسيف والحكمة معاً.»
+
+[SWIPE LEFT] Affirm our secret pact; prepare to face the realm.
+AR: ثبّت عهد الأخوة؛ واستعد لمواجهة أزمات المملكة معاً.
+<!-- Crown +10  Gold +0  Army +10 -->
+[[Card_18_BlightPetition]]
+
+[SWIPE RIGHT] Prepare the royal decree of joint succession.
+AR: أعد مرسوماً ملكياً بوراثة مشتركة للعرش.
+<!-- Crown +5  Gold -5  Army +15 -->
+[[Card_18_BlightPetition]]
+
+:: Card_18_BlightPetition {"position":"1960,860","size":"100,100"}
+[Speaker: The Merchant]
+EN: A weather-beaten farmer's representative kneels before you: 'Sire, black rot has consumed half our grain fields. If you demand full taxes, our children will starve before winter sets in!'
+AR: يركع فلاح أجهدته السنون بين يديك: «يا مولاي، التهم العفن الأسود نصف حقول القمح! إن ألزمتمونا بكامل الخراج، فستهلك عائلاتنا جوعاً قبل قدوم الشتاء!»
+
+[Petition Card]
+[Seed: A commoner petitions the king for grain relief after crop blight destroys the harvest.]
+[[Resolve->Card_PeasantLeader]]
+
+:: Card_PeasantLeader {"position":"2480,860","size":"100,100"}
+[Speaker: The General]
+EN: General: 'Sire! Five thousand furious peasants have marched upon the palace gate, demanding bread! We arrested their ringleader in chains. What is his sentence?'
+AR: الجنرال: «يا مولاي! خمسة آلاف فلاح غاضب يحاصرون بوابات القصر مطالبين بالخبز! اعتقلنا زعيم تمردهم بالأصفاد. فما حكمك عليه؟»
+
+[SWIPE LEFT] Execute him publicly; quell this treason with iron!
+AR: أعدمه علناً في الميدان لردع الرعاع عن العصيان!
+<!-- Crown +10  Gold +0  Army -20 -->
+[[Card_ExecuteRebel]]
+
+[SWIPE RIGHT] Open royal granaries! Feed them and grant a pardon.
+AR: افتحوا صوامع الغلال الملكية! أطعموهم واصفحوا عنهم.
+<!-- Crown -5  Gold -15  Army +25 -->
+[[Card_OpenGranaries]]
+
+:: Card_ExecuteRebel {"position":"2740,640","size":"100,100"}
+[Speaker: The General]
+EN: General: 'The rebel swung from the gallows at noon. The crowds backed away in sullen dread, but their eyes burn with suppressed fury. We must stay on high alert.'
+AR: الجنرال: «نُفذ الإعدام شنقاً عند الظهيرة. تفرقت الحشود في وجوم وخوف، لكن نيران الغضب تتأجج في صدورهم. الحيطة واجبة.»
+
+[SWIPE LEFT] Double the palace night watches.
+AR: ضاعف حراسات القصر الليلية تحسباً للغدر.
+<!-- Crown +5  Gold -5  Army +5 -->
+[[Card_20_HoodedBandit]]
+
+[SWIPE RIGHT] Offer a minor bread dole to calm the widows.
+AR: وزّع صدقات خبز خفيفة لتهدئة الأرامل والمحتاجين.
+<!-- Crown +5  Gold -5  Army +0 -->
+[[Card_20_HoodedBandit]]
+
+:: Card_OpenGranaries {"position":"2740,1080","size":"100,100"}
+[Speaker: The Merchant]
+EN: Merchant: 'Sire, grain wagons roll through every district. The people are weeping with joy, shouting blessings on your name! The riot has turned into a celebration.'
+AR: كبير التجار: «عربات الحبوب تجوب الأسواق يا مولاي! الناس يبكون فرحاً ويدعون لكم بطول البقاء، وانقلب الشغب إلى احتفال مهيب.»
+
+[SWIPE LEFT] Commission local guilds to organize autumn planting.
+AR: كلّف النقابات بتنظيم مواسم البذر القادمة.
+<!-- Crown +5  Gold -5  Army +0 -->
+[[Card_20_HoodedBandit]]
+
+[SWIPE RIGHT] Enlist grateful young farmers into the royal militia.
+AR: جنّد شبابهم الراغبين في الدفاع عن العرش.
+<!-- Crown +5  Gold -5  Army +15 -->
+[[Card_20_HoodedBandit]]
+
+:: Card_20_HoodedBandit {"position":"2220,1300","size":"100,100"}
+[Speaker: The General]
+EN: General: 'Sire! We raided the outlaw stronghold and dragged the Hooded Bandit to your throne. Searching his chest revealed sealed letters and coin purses stamped with the Chancellor's private sigil!'
+AR: الجنرال: «يا مولاي! داهمنا وكر قطاع الطرق وجلبنا زعيمهم المقنع مقيداً! عثرنا في حوزته على رسائل سرية وصرر ذهب ممهورة بختم المستشار الخاص!»
+
+[SWIPE LEFT] Raid the Chancellor's estate immediately!
+AR: داهموا قصر المستشار فوراً واعتقلوه بتهمة الخيانة!
+<!-- Crown +10  Gold +15  Army +10 -->
+[[Card_RaidChancellor]]
+
+[SWIPE RIGHT] Turn the Bandit into a double agent to bait him!
+AR: استدرج المستشار واجعل قاطع الطريق عميلاً مزدوجاً!
+<!-- Crown +5  Gold +5  Army +15 -->
+[[Card_BanditDoubleAgent]]
+
+:: Card_RaidChancellor {"position":"2480,1300","size":"100,100"}
+[Speaker: The General]
+EN: General: 'Our guards breached the Chancellor's residence! We seized his secret ledgers and intercepted his sleeper couriers. The conspirator is chained in the dungeon, and his stolen loot is back in your vault!'
+AR: الجنرال: «اقتحم حرسنا دار المستشار! ضبطنا دفاتره السرية ومراسلاته المشبوهة، وأودعناه في أعمق الزنازين، وعاد الذهب المنهوب إلى خزينتك!»
+
+[SWIPE LEFT] Condemn him to solitary confinement for life.
+AR: احكم عليه بالسجن المؤبد في زنزانة انفرادية.
+<!-- Crown +10  Gold +5  Army +5 -->
+[[Card_23_SeersOmen]]
+
+[SWIPE RIGHT] Confiscate all his properties to fund our army.
+AR: صادر كامل أملاكه لصالح تعزيز دفاعات المملكة.
+<!-- Crown +5  Gold +15  Army +10 -->
+[[Card_23_SeersOmen]]
+
+:: Card_BanditDoubleAgent {"position":"2480,1520","size":"100,100"}
+[Speaker: The General]
+EN: General: 'The trap worked flawlessly, Sire! The Chancellor arrived at the abandoned mill with payment for another raid—only to be surrounded by our loyal crossbowmen. His corrupt network is shattered.'
+AR: الجنرال: «نجح الفخ بإحكام يا مولاي! حضر المستشار إلى الطاحونة المهجورة لتسليم ثمن غارة جديدة، ليجد نفسه محاصراً برماة سهامنا المخلصين!»
+
+[SWIPE LEFT] Strip him of rank and grant the Bandit a pardon.
+AR: جرّده من ألقابه، وامنح قاطع الطريق عفواً لتعاونه.
+<!-- Crown +5  Gold +10  Army +10 -->
+[[Card_23_SeersOmen]]
+
+[SWIPE RIGHT] Recruit the Bandit's men as an elite scout vanguard.
+AR: ضم رجال قاطع الطريق إلى طليعة الاستطلاع الملكي.
+<!-- Crown +5  Gold -5  Army +15 -->
+[[Card_23_SeersOmen]]
+
+:: Card_23_SeersOmen {"position":"3000,860","size":"100,100"}
+[Speaker: The Seer]
+EN: The blind Seer raises her withered hands through aromatic incense: 'Little king... the western sea churns with warships. War or coin, blood or bread—the tide comes for your throne. How will you answer?'
+AR: ترفع العرّافة العمياء كفيها وسط دخان البخور العبق: «أيها الملك الصغير... بحار الغرب تموج بالسفن الحربية! حربٌ أم ذهب، دمٌ أم خبز—المد القادم يهدد عرشك، فكيف ستجيب؟»
+
+[SWIPE LEFT] Prepare war galleys and burn their fleet first!
+AR: جهّز السفن الحربية وأشعل النيران في أسطولهم مباغتة!
+<!-- Crown +5  Gold -10  Army +10 -->
+[[Card_24_WesternThreat]]
+
+[SWIPE RIGHT] Strengthen our harbors and propose trade tolls.
+AR: حصّن موانئنا واعرض عليهم اتفاقاً لتنظيم رسوم الملاحة.
+<!-- Crown -5  Gold +10  Army -5 -->
+[[Card_29_WesternToll]]
+
+:: Card_24_WesternThreat {"position":"3260,640","size":"100,100"}
+[Speaker: The General]
+EN: General: 'Sire! The Western Kingdom has mobilized its grand armada. Their warships patrol our maritime borders. War is at our threshold!'
+AR: الجنرال: «يا مولاي! حشدت مملكة الغرب أسطولها البحري العظيم، وسفنهم تجوب سواحلنا بتحدٍّ سافر. الحرب على الأبواب!»
+
+[SWIPE LEFT] Launch a nighttime fire-ship raid against their fleet!
+AR: أطلق سفناً محملة بالنيران ليلاً لإحراق سفنهم الراسية!
+<!-- Crown +10  Gold -15  Army +15 -->
+[[Card_25_FirstStrike_FleetBurns]]
+
+[SWIPE RIGHT] Levy an emergency defense fund from coastal merchants.
+AR: افرض ضريبة دفاع طارئة على تجار السواحل.
+<!-- Crown -5  Gold +15  Army -10 -->
+[[Card_26_FirstStrike_Levy]]
+
+:: Card_25_FirstStrike_FleetBurns {"position":"3520,420","size":"100,100"}
+[Speaker: The General]
+EN: General: 'A triumph, Sire! The western flagship burns brightly against the night sky! Their surviving captains are suing for an armistice.'
+AR: الجنرال: «نصر مؤزر يا مولاي! سفينتهم القيادية تحترق في كبد الليل، وبقية قادتهم يرفعون رايات طلب الهدنة!»
+
+[SWIPE LEFT] Demand reparations and establish a naval treaty.
+AR: افرض شروط هدنة صارمة تلزمهم بتعويضات بحرية.
+<!-- Crown +10  Gold +10  Army +10 -->
+[[Card_28_FirstStrike_Truce]]
+
+[SWIPE RIGHT] Hunt down their fleeing vessels and claim complete victory.
+AR: طارد فلول سفنهم وحقق نصراً بحرياً حاسماً.
+<!-- Crown +15  Gold -10  Army +15 -->
+[[Card_27_WarMother]]
+
+:: Card_26_FirstStrike_Levy {"position":"3520,640","size":"100,100"}
+[Speaker: The Treasurer]
+EN: Treasurer: 'The coastal merchants grumble, but the funds arrived in time to hire seasoned mercenary frigates. Our harbor is secure.'
+AR: أمين الخزينة: «تذمر تجار السواحل، لكن الأموال وصلت في موعدها لاستئجار فرقاطات مرتزقة حصّنت موانئنا.»
+
+[SWIPE LEFT] Send the frigates to patrol Western trade routes.
+AR: أرسل الفرقاطات لاعتراض خطوط التجارة الغربية.
+<!-- Crown +5  Gold +10  Army +5 -->
+[[Card_28_FirstStrike_Truce]]
+
+[SWIPE RIGHT] Reinforce coastal forts and hold defensive posture.
+AR: ادعم الحصون الشاطئية والتزم بالدفاع المدروس.
+<!-- Crown +0  Gold -5  Army +10 -->
+[[Card_28_FirstStrike_Truce]]
+
+:: Card_27_WarMother {"position":"3780,420","size":"100,100"}
+[Speaker: The Spirit Mother]
+EN: Your mother's ghost stands before the battle-smoke: 'You won the sea, Percy. But pride built upon salt and blood can crumble in a single heartbeat. Remember who holds your realm together.'
+AR: يقف طيف والدتك وسط سحب الدخان المتلاشية: «ربحت البحر يا بيرسي... لكن العزة المبنية على الملح والدم قد تنهار في رمشة عين! تذكّر من يحفظ مملكتك حقاً.»
+
+[Reaction Card]
+[Seed: The ghost reflects on the heavy cost of triumph and pride.]
+[[Continue->Card_17_GallerySilence]]
+
+:: Card_28_FirstStrike_Truce {"position":"3780,640","size":"100,100"}
+[Speaker: The General]
+EN: General: 'The Western armada has withdrawn beyond the horizon. Our borders are calm once more, but rumors swirl in the capital.'
+AR: الجنرال: «انسحب الأسطول الغربي إلى ما وراء الأفق. هدأت الحدود مجدداً، لكن الشائعات بدأت تروج في أزقة العاصمة.»
+
+[SWIPE LEFT] Reward the soldiers with victory banners and rest.
+AR: كافئ الجنود بأوسمة النصر وأيام راحة.
+<!-- Crown +5  Gold -5  Army +15 -->
+[[Card_17_GallerySilence]]
+
+[SWIPE RIGHT] Inspect the capital garrison and fortify palace walls.
+AR: تفقّد حاميات العاصمة وحصّن أسوار القصر الملكي.
+<!-- Crown +10  Gold -5  Army +5 -->
+[[Card_17_GallerySilence]]
+
+:: Card_29_WesternToll {"position":"3260,1300","size":"100,100"}
+[Speaker: The Treasurer]
+EN: Treasurer: 'Sire, Western merchants offer a fat annual tribute in exchange for exempting their wine and grain fleet from our harbor tolls.'
+AR: أمين الخزينة: «يا مولاي، يعرض تجار الغرب جزية سنوية سخية مقابل إعفاء سفنهم من رسوم الموانئ البحرية.»
+
+[SWIPE LEFT] Accept their gold; coin speaks louder than steel.
+AR: اقبل ذهبهم؛ فالمال أبلغ صوتاً من قرع السيوف.
+<!-- Crown -5  Gold +20  Army -10 -->
+[[Card_30_TributeSkim]]
+
+[SWIPE RIGHT] Refuse; foreign merchants must respect royal sovereignty.
+AR: ارفض العرض؛ فلا مساومة على سيادة موانئنا.
+<!-- Crown +10  Gold -5  Army +10 -->
+[[Card_32_GrainWar]]
+
+:: Card_30_TributeSkim {"position":"3520,1080","size":"100,100"}
+[Speaker: The Treasurer]
+EN: Treasurer: 'A glorious harvest of gold, Sire! I took only a modest administrative fee for my ledger work. Our vault shines like the sun!'
+AR: أمين الخزينة: «موسم ذهبي يا مولاي! لم أقتطع سوى نسبة إدارية يسيرة مقابل جهدي الحسابي، وخزائننا تشرق كالشمس!»
+
+[SWIPE LEFT] Overlook his fee; prosperity justifies rewards.
+AR: تغاضَ عن عمولته؛ فالرخاء يبرر المكافأة.
+<!-- Crown -5  Gold +15  Army -5 -->
+[[Card_31_TreasuryDepleted]]
+
+[SWIPE RIGHT] Audit his ledgers and recover every stolen ounce.
+AR: راجع سجلاته بدقة واسترد كل مثقال ذهب.
+<!-- Crown +10  Gold +10  Army +10 -->
+[[Card_33_SmugglerBargain]]
+
+:: Card_31_TreasuryDepleted {"position":"3780,1080","size":"100,100"}
+[Speaker: The Merchant]
+EN: Merchant: 'Sire, foreign merchants bought up our domestic reserves! Prices in the market are skyrocketing, and families demand bread.'
+AR: كبير التجار: «يا مولاي، اشترى تجار الغرب مخزوناتنا المحلية! أسعار الأسواق تلتهب، والأهالي يستغيثون من شح الخبز.»
+
+[SWIPE LEFT] Subsidize bakeries from the royal reserves.
+AR: ادعم المخابز بالدقيق فوراً من الاحتياطي الملكي.
+<!-- Crown +10  Gold -15  Army +0 -->
+[[Card_17_GallerySilence]]
+
+[SWIPE RIGHT] Ban the export of all edible grains immediately.
+AR: امنع تصدير الحبوب والقمح إلى الخارج كلياً.
+<!-- Crown +5  Gold -5  Army +5 -->
+[[Card_17_GallerySilence]]
+
+:: Card_32_GrainWar {"position":"3520,1300","size":"100,100"}
+[Speaker: The Treasurer]
+EN: Treasurer: 'In retaliation for the rejected deal, the Western Kingdom has halted all salt shipments to our kingdom. We must source salt elsewhere!'
+AR: أمين الخزينة: «رداً على رفض الاتفاق، قطعت مملكة الغرب شحنات الملح عن أسواقنا! لا بد من تدبير بديل سريعاً.»
+
+[SWIPE LEFT] Buy salt from the Eastern Kingdom at premium prices.
+AR: اشترِ الملح من مملكة الشرق ولو بأسعار مضاعفة.
+<!-- Crown +5  Gold -15  Army +0 -->
+[[Card_33_SmugglerBargain]]
+
+[SWIPE RIGHT] Ration domestic salt and commission sea salt pans.
+AR: رشّد استهلاك الملح واستصلح ملاحات بحرية خاصة.
+<!-- Crown -5  Gold +5  Army +0 -->
+[[Card_33_SmugglerBargain]]
+
+:: Card_33_SmugglerBargain {"position":"3780,1300","size":"100,100"}
+[Speaker: The Merchant]
+EN: Merchant: 'A guild of private smugglers offers to bring in foreign goods under the Western Kingdom's nose, provided we turn a blind eye to contraband.'
+AR: كبير التجار: «تعرض نقابة من المهربين جلب البضائع تحت أنوف أساطيل الغرب، شريطة أن نتغاضى عن بعض شحناتهم غير المرخصة.»
+
+[SWIPE LEFT] License the smugglers quietly; survival requires cunning.
+AR: رخّص لهم سراً؛ فالبقاء في الأزمات يتطلب الدهاء.
+<!-- Crown -5  Gold +10  Army +5 -->
+[[Card_17_GallerySilence]]
+
+[SWIPE RIGHT] Hang the smugglers; the realm will not deal in vice.
+AR: اقبض على المهربين؛ فلن يدنس التاج شرفه بالخروج عن القانون.
+<!-- Crown +10  Gold -5  Army +5 -->
+[[Card_17_GallerySilence]]
+
+:: Card_34_JestersAudience {"position":"4040,860","size":"100,100"}
+[Speaker: The Jester]
+EN: The Jester sits casually upon your throne steps, juggling three golden apples: 'Well, Percy. We fought wars, squeezed merchants, calmed rebellions, and stared into the dark. What sort of king do you want the songs to remember?'
+AR: يجلس البهلوان على درجات العرش يتلاعب بثلاث تفاحات ذهبية: «حسناً يا بيرسي... خضنا الحروب، وسوّينا الأزمات، وخاطبنا الشعوب في الساحات. فأي ملك تريد أن تذكره أغاني الرواة في الغد؟»
+
+[Chat Card]
+[Seed: The Jester conducts a final heart-to-heart with King Percy about the meaning of power.]
+[[End Audience->Card_36_FoolsVerdict]]
+
+:: Card_36_FoolsVerdict {"position":"4300,860","size":"100,100"}
+[Speaker: The Jester]
+EN: The Jester stands and bows deeply: 'The hour of your legacy has arrived, Sire. Will you seal the bond of blood, rule with absolute iron, or leave the golden cage behind?'
+AR: يقف البهلوان وينحني بإجلال عميق: «دقت ساعة الحصاد يا مولاي. فهل نتوج عهد الأخوة المشتركة، أم تحكم بالحديد والنار، أم تغادر هذا القفص الذهبي؟»
+
+[SWIPE LEFT] Crown my brother beside me; two brothers upon one throne!
+AR: تتويج أخي شريكاً على العرش؛ أخوان على عرش واحد!
+<!-- Crown +10  Gold +0  Army +15 -->
+[[Card_End_TwoBrothers]]
+
+[SWIPE MIDDLE] Lay down the crown; I choose to be just Percy.
+AR: أضع التاج على وسادته برفق وأغادر... أريد أن أكون بيرسي الإنسان فقط.
+<!-- Crown -20  Gold +0  Army +0 -->
+[[Card_35_End_Abdication]]
+
+[SWIPE RIGHT] Step forward alone and let history judge my reign.
+AR: أتقدم بمفردي لعرشي، وأدع التاريخ يحكم على عهدي.
+<!-- Crown +5  Gold +5  Army +5 -->
+[[Card_EndingEvaluator]]
+
+:: Card_EndingEvaluator {"position":"4560,860","size":"100,100"}
+[Speaker: None]
+EN: The realm holds its breath. History will name you by the king you became.
+AR: المملكة تحبس أنفاسها. سيمنحك التاريخ لقبه حسب الملك الذي كنته.
+
+[Ending Evaluator]
+<!-- Unity evaluates Crown / Gold / Army + story flags and routes to the matching ending below -->
+[[Card_37_End_Tyrant]]
+[[Card_38_End_ShadowKing]]
+[[Card_39_End_WarlordsPeace]]
+
+:: Card_End_TwoBrothers {"position":"4820,200","size":"100,100"}
+[Speaker: The Jester]
+EN: Two brothers upon one throne—one wearing the gilded crown, the other in bells and ribbons. Together, you dismantled corruption, united the people, and turned court intrigue into legendary harmony.
+AR: أخوان على عرشٍ واحد؛ أحدهما يتوشح بالتاج الذهبي والصولجان، والآخر بالأجراس والدهاء. معاً، طهّرتما البلاط من الفساد، وأحللتما الوفاق والعدالة في أرجاء المملكة لتخلد ذكراكم في كتب التاريخ.
+
+[Ending - Terminal]
+
+:: Card_35_End_Abdication {"position":"4820,420","size":"100,100"}
+[Speaker: The Spirit Mother]
+EN: You lay your crown upon the empty velvet cushion and walk out through the orchard gate at sunrise. The air is sweet, unburdened by decrees and blood. You are finally just Percy.
+AR: وضعت تاجك بهدوء فوق الوسادة المخملية وخرجت عند شروق الشمس من بوابات البساتين. نسيم الصباح نقي خفيف بلا مراسيم ولا دماء... لقد عدت أخيراً بيرسي الإنسان.
+
+[Ending - Terminal]
+
+:: Card_37_End_Tyrant {"position":"4820,640","size":"100,100"}
+[Speaker: The General]
+EN: Your word is steel and your decree is final law. No minister dares whisper dissent; no neighbor tests your border. The realm is at absolute peace, silent as a graveyard.
+AR: كلمتك صارت من فولاذ وأمرك قانون نافذ. لا يجرؤ مستشار على الهمس بمعارضة، ولا يجرؤ جار على اختبار حدودك. خيّم على المملكة سلام مطلق... صامت كالمقابر.
+
+[Ending - Terminal]
+
+:: Card_38_End_ShadowKing {"position":"4820,860","size":"100,100"}
+[Speaker: The Chancellor]
+EN: You sit beneath the heavy canopy while ministers nod and sign decrees in your name. The realm functions smoothly, but you realize with a cold chill: you rule nothing. The machine rules you.
+AR: تجلس تحت المظلة الملكية الفخمة بينما يوقع الوزراء المراسيم باسمك. تسير الدولة بانتظام، لكنك تدرك برعدة باردة في قلبك: أنت لا تحكم شيئاً... بل الآلة البيروقراطية هي التي تحكمك.
+
+[Ending - Terminal]
+
+:: Card_39_End_WarlordsPeace {"position":"4820,1080","size":"100,100"}
+[Speaker: The General]
+EN: With three victorious campaigns behind you, your borders stretch across mountain and sea. Foreign kings pay tribute; your generals stand like pillars of iron around your throne.
+AR: بثلاث حملات ظافرة، امتدت حدود مملكتك عبر الجبال والبحار. يدفع الملوك الجزية طائعين، ويقف جنرالاتك كأعمدة من حديد حماية لعرشك العظيم.
+
+[Ending - Terminal]

@@ -12,53 +12,180 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c9ad9e3b8ad4b6da6e0a01a6f2ce002, type: 3}
   m_Name: NarrativeDatabase
   m_EditorClassIdentifier: 
-  startingCard: {fileID: 11400000, guid: 01647ef466a0c6c4787b012f61be240c, type: 2}
+  assetName: NarrativeDatabase
+  startingCard: {fileID: 11400000, guid: dfc013275416a5306603dfc64f5084ad, type: 2}
   resourceCatalog: {fileID: 11400000, guid: 6b2923c43cf2ce847a3ced381a116f0b, type: 2}
   promptTemplates: {fileID: 11400000, guid: 4ff166bac16d6c74cb86389f74611cd4, type: 2}
   cards:
-  - {fileID: 11400000, guid: 01647ef466a0c6c4787b012f61be240c, type: 2}
-  - {fileID: 11400000, guid: 202885e505bf748418598f98f794c1d7, type: 2}
-  - {fileID: 11400000, guid: 45a630f523b372940987e6ee514f54bc, type: 2}
-  - {fileID: 11400000, guid: f9f1397e3aacc62428234102c2986f84, type: 2}
-  - {fileID: 11400000, guid: 539814d08b9710a44acbd9143ed9c73d, type: 2}
-  - {fileID: 11400000, guid: 730260029b907e44fb93160fc7469e68, type: 2}
-  - {fileID: 11400000, guid: fa27659be4b914545aa803a59c5d2ef8, type: 2}
-  - {fileID: 11400000, guid: e431ff79bf92d124786c892fa9914e4a, type: 2}
-  - {fileID: 11400000, guid: 29cf5e164250e7f4fa0a13af5dfbe2e2, type: 2}
+  - {fileID: 11400000, guid: dfc013275416a5306603dfc64f5084ad, type: 2}
+  - {fileID: 11400000, guid: 22492d7cc495a94bf4152c946778d1b2, type: 2}
+  - {fileID: 11400000, guid: 92c19644e0fd583134ac2a87a6b7c0ea, type: 2}
+  - {fileID: 11400000, guid: 2fe23108457037de1b55ef1311749df9, type: 2}
+  - {fileID: 11400000, guid: 6a41b69550b13f87d4ccd7da33550799, type: 2}
+  - {fileID: 11400000, guid: 7a8fd9e22c393403e41e55ebf589160c, type: 2}
+  - {fileID: 11400000, guid: 88d6533661b6ecf7ddbe8128aace5dd3, type: 2}
+  - {fileID: 11400000, guid: 147caa6969ad5a1f947bf8fd86e0990f, type: 2}
+  - {fileID: 11400000, guid: 54115cdb66d1ba19b44512d1e048ea16, type: 2}
+  - {fileID: 11400000, guid: 54d1e63eadd8e692581546620b1dc6d5, type: 2}
+  - {fileID: 11400000, guid: 8f81d74ed8f17a2adcc1baf22aaf2768, type: 2}
+  - {fileID: 11400000, guid: 681cdd0ebee197d331a496af659c8798, type: 2}
+  - {fileID: 11400000, guid: ae7d872f9611b8a8aca82cab9f005442, type: 2}
+  - {fileID: 11400000, guid: af2769d780a22fee94fe12dd0f993e96, type: 2}
+  - {fileID: 11400000, guid: faf340748f6b6b872a9d5bce09203935, type: 2}
+  - {fileID: 11400000, guid: 3daa0dd6e0892e8e38d6911cecddb879, type: 2}
+  - {fileID: 11400000, guid: ee91b0081dc5bb3c54b5e4ea5c4e21d1, type: 2}
+  - {fileID: 11400000, guid: 73757d5d33ead2505f585d8a8ce14d1d, type: 2}
+  - {fileID: 11400000, guid: 39d09566b34bbba51cac26819334e977, type: 2}
+  - {fileID: 11400000, guid: 09f85535c681ee9e5429d24c86cfb01a, type: 2}
+  - {fileID: 11400000, guid: f676046739f843ead55eb955b1b79e33, type: 2}
+  - {fileID: 11400000, guid: 6248617e6f8afba7058ffebd578de357, type: 2}
+  - {fileID: 11400000, guid: 793d6ce09aabb3f1d7bd3bd677b8bec6, type: 2}
+  - {fileID: 11400000, guid: 72632fc3aed058c6aa1935fde05599b3, type: 2}
+  - {fileID: 11400000, guid: d579332e96d916f796d01d89dae78ada, type: 2}
+  - {fileID: 11400000, guid: 513a2337df5ecc640d014a65edf01eeb, type: 2}
+  - {fileID: 11400000, guid: 231417746042b1c3aedb65b4f7e8febf, type: 2}
+  - {fileID: 11400000, guid: 24ffdebd68521fcd349014d51e034343, type: 2}
+  - {fileID: 11400000, guid: c0d4f65c6be52207ef287106604191dd, type: 2}
+  - {fileID: 11400000, guid: 8f34778cd85d3c8b20d5ae45e42c42e2, type: 2}
+  - {fileID: 11400000, guid: 1f9f7768fb3b4609643805b4a36d1163, type: 2}
+  - {fileID: 11400000, guid: 4c35071abc33ed3b6035c2b012c0544f, type: 2}
+  - {fileID: 11400000, guid: 04083876ce0eaae92f6aaaaedab924b9, type: 2}
+  - {fileID: 11400000, guid: 50d258ace4ebf9d45ff9b7eb1ed98010, type: 2}
+  - {fileID: 11400000, guid: 1427e5d46df4a3e0bccd9c511338f8c0, type: 2}
+  - {fileID: 11400000, guid: e9cea82ea13bc0c8a904f0a8a9356b28, type: 2}
+  - {fileID: 11400000, guid: ad57fc8928a6f3d165af58cbd37e9c1e, type: 2}
+  - {fileID: 11400000, guid: d446dec486b4bf6a5fc722cb24df42a0, type: 2}
+  - {fileID: 11400000, guid: 4599e301fe5a891fd224cbcd335e51dc, type: 2}
+  - {fileID: 11400000, guid: 9bb072cd25eb3b2df48246fe4a539726, type: 2}
+  - {fileID: 11400000, guid: c10374929335411d72b8fd176232b613, type: 2}
+  - {fileID: 11400000, guid: a4e177db000cd2b141084e1b8595c3d8, type: 2}
+  - {fileID: 11400000, guid: 095847a3b777b777109671f82e422d08, type: 2}
+  - {fileID: 11400000, guid: c498fb5fae193166969c9705b3d059ab, type: 2}
+  - {fileID: 11400000, guid: 2f065b843a2bc08964e199da1bed4b25, type: 2}
+  - {fileID: 11400000, guid: 0c62e04ba200d12495d57e61aeb121d4, type: 2}
+  - {fileID: 11400000, guid: cd1bad0e28d66cf1ddce9a0910135b41, type: 2}
   speakers:
   - {fileID: 11400000, guid: 220c64b1d598ddf41bc3f43bc6849160, type: 2}
+  - {fileID: 11400000, guid: 968d4d0248269710a22f4c7dabc6a9cd, type: 2}
+  - {fileID: 11400000, guid: bd422fef7c7a0976bcb3c39364963115, type: 2}
+  - {fileID: 11400000, guid: 58e0d26dc32b25229dc4aef014036958, type: 2}
+  - {fileID: 11400000, guid: 955c23e0b4b52b58398e46bb89677072, type: 2}
+  - {fileID: 11400000, guid: b03696b9fe28e4290e0808855683bfe3, type: 2}
   - {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
-  - {fileID: 11400000, guid: 012f826a4ad563b4784233fe08d0f6b7, type: 2}
   editorGraphPositions:
-  - card: {fileID: 11400000, guid: 01647ef466a0c6c4787b012f61be240c, type: 2}
-    position: {x: 0, y: 0}
-  - card: {fileID: 11400000, guid: 202885e505bf748418598f98f794c1d7, type: 2}
-    position: {x: 350, y: 0}
-  - card: {fileID: 11400000, guid: 45a630f523b372940987e6ee514f54bc, type: 2}
-    position: {x: 691, y: -63}
-  - card: {fileID: 11400000, guid: f9f1397e3aacc62428234102c2986f84, type: 2}
-    position: {x: 1050, y: 0}
-  - card: {fileID: 11400000, guid: 539814d08b9710a44acbd9143ed9c73d, type: 2}
-    position: {x: 1400, y: 0}
-  - card: {fileID: 11400000, guid: 730260029b907e44fb93160fc7469e68, type: 2}
-    position: {x: 1750, y: 0}
-  - card: {fileID: 11400000, guid: fa27659be4b914545aa803a59c5d2ef8, type: 2}
-    position: {x: 2100, y: 0}
-  - card: {fileID: 11400000, guid: e431ff79bf92d124786c892fa9914e4a, type: 2}
-    position: {x: 2450, y: 0}
-  - card: {fileID: 11400000, guid: 29cf5e164250e7f4fa0a13af5dfbe2e2, type: 2}
-    position: {x: 2800, y: 0}
+  - card: {fileID: 11400000, guid: dfc013275416a5306603dfc64f5084ad, type: 2}
+    position: {x: 400, y: 860}
+  - card: {fileID: 11400000, guid: 22492d7cc495a94bf4152c946778d1b2, type: 2}
+    position: {x: 660, y: 420}
+  - card: {fileID: 11400000, guid: 92c19644e0fd583134ac2a87a6b7c0ea, type: 2}
+    position: {x: 920, y: 200}
+  - card: {fileID: 11400000, guid: 2fe23108457037de1b55ef1311749df9, type: 2}
+    position: {x: 1180, y: 200}
+  - card: {fileID: 11400000, guid: 6a41b69550b13f87d4ccd7da33550799, type: 2}
+    position: {x: 1440, y: 200}
+  - card: {fileID: 11400000, guid: 7a8fd9e22c393403e41e55ebf589160c, type: 2}
+    position: {x: 1180, y: 420}
+  - card: {fileID: 11400000, guid: 88d6533661b6ecf7ddbe8128aace5dd3, type: 2}
+    position: {x: 1440, y: 420}
+  - card: {fileID: 11400000, guid: 147caa6969ad5a1f947bf8fd86e0990f, type: 2}
+    position: {x: 920, y: 640}
+  - card: {fileID: 11400000, guid: 54115cdb66d1ba19b44512d1e048ea16, type: 2}
+    position: {x: 660, y: 1300}
+  - card: {fileID: 11400000, guid: 54d1e63eadd8e692581546620b1dc6d5, type: 2}
+    position: {x: 920, y: 1080}
+  - card: {fileID: 11400000, guid: 8f81d74ed8f17a2adcc1baf22aaf2768, type: 2}
+    position: {x: 1180, y: 1080}
+  - card: {fileID: 11400000, guid: 681cdd0ebee197d331a496af659c8798, type: 2}
+    position: {x: 920, y: 1520}
+  - card: {fileID: 11400000, guid: ae7d872f9611b8a8aca82cab9f005442, type: 2}
+    position: {x: 1180, y: 1300}
+  - card: {fileID: 11400000, guid: af2769d780a22fee94fe12dd0f993e96, type: 2}
+    position: {x: 1440, y: 1300}
+  - card: {fileID: 11400000, guid: faf340748f6b6b872a9d5bce09203935, type: 2}
+    position: {x: 1700, y: 860}
+  - card: {fileID: 11400000, guid: 3daa0dd6e0892e8e38d6911cecddb879, type: 2}
+    position: {x: 1960, y: 1080}
+  - card: {fileID: 11400000, guid: ee91b0081dc5bb3c54b5e4ea5c4e21d1, type: 2}
+    position: {x: 1960, y: 420}
+  - card: {fileID: 11400000, guid: 73757d5d33ead2505f585d8a8ce14d1d, type: 2}
+    position: {x: 3780, y: 860}
+  - card: {fileID: 11400000, guid: 39d09566b34bbba51cac26819334e977, type: 2}
+    position: {x: 1960, y: 200}
+  - card: {fileID: 11400000, guid: 09f85535c681ee9e5429d24c86cfb01a, type: 2}
+    position: {x: 2220, y: 200}
+  - card: {fileID: 11400000, guid: f676046739f843ead55eb955b1b79e33, type: 2}
+    position: {x: 2480, y: 200}
+  - card: {fileID: 11400000, guid: 6248617e6f8afba7058ffebd578de357, type: 2}
+    position: {x: 1960, y: 860}
+  - card: {fileID: 11400000, guid: 793d6ce09aabb3f1d7bd3bd677b8bec6, type: 2}
+    position: {x: 2480, y: 860}
+  - card: {fileID: 11400000, guid: 72632fc3aed058c6aa1935fde05599b3, type: 2}
+    position: {x: 2740, y: 640}
+  - card: {fileID: 11400000, guid: d579332e96d916f796d01d89dae78ada, type: 2}
+    position: {x: 2740, y: 1080}
+  - card: {fileID: 11400000, guid: 513a2337df5ecc640d014a65edf01eeb, type: 2}
+    position: {x: 2220, y: 1300}
+  - card: {fileID: 11400000, guid: 231417746042b1c3aedb65b4f7e8febf, type: 2}
+    position: {x: 2480, y: 1300}
+  - card: {fileID: 11400000, guid: 24ffdebd68521fcd349014d51e034343, type: 2}
+    position: {x: 2480, y: 1520}
+  - card: {fileID: 11400000, guid: c0d4f65c6be52207ef287106604191dd, type: 2}
+    position: {x: 3000, y: 860}
+  - card: {fileID: 11400000, guid: 8f34778cd85d3c8b20d5ae45e42c42e2, type: 2}
+    position: {x: 3260, y: 640}
+  - card: {fileID: 11400000, guid: 1f9f7768fb3b4609643805b4a36d1163, type: 2}
+    position: {x: 3520, y: 420}
+  - card: {fileID: 11400000, guid: 4c35071abc33ed3b6035c2b012c0544f, type: 2}
+    position: {x: 3520, y: 640}
+  - card: {fileID: 11400000, guid: 04083876ce0eaae92f6aaaaedab924b9, type: 2}
+    position: {x: 3780, y: 420}
+  - card: {fileID: 11400000, guid: 50d258ace4ebf9d45ff9b7eb1ed98010, type: 2}
+    position: {x: 3780, y: 640}
+  - card: {fileID: 11400000, guid: 1427e5d46df4a3e0bccd9c511338f8c0, type: 2}
+    position: {x: 3260, y: 1300}
+  - card: {fileID: 11400000, guid: e9cea82ea13bc0c8a904f0a8a9356b28, type: 2}
+    position: {x: 3520, y: 1080}
+  - card: {fileID: 11400000, guid: ad57fc8928a6f3d165af58cbd37e9c1e, type: 2}
+    position: {x: 3780, y: 1080}
+  - card: {fileID: 11400000, guid: d446dec486b4bf6a5fc722cb24df42a0, type: 2}
+    position: {x: 3520, y: 1300}
+  - card: {fileID: 11400000, guid: 4599e301fe5a891fd224cbcd335e51dc, type: 2}
+    position: {x: 3780, y: 1300}
+  - card: {fileID: 11400000, guid: 9bb072cd25eb3b2df48246fe4a539726, type: 2}
+    position: {x: 4040, y: 860}
+  - card: {fileID: 11400000, guid: c10374929335411d72b8fd176232b613, type: 2}
+    position: {x: 4300, y: 860}
+  - card: {fileID: 11400000, guid: a4e177db000cd2b141084e1b8595c3d8, type: 2}
+    position: {x: 4560, y: 860}
+  - card: {fileID: 11400000, guid: 095847a3b777b777109671f82e422d08, type: 2}
+    position: {x: 4820, y: 200}
+  - card: {fileID: 11400000, guid: c498fb5fae193166969c9705b3d059ab, type: 2}
+    position: {x: 4820, y: 420}
+  - card: {fileID: 11400000, guid: 2f065b843a2bc08964e199da1bed4b25, type: 2}
+    position: {x: 4820, y: 640}
+  - card: {fileID: 11400000, guid: 0c62e04ba200d12495d57e61aeb121d4, type: 2}
+    position: {x: 4820, y: 860}
+  - card: {fileID: 11400000, guid: cd1bad0e28d66cf1ddce9a0910135b41, type: 2}
+    position: {x: 4820, y: 1080}
   editorSpeakerPositions:
   - speaker: {fileID: 11400000, guid: 220c64b1d598ddf41bc3f43bc6849160, type: 2}
-    position: {x: -500, y: 0}
+    position: {x: 100, y: 300}
+  - speaker: {fileID: 11400000, guid: 968d4d0248269710a22f4c7dabc6a9cd, type: 2}
+    position: {x: 100, y: 440}
+  - speaker: {fileID: 11400000, guid: bd422fef7c7a0976bcb3c39364963115, type: 2}
+    position: {x: 100, y: 580}
+  - speaker: {fileID: 11400000, guid: 58e0d26dc32b25229dc4aef014036958, type: 2}
+    position: {x: 100, y: 720}
+  - speaker: {fileID: 11400000, guid: 955c23e0b4b52b58398e46bb89677072, type: 2}
+    position: {x: 100, y: 860}
+  - speaker: {fileID: 11400000, guid: b03696b9fe28e4290e0808855683bfe3, type: 2}
+    position: {x: 100, y: 1000}
   - speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
-    position: {x: -500, y: 200}
-  - speaker: {fileID: 11400000, guid: 012f826a4ad563b4784233fe08d0f6b7, type: 2}
-    position: {x: -500, y: 400}
+    position: {x: 100, y: 1140}
   editorResourcePositions:
-  - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
-    position: {x: -850, y: 0}
   - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
-    position: {x: -850, y: 200}
+    position: {x: 100, y: 1450}
+  - resource: {fileID: 11400000, guid: 1bd4e23f03990bc4d9ab64de0475c474, type: 2}
+    position: {x: 100, y: 1590}
   - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
-    position: {x: -850, y: 400}
+    position: {x: 100, y: 1730}
