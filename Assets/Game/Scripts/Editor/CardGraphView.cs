@@ -343,7 +343,6 @@ namespace Game.Scripts.Editor
                     if (card.isEndingEvaluator)
                     {
                         TryConnect(sourceNode.ContinuePort, card.continueNextCard, nodesByCard);
-                        TryConnect(sourceNode.MiddlePort, card.middleNextCard, nodesByCard);
                     }
                 }
             }
@@ -352,7 +351,12 @@ namespace Game.Scripts.Editor
         /// <summary>Connects an output port to the input port of the target card's node if both exist in the graph.</summary>
         private void TryConnect(Port outputPort, CardData targetCard, Dictionary<CardData, CardNode> nodesByCard)
         {
-            if (targetCard != null && nodesByCard.TryGetValue(targetCard, out CardNode targetNode))
+            if (outputPort == null || targetCard == null)
+            {
+                return;
+            }
+
+            if (nodesByCard.TryGetValue(targetCard, out CardNode targetNode) && targetNode != null && targetNode.InputPort != null)
             {
                 AddElement(outputPort.ConnectTo(targetNode.InputPort));
             }
