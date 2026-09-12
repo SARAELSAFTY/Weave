@@ -110,5 +110,80 @@ namespace Game.Scripts.Editor
 
             return labels;
         }
+
+        [MenuItem("Weave/Detect Spam/Mode: Auto (Default)")]
+        private static void SetDetectSpamAuto()
+        {
+            SetGlobalDetectSpamMode(DetectSpamMode.Auto);
+        }
+
+        [MenuItem("Weave/Detect Spam/Mode: Force On")]
+        private static void SetDetectSpamForceOn()
+        {
+            SetGlobalDetectSpamMode(DetectSpamMode.ForceOn);
+        }
+
+        [MenuItem("Weave/Detect Spam/Mode: Force Off")]
+        private static void SetDetectSpamForceOff()
+        {
+            SetGlobalDetectSpamMode(DetectSpamMode.ForceOff);
+        }
+
+        [MenuItem("Weave/Detect Spam/Mode: Auto (Default)", true)]
+        private static bool ValidateDetectSpamAuto()
+        {
+            Menu.SetChecked("Weave/Detect Spam/Mode: Auto (Default)", GetFirstSettingsMode() == DetectSpamMode.Auto);
+            return true;
+        }
+
+        [MenuItem("Weave/Detect Spam/Mode: Force On", true)]
+        private static bool ValidateDetectSpamForceOn()
+        {
+            Menu.SetChecked("Weave/Detect Spam/Mode: Force On", GetFirstSettingsMode() == DetectSpamMode.ForceOn);
+            return true;
+        }
+
+        [MenuItem("Weave/Detect Spam/Mode: Force Off", true)]
+        private static bool ValidateDetectSpamForceOff()
+        {
+            Menu.SetChecked("Weave/Detect Spam/Mode: Force Off", GetFirstSettingsMode() == DetectSpamMode.ForceOff);
+            return true;
+        }
+
+        private static DetectSpamMode GetFirstSettingsMode()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:LlmSettings");
+            if (guids.Length > 0)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                LlmSettings settings = AssetDatabase.LoadAssetAtPath<LlmSettings>(path);
+                if (settings != null)
+                {
+                    return settings.detectSpamMode;
+                }
+            }
+
+            return DetectSpamMode.Auto;
+        }
+
+        private static void SetGlobalDetectSpamMode(DetectSpamMode mode)
+        {
+            string[] guids = AssetDatabase.FindAssets("t:LlmSettings");
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                LlmSettings settings = AssetDatabase.LoadAssetAtPath<LlmSettings>(path);
+                if (settings == null)
+                {
+                    continue;
+                }
+
+                settings.detectSpamMode = mode;
+                EditorUtility.SetDirty(settings);
+            }
+
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[LlmSettingsEditor] Petition spam detection set to: {mode}");
+        }
     }
 }

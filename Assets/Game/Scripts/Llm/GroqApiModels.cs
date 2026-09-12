@@ -40,7 +40,7 @@ namespace Game.Scripts.Llm
         /// <summary>The five petition resolution fields; names are part of the API contract.</summary>
         public GroqPetitionSchemaProperties properties = new GroqPetitionSchemaProperties();
         /// <summary>Strict mode requires every field to be listed here.</summary>
-        public string[] required = { "phase", "reaction", "speakerName", "resourceChanges", "historyTag" };
+        public string[] required = { "phase", "reaction", "speakerName", "resourceChanges", "historyTag", "isSpam" };
         /// <summary>Strict mode requires additionalProperties to be false.</summary>
         public bool additionalProperties = false;
     }
@@ -59,6 +59,8 @@ namespace Game.Scripts.Llm
         public GroqSchemaDeltaArray resourceChanges = new GroqSchemaDeltaArray();
         /// <summary>Short snake_case history tag; empty string until a proposal.</summary>
         public GroqSchemaString historyTag = new GroqSchemaString();
+        /// <summary>Spam classification flag.</summary>
+        public GroqSchemaBoolean isSpam = new GroqSchemaBoolean();
     }
 
     /// <summary>JSON schema node for a string value.</summary>
@@ -67,6 +69,14 @@ namespace Game.Scripts.Llm
     {
         /// <summary>Schema node type.</summary>
         public string type = "string";
+    }
+
+    /// <summary>JSON schema node for a boolean value.</summary>
+    [Serializable]
+    public class GroqSchemaBoolean
+    {
+        /// <summary>Schema node type.</summary>
+        public string type = "boolean";
     }
 
     /// <summary>JSON schema node for an integer value.</summary>
