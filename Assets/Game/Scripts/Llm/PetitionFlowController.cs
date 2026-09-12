@@ -166,6 +166,8 @@ namespace Game.Scripts.Llm
             cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
         }
 
+        private bool IsDetectSpamActive => llmSettings != null ? llmSettings.IsDetectSpamEnabled() : LlmKeyStore.HasActiveKey;
+
         private void OnPetitionTurnResolved(PetitionResolution result, string rawContent)
         {
             if (result == null || string.IsNullOrWhiteSpace(result.reaction))
@@ -174,29 +176,21 @@ namespace Game.Scripts.Llm
                 return;
             }
 
-            currentPetitionSession?.RecordReply(result, rawContent);
+            currentPetitionSession?.RecordReply(result, rawContent, IsDetectSpamActive);
             cardView.SetPetitionSubmitting(false);
-
-            if (result.IsProposal)
-            {
-                cardView.ShowPetitionProposal(result.reaction);
-                if (currentPetitionSession != null && currentPetitionSession.TurnsExhausted)
-                {
-                    cardView.DisablePetitionFurtherInput();
-                    cardView.UpdatePetitionDots(0);
-                }
-                else
-                {
-                    cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
-                }
-                return;
-            }
 
             if (currentPetitionSession != null && currentPetitionSession.TurnsExhausted)
             {
                 CardData currentCard = narrativeRunner.CurrentCard;
                 SpeakerData speaker = currentSpeaker != null ? currentSpeaker : (currentCard != null ? currentCard.speaker : null);
                 HandlePetitionTurnsExhausted(currentCard, speaker);
+                return;
+            }
+
+            if (result.IsProposal)
+            {
+                cardView.ShowPetitionProposal(result.reaction);
+                cardView.UpdatePetitionDots(currentPetitionSession.TurnsRemaining);
                 return;
             }
 

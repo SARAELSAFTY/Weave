@@ -32,6 +32,8 @@ namespace Game.Scripts.Llm
         public PetitionResourceDelta[] resourceChanges;
         /// <summary>Short snake_case tag recorded in kingdom history when the petition resolves.</summary>
         public string historyTag;
+        /// <summary>True when the player's input was classified as off-topic, gibberish, or spam.</summary>
+        public bool isSpam;
 
         /// <summary>True when the petitioner has accepted the ruler's command and the petition can be finalized.</summary>
         public bool IsProposal => string.Equals(phase, "proposal", StringComparison.OrdinalIgnoreCase);

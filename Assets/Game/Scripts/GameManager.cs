@@ -352,9 +352,19 @@ namespace Game.Scripts
             // Capture choice text before Choose() advances the narrative, since CurrentCard will change.
             CardData currentCard = narrativeRunner.CurrentCard;
             bool isLlmCard = currentCard != null && currentCard.isLlmReactionCard;
-            string chosenChoiceText = currentCard != null && !isLlmCard
-                ? (choseRight ? currentCard.GetRightChoice(CurrentLanguage) : currentCard.GetLeftChoice(CurrentLanguage))
-                : null;
+            string chosenChoiceText = null;
+            if (currentCard != null && !isLlmCard)
+            {
+                string authored = choseRight ? currentCard.GetRightChoice(CurrentLanguage) : currentCard.GetLeftChoice(CurrentLanguage);
+                if (!string.IsNullOrWhiteSpace(authored))
+                {
+                    chosenChoiceText = authored;
+                }
+                else if (currentCard.isPetitionCard)
+                {
+                    chosenChoiceText = choseRight ? FallbackStrings.Accept(CurrentLanguage) : FallbackStrings.Reject(CurrentLanguage);
+                }
+            }
 
             NarrativeStepResult result = narrativeRunner.Choose(choseRight);
 

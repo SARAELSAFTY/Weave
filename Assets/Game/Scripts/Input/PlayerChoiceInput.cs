@@ -38,10 +38,18 @@ namespace Game.Scripts.Input
         [Tooltip("Smoothing factor for drag interpolation (lower = more lag, higher = snappier).")]
         [SerializeField, Range(0.05f, 1f)] private float dragSmooth = 0.35f;
 
+        private enum PointerSource
+        {
+            None,
+            Mouse,
+            Touch
+        }
+
         private Vector2 dragStartScreenPosition;
         private float currentDragX;
         private float targetDragX;
         private bool isDragging;
+        private PointerSource activePointerSource = PointerSource.None;
         private Camera eventCamera;
 
         private void Awake()
@@ -144,11 +152,13 @@ namespace Game.Scripts.Input
         {
             if (IsTypingInInputField())
             {
+                activePointerSource = PointerSource.None;
                 return;
             }
 
             if (!cardView.ContainsScreenPoint(screenPosition, eventCamera))
             {
+                activePointerSource = PointerSource.None;
                 return;
             }
 
@@ -161,6 +171,7 @@ namespace Game.Scripts.Input
         private void EndDrag(float dragX)
         {
             isDragging = false;
+            activePointerSource = PointerSource.None;
             currentDragX = 0f;
             targetDragX = 0f;
 
@@ -179,10 +190,12 @@ namespace Game.Scripts.Input
         {
             if (!isDragging)
             {
+                activePointerSource = PointerSource.None;
                 return;
             }
 
             isDragging = false;
+            activePointerSource = PointerSource.None;
             currentDragX = 0f;
             targetDragX = 0f;
 
@@ -240,30 +253,63 @@ namespace Game.Scripts.Input
                 : rootCanvas.worldCamera;
         }
 
-        // Reads mouse first, then touchscreen; returns false when neither device has active input.
-        private static bool TryGetPointer(out Vector2 screenPosition, out bool pressedThisFrame, out bool isPressed, out bool releasedThisFrame)
+        // Reads touch input or mouse input, locking to the active gesture source until drag completion.
+        private bool TryGetPointer(out Vector2 screenPosition, out bool pressedThisFrame, out bool isPressed, out bool releasedThisFrame)
         {
-            Mouse mouse = Mouse.current;
-            if (mouse != null)
+            if (activePointerSource == PointerSource.None)
             {
-                screenPosition = mouse.position.ReadValue();
-                pressedThisFrame = mouse.leftButton.wasPressedThisFrame;
-                isPressed = mouse.leftButton.isPressed;
-                releasedThisFrame = mouse.leftButton.wasReleasedThisFrame;
-                return true;
+                Touchscreen touchDevice = Touchscreen.current;
+                if (touchDevice != null && touchDevice.primaryTouch.press.wasPressedThisFrame)
+                {
+                    activePointerSource = PointerSource.Touch;
+                    screenPosition = touchDevice.primaryTouch.position.ReadValue();
+                    pressedThisFrame = true;
+                    isPressed = true;
+                    releasedThisFrame = false;
+                    return true;
+                }
+
+                Mouse mouseDevice = Mouse.current;
+                if (mouseDevice != null && mouseDevice.leftButton.wasPressedThisFrame)
+                {
+                    activePointerSource = PointerSource.Mouse;
+                    screenPosition = mouseDevice.position.ReadValue();
+                    pressedThisFrame = true;
+                    isPressed = true;
+                    releasedThisFrame = false;
+                    return true;
+                }
+
+                screenPosition = default;
+                pressedThisFrame = false;
+                isPressed = false;
+                releasedThisFrame = false;
+                return false;
             }
 
-            Touchscreen touch = Touchscreen.current;
-            if (touch != null &&
-                (touch.primaryTouch.press.isPressed ||
-                 touch.primaryTouch.press.wasPressedThisFrame ||
-                 touch.primaryTouch.press.wasReleasedThisFrame))
+            if (activePointerSource == PointerSource.Touch)
             {
-                screenPosition = touch.primaryTouch.position.ReadValue();
-                pressedThisFrame = touch.primaryTouch.press.wasPressedThisFrame;
-                isPressed = touch.primaryTouch.press.isPressed;
-                releasedThisFrame = touch.primaryTouch.press.wasReleasedThisFrame;
-                return true;
+                Touchscreen touchDevice = Touchscreen.current;
+                if (touchDevice != null)
+                {
+                    screenPosition = touchDevice.primaryTouch.position.ReadValue();
+                    pressedThisFrame = touchDevice.primaryTouch.press.wasPressedThisFrame;
+                    isPressed = touchDevice.primaryTouch.press.isPressed;
+                    releasedThisFrame = touchDevice.primaryTouch.press.wasReleasedThisFrame;
+                    return true;
+                }
+            }
+            else if (activePointerSource == PointerSource.Mouse)
+            {
+                Mouse mouseDevice = Mouse.current;
+                if (mouseDevice != null)
+                {
+                    screenPosition = mouseDevice.position.ReadValue();
+                    pressedThisFrame = mouseDevice.leftButton.wasPressedThisFrame;
+                    isPressed = mouseDevice.leftButton.isPressed;
+                    releasedThisFrame = mouseDevice.leftButton.wasReleasedThisFrame;
+                    return true;
+                }
             }
 
             screenPosition = default;

@@ -72,6 +72,16 @@ namespace Game.Scripts.Localization
         public static string Continue(GameLanguage language) =>
             language == GameLanguage.Arabic ? "متابعة" : "Continue";
 
+        /// <summary>Returns the localized label for the Reject action choice.</summary>
+        /// <param name="language">Target language.</param>
+        public static string Reject(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "رفض" : "Reject";
+
+        /// <summary>Returns the localized label for the Accept action choice.</summary>
+        /// <param name="language">Target language.</param>
+        public static string Accept(GameLanguage language) =>
+            language == GameLanguage.Arabic ? "قبول" : "Accept";
+
         /// <summary>Returns the localized label for the petition proposal confirm button.</summary>
         /// <param name="language">Target language.</param>
         public static string Confirm(GameLanguage language) =>

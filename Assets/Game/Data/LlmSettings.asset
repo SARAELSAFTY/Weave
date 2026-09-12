@@ -25,5 +25,6 @@ MonoBehaviour:
   petitionTurnLimit: 3
   petitionMinTurnLimit: 2
   petitionMaxTurnLimit: 4
+  detectSpamMode: 1
   petitionRetryCooldownSeconds: 2
   apiTimeoutSeconds: 30

@@ -97,6 +97,7 @@ namespace Game.Scripts.UI
         private bool isEndingCard;
         private bool isPetitionCard;
         private bool isLlmReactionPresentation;
+        private bool isPetitionExhaustedPresentation;
         private CardData currentCardData;
         private SpeakerData currentSpeaker;
         private string currentDynamicDescription;
@@ -257,19 +258,20 @@ namespace Game.Scripts.UI
             ShowPetition(cardData, speaker);
         }
 
-        /// <summary>Converts an active petition card into a normal choice card displaying the final LLM reaction text and reaction-fallback labels.</summary>
+        /// <summary>Converts an active petition card into a normal choice card displaying the final LLM reaction text and swipe controls (accept/reject).</summary>
         /// <param name="cardData">The card data providing choice text fallbacks.</param>
         /// <param name="finalReactionText">The LLM-generated reaction text displayed as the card description.</param>
         public void ConvertPetitionToNormalChoices(CardData cardData, string finalReactionText)
         {
             isPetitionCard = false;
             isLlmReactionPresentation = false;
+            isPetitionExhaustedPresentation = true;
             currentCardData = cardData;
             currentDynamicDescription = finalReactionText ?? string.Empty;
             HidePetitionInput();
 
             SetLabel(descriptionText, currentDynamicDescription);
-            ApplyChoiceTexts(cardData, useReactionFallbacks: true);
+            ApplyPetitionExhaustedChoiceTexts(cardData);
 
             ResetCardPosition();
         }
@@ -339,6 +341,7 @@ namespace Game.Scripts.UI
             isEndingCard = ending;
             isPetitionCard = petition;
             isLlmReactionPresentation = llmReaction;
+            isPetitionExhaustedPresentation = false;
             currentDynamicDescription = dynamicDescription;
             currentCardData = cardData;
             currentSpeaker = speaker;
@@ -757,7 +760,33 @@ namespace Game.Scripts.UI
                 SetLabel(descriptionText, currentCardData.GetDescription(CurrentLanguage));
             }
 
-            ApplyChoiceTexts(currentCardData, useReactionFallbacks: isLlmReactionPresentation);
+            if (isPetitionExhaustedPresentation)
+            {
+                ApplyPetitionExhaustedChoiceTexts(currentCardData);
+            }
+            else
+            {
+                ApplyChoiceTexts(currentCardData, useReactionFallbacks: isLlmReactionPresentation);
+            }
+        }
+
+        private void ApplyPetitionExhaustedChoiceTexts(CardData cardData)
+        {
+            string left = cardData != null ? cardData.GetLeftChoice(CurrentLanguage) : null;
+            string right = cardData != null ? cardData.GetRightChoice(CurrentLanguage) : null;
+
+            if (string.IsNullOrWhiteSpace(left))
+            {
+                left = FallbackStrings.Reject(CurrentLanguage);
+            }
+
+            if (string.IsNullOrWhiteSpace(right))
+            {
+                right = FallbackStrings.Accept(CurrentLanguage);
+            }
+
+            SetLabel(leftChoiceText, left, TextFontCategory.Choice);
+            SetLabel(rightChoiceText, right, TextFontCategory.Choice);
         }
 
         private void ApplyStaticCardText(CardData cardData, bool useReactionFallbacks)

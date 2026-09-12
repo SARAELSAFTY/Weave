@@ -11,6 +11,17 @@ namespace Game.Scripts.Llm
         RandomRange
     }
 
+    /// <summary>Controls whether petition spam detection is active.</summary>
+    public enum DetectSpamMode
+    {
+        /// <summary>Automatically enabled when the player is using their own API key, disabled on shared key.</summary>
+        Auto,
+        /// <summary>Always enabled regardless of key source.</summary>
+        ForceOn,
+        /// <summary>Always disabled regardless of key source.</summary>
+        ForceOff
+    }
+
     /// <summary>ScriptableObject holding all tunable LLM parameters shared across reaction, petition, and epilogue requests.</summary>
     /// <remarks>Referenced by <see cref="LlmReactionClient"/> at runtime. Petition turn limits are resolved per audience via <see cref="ResolvePetitionTurnLimit"/>.
     /// Callers holding an optional reference use the Default* constants below when the asset is missing, so fallback
@@ -71,6 +82,10 @@ namespace Game.Scripts.Llm
         [Min(1)]
         public int petitionMaxTurnLimit = 4;
 
+        [Header("Spam Detection")]
+        [Tooltip("Controls whether petition spam detection is enabled. Auto uses spam detection only when the player provides their own API key.")]
+        public DetectSpamMode detectSpamMode = DetectSpamMode.Auto;
+
         [Header("Timing")]
         [Tooltip("Seconds to wait before retrying a failed petition request.")]
         [Min(0f)]
@@ -115,6 +130,23 @@ namespace Game.Scripts.Llm
             }
 
             return Mathf.Max(1, petitionTurnLimit);
+        }
+
+        /// <summary>Determines if spam detection is active based on the configured mode and the player's key source.</summary>
+        /// <returns>True if spam detection should be enforced for petition turns.</returns>
+        public bool IsDetectSpamEnabled()
+        {
+            if (detectSpamMode == DetectSpamMode.ForceOn)
+            {
+                return true;
+            }
+
+            if (detectSpamMode == DetectSpamMode.ForceOff)
+            {
+                return false;
+            }
+
+            return LlmKeyStore.HasActiveKey;
         }
     }
 }

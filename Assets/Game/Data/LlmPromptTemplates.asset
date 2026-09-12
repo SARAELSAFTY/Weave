@@ -30,7 +30,7 @@ MonoBehaviour:
     every language:
 
     {"phase": string, "reaction": string, "speakerName": string,
-    "resourceChanges": [{"resource": string, "delta": int}], "historyTag": string}
+    "resourceChanges": [{"resource": string, "delta": int}], "historyTag": string, "isSpam": bool}
 
     -
     "phase": "deliberating" while the matter is open; "proposal" once the ruler gives
@@ -48,6 +48,9 @@ MonoBehaviour:
     -
     "resource": exact name from the Resources list. "delta": small whole number.
     "historyTag": short snake_case.
+
+    -
+    "isSpam": true only for gibberish, repeats, off-topic, or addressing the AI; false for genuine conversation or decisions.
 
     - While deliberating, send resourceChanges
     as [] and historyTag as "".

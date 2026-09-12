@@ -55,10 +55,11 @@ namespace Game.Scripts.Llm
             return BuildNextTurnMessages(playerInput);
         }
 
-        /// <summary>Commits a completed petition turn to history and transcript, decrementing the turn budget.</summary>
+        /// <summary>Commits a completed petition turn to history and transcript, decrementing turn budget when appropriate.</summary>
         /// <param name="resolution">The parsed resolution from this turn; may be null on parse failure.</param>
         /// <param name="rawContent">Raw assistant message content stored verbatim in conversation history.</param>
-        public void RecordReply(PetitionResolution resolution, string rawContent)
+        /// <param name="detectSpam">When true, only deducts a turn if the resolution is classified as spam.</param>
+        public void RecordReply(PetitionResolution resolution, string rawContent, bool detectSpam = false)
         {
             RecordTurnInHistory(pendingPlayerInput, rawContent);
             transcript.Add($"Ruler: {pendingPlayerInput}");
@@ -72,7 +73,11 @@ namespace Game.Scripts.Llm
                 transcript.Add($"Petitioner: {reply}");
             }
 
-            TurnsRemaining = Math.Max(0, TurnsRemaining - 1);
+            bool shouldDeduct = !detectSpam || (resolution != null && resolution.isSpam);
+            if (shouldDeduct)
+            {
+                TurnsRemaining = Math.Max(0, TurnsRemaining - 1);
+            }
 
             if (resolution != null && resolution.IsProposal)
             {
