@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c9ad9e3b8ad4b6da6e0a01a6f2ce002, type: 3}
   m_Name: NarrativeDatabase
   m_EditorClassIdentifier: 
-  assetName: NarrativeDatabase
   startingCard: {fileID: 11400000, guid: dfc013275416a5306603dfc64f5084ad, type: 2}
   resourceCatalog: {fileID: 11400000, guid: 6b2923c43cf2ce847a3ced381a116f0b, type: 2}
   promptTemplates: {fileID: 11400000, guid: 4ff166bac16d6c74cb86389f74611cd4, type: 2}
@@ -116,7 +115,7 @@ MonoBehaviour:
   - card: {fileID: 11400000, guid: f676046739f843ead55eb955b1b79e33, type: 2}
     position: {x: 2480, y: 200}
   - card: {fileID: 11400000, guid: 6248617e6f8afba7058ffebd578de357, type: 2}
-    position: {x: 1960, y: 860}
+    position: {x: 2208.8, y: 745.6}
   - card: {fileID: 11400000, guid: 793d6ce09aabb3f1d7bd3bd677b8bec6, type: 2}
     position: {x: 2480, y: 860}
   - card: {fileID: 11400000, guid: 72632fc3aed058c6aa1935fde05599b3, type: 2}

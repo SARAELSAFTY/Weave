@@ -18,55 +18,40 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
   descriptionLocalized:
-    english: "A weather-beaten farmer's representative kneels before you: 'Sire, black rot has consumed half our grain fields. If you demand full taxes, our children will starve before winter sets in!'"
-    arabic: "يركع فلاح أجهدته السنون بين يديك: «يا مولاي، التهم العفن الأسود نصف حقول القمح! إن ألزمتمونا بكامل الخراج، فستهلك عائلاتنا جوعاً قبل قدوم الشتاء!»"
+    english: 'A weather-beaten farmer''s representative kneels before you: ''Sire,
+      black rot has consumed half our grain fields. If you demand full taxes, our
+      children will starve before winter sets in!'''
+    arabic: "\u064A\u0631\u0643\u0639 \u0641\u0644\u0627\u062D \u0623\u062C\u0647\u062F\u062A\u0647
+      \u0627\u0644\u0633\u0646\u0648\u0646 \u0628\u064A\u0646 \u064A\u062F\u064A\u0643:
+      \xAB\u064A\u0627 \u0645\u0648\u0644\u0627\u064A\u060C \u0627\u0644\u062A\u0647\u0645
+      \u0627\u0644\u0639\u0641\u0646 \u0627\u0644\u0623\u0633\u0648\u062F \u0646\u0635\u0641
+      \u062D\u0642\u0648\u0644 \u0627\u0644\u0642\u0645\u062D! \u0625\u0646 \u0623\u0644\u0632\u0645\u062A\u0645\u0648\u0646\u0627
+      \u0628\u0643\u0627\u0645\u0644 \u0627\u0644\u062E\u0631\u0627\u062C\u060C \u0641\u0633\u062A\u0647\u0644\u0643
+      \u0639\u0627\u0626\u0644\u0627\u062A\u0646\u0627 \u062C\u0648\u0639\u0627\u064B
+      \u0642\u0628\u0644 \u0642\u062F\u0648\u0645 \u0627\u0644\u0634\u062A\u0627\u0621!\xBB"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: ""
-    arabic: ""
+    english: 
+    arabic: 
   leftResourceChange:
-    values:
+    values: []
   leftNextCard: {fileID: 0}
   rightChoiceLocalized:
-    english: ""
-    arabic: ""
+    english: 
+    arabic: 
   rightResourceChange:
-    values:
+    values: []
   rightNextCard: {fileID: 0}
-  middleChoiceLocalized:
-    english: ""
-    arabic: ""
-  middleResourceChange:
-    values:
-  middleNextCard: {fileID: 0}
-  isThreeWayVerdict: 0
-  isEndingEvaluator: 0
-  leftSetFlags: 0
-  rightSetFlags: 0
-  middleSetFlags: 0
-  continueSetFlags: 0
-  leftRequiresFlags: 0
-  rightRequiresFlags: 0
-  middleRequiresFlags: 0
-  alternateDescriptionIfFlags: 0
-  alternateDescriptionIfMissing: 0
-  alternateDescriptionLocalized:
-    english: ""
-    arabic: ""
-  entryRequiresFlags: 0
-  hasResourceGate: 0
-  gateResource: {fileID: 0}
-  gateMinInclusive: 0
-  gateMaxInclusive: 100
-  skipToCard: {fileID: 0}
-  skipToAltCard: {fileID: 0}
   isLlmReactionCard: 0
-  reactionSeedOverride: "A commoner petitions the king for grain relief after crop blight destroys the harvest."
+  reactionSeedOverride: A commoner petitions the king for grain relief after crop
+    blight destroys the harvest.
   isPetitionCard: 1
-  petitionSeedOverride: "A commoner petitions the king for grain relief after crop blight destroys the harvest."
+  petitionSeedOverride: A commoner petitions the king for grain relief after crop
+    blight destroys the harvest.
   petitionerSource: 0
   isChatCard: 0
-  chatSeedOverride: "A commoner petitions the king for grain relief after crop blight destroys the harvest."
+  chatSeedOverride: A commoner petitions the king for grain relief after crop blight
+    destroys the harvest.
   continueNextCard: {fileID: 11400000, guid: 793d6ce09aabb3f1d7bd3bd677b8bec6, type: 2}
   artMode: 0
   cardImage: {fileID: 0}
