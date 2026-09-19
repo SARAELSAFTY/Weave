@@ -18,12 +18,20 @@ MonoBehaviour:
     arabic: 
   speaker: {fileID: 11400000, guid: 968d4d0248269710a22f4c7dabc6a9cd, type: 2}
   descriptionLocalized:
-    english: "General: 'Sire, the Eastern Kingdom's border raiders burned three of our grain mills. We must strike their garrisons before dawn!'"
-    arabic: "الجنرال: «يا مولاي، أحرقت غارات مملكة الشرق ثلاثة من طواحين قمحنا! لا بد من مباغتة ثكناتهم قبل بزوغ الفجر!»"
+    english: 'General: ''Sire, the Eastern Kingdom''s border raiders burned three
+      of our grain mills. We must strike their garrisons before dawn!'''
+    arabic: "\u0627\u0644\u062C\u0646\u0631\u0627\u0644: \xAB\u064A\u0627 \u0645\u0648\u0644\u0627\u064A\u060C
+      \u0623\u062D\u0631\u0642\u062A \u063A\u0627\u0631\u0627\u062A \u0645\u0645\u0644\u0643\u0629
+      \u0627\u0644\u0634\u0631\u0642 \u062B\u0644\u0627\u062B\u0629 \u0645\u0646
+      \u0637\u0648\u0627\u062D\u064A\u0646 \u0642\u0645\u062D\u0646\u0627! \u0644\u0627
+      \u0628\u062F \u0645\u0646 \u0645\u0628\u0627\u063A\u062A\u0629 \u062B\u0643\u0646\u0627\u062A\u0647\u0645
+      \u0642\u0628\u0644 \u0628\u0632\u0648\u063A \u0627\u0644\u0641\u062C\u0631!\xBB"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: "Mobilize the vanguard; burn their outposts."
-    arabic: "حرّك طليعة الجيش، وأشعل النار في حصونهم."
+    english: Mobilize the vanguard; burn their outposts.
+    arabic: "\u062D\u0631\u0651\u0643 \u0637\u0644\u064A\u0639\u0629 \u0627\u0644\u062C\u064A\u0634\u060C
+      \u0648\u0623\u0634\u0639\u0644 \u0627\u0644\u0646\u0627\u0631 \u0641\u064A
+      \u062D\u0635\u0648\u0646\u0647\u0645."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
@@ -34,8 +42,10 @@ MonoBehaviour:
       value: 10
   leftNextCard: {fileID: 11400000, guid: 92c19644e0fd583134ac2a87a6b7c0ea, type: 2}
   rightChoiceLocalized:
-    english: "Hold defensive lines; do not escalate."
-    arabic: "الزموا الخطوط الدفاعية؛ لا أريد تصعيداً غير محسوب."
+    english: Hold defensive lines; do not escalate.
+    arabic: "\u0627\u0644\u0632\u0645\u0648\u0627 \u0627\u0644\u062E\u0637\u0648\u0637
+      \u0627\u0644\u062F\u0641\u0627\u0639\u064A\u0629\u061B \u0644\u0627 \u0623\u0631\u064A\u062F
+      \u062A\u0635\u0639\u064A\u062F\u0627\u064B \u063A\u064A\u0631 \u0645\u062D\u0633\u0648\u0628."
   rightResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
@@ -45,40 +55,13 @@ MonoBehaviour:
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
       value: -5
   rightNextCard: {fileID: 11400000, guid: 147caa6969ad5a1f947bf8fd86e0990f, type: 2}
-  middleChoiceLocalized:
-    english: ""
-    arabic: ""
-  middleResourceChange:
-    values:
-  middleNextCard: {fileID: 0}
-  isThreeWayVerdict: 0
-  isEndingEvaluator: 0
-  leftSetFlags: 0
-  rightSetFlags: 0
-  middleSetFlags: 0
-  continueSetFlags: 0
-  leftRequiresFlags: 0
-  rightRequiresFlags: 0
-  middleRequiresFlags: 0
-  alternateDescriptionIfFlags: 0
-  alternateDescriptionIfMissing: 0
-  alternateDescriptionLocalized:
-    english: ""
-    arabic: ""
-  entryRequiresFlags: 0
-  hasResourceGate: 0
-  gateResource: {fileID: 0}
-  gateMinInclusive: 0
-  gateMaxInclusive: 100
-  skipToCard: {fileID: 0}
-  skipToAltCard: {fileID: 0}
   isLlmReactionCard: 0
-  reactionSeedOverride: ""
+  reactionSeedOverride: 
   isPetitionCard: 0
-  petitionSeedOverride: ""
+  petitionSeedOverride: 
   petitionerSource: 0
   isChatCard: 0
-  chatSeedOverride: ""
+  chatSeedOverride: 
   continueNextCard: {fileID: 0}
   artMode: 0
   cardImage: {fileID: 0}
