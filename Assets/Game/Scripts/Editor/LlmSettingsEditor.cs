@@ -178,6 +178,7 @@ namespace Game.Scripts.Editor
                     continue;
                 }
 
+                Undo.RecordObject(settings, "Set Detect Spam Mode");
                 settings.detectSpamMode = mode;
                 EditorUtility.SetDirty(settings);
             }

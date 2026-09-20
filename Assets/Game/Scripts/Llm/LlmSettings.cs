@@ -40,9 +40,9 @@ namespace Game.Scripts.Llm
         public string reasoningEffort = "none";
 
         [Header("Token Limits")]
-        [Tooltip("Default maximum completion tokens for reaction and petition responses unless overridden per request.")]
+        [Tooltip("Default maximum completion tokens for reaction and petition responses unless overridden per request. 400 gives headroom for the petition JSON envelope + leaked <think> blocks; prompt word caps (not this) control visible length.")]
         [Min(50)]
-        public int maxTokensPerResponse = 300;
+        public int maxTokensPerResponse = 400;
 
         [Tooltip("Maximum completion tokens reserved specifically for epilogue generation.")]
         [Min(20)]
@@ -83,8 +83,8 @@ namespace Game.Scripts.Llm
         public int petitionMaxTurnLimit = 4;
 
         [Header("Spam Detection")]
-        [Tooltip("Controls whether petition spam detection is enabled. Auto uses spam detection only when the player provides their own API key.")]
-        public DetectSpamMode detectSpamMode = DetectSpamMode.Auto;
+        [Tooltip("Controls whether petition spam detection is enabled. ForceOn keeps it active for every player; Auto limits it to own-key sessions.")]
+        public DetectSpamMode detectSpamMode = DetectSpamMode.ForceOn;
 
         [Header("Timing")]
         [Tooltip("Seconds to wait before retrying a failed petition request.")]

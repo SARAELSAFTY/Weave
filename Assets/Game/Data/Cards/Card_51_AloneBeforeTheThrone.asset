@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_51_AloneBeforeTheThrone
+  m_EditorClassIdentifier: 
+  assetName: Card_51_AloneBeforeTheThrone
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 11400000, guid: 58e0d26dc32b25229dc4aef014036958, type: 2}
+  descriptionLocalized:
+    english: "You dismiss the court. The throne room empties until only the velvet cushion and your crown remain. The Jester watches from the doorway, without smiling."
+    arabic: "تصرف البلاط. تخلو قاعة العرش حتى لا يبقى سوى الوسادة المخملية وتاجك. يراقبك البهلوان من عند الباب، دون ابتسامة."
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: "Lay the crown down; be just Percy."
+    arabic: "أضع التاج على وسادته، وأكون بيرسي الإنسان فقط."
+  leftResourceChange:
+    values:
+  leftNextCard: {fileID: 11400000, guid: c498fb5fae193166969c9705b3d059ab, type: 2}
+  rightChoiceLocalized:
+    english: "Keep the crown; face history's judgment."
+    arabic: "أُبقي التاج على رأسي، وأواجه حكم التاريخ."
+  rightResourceChange:
+    values:
+  rightNextCard: {fileID: 11400000, guid: a4e177db000cd2b141084e1b8595c3d8, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: 
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

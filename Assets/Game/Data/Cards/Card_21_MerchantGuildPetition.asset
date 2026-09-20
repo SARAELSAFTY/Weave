@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_21_MerchantGuildPetition
+  m_EditorClassIdentifier: 
+  assetName: Card_21_MerchantGuildPetition
+  displayNameLocalized:
+    english: "Merchant Guild Petition"
+    arabic: "عطاء تجار الحرفة"
+  speaker: {fileID: 11400000, guid: c5e9af25f58fc364fa7f8feda2237cb4, type: 2}
+  descriptionLocalized:
+    english: "The guild master bows deeply: 'Sire, new harbor levies strangle our trade routes. If merchants flee eastward, your coffers fill with sand while shops fall silent. We beg you to reconsider before our ships set sail for foreign ports.'"
+    arabic: "يركع رئيس الطائفة بعمق: «أيها الملك، الرسومُ الجديدة على الميناء تشلُّ طرق تجارتنا. إن هرب التجار شرقاً، امتلأت خزائنك بالرمال بينما صمتت المحلات. نطلب منك أن تعيد النظر قبل أن ترسل سفننا إلى موانئ أجنبية.»"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: ""
+    arabic: ""
+  leftResourceChange:
+    values: []
+  leftNextCard: {fileID: 0}
+  rightChoiceLocalized:
+    english: ""
+    arabic: ""
+  rightResourceChange:
+    values: []
+  rightNextCard: {fileID: 0}
+  isLlmReactionCard: 0
+  reactionSeedOverride: "A merchant guild leader petitions the king against new harbor levies threatening their trade."
+  isPetitionCard: 1
+  petitionSeedOverride: "A merchant guild leader petitions the king about harbor taxes destroying their livelihoods."
+  petitionerSource: 1
+  isChatCard: 0
+  chatSeedOverride: "A merchant guild leader petitions the king about harbor taxes destroying their livelihoods."
+  continueNextCard: {fileID: 11400000, guid: 88d6533661b6ecf7ddbe8128aace5dd3, type: 2}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

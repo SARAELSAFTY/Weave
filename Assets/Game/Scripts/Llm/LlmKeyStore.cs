@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using UnityEngine;
 
@@ -43,11 +42,6 @@ namespace Game.Scripts.Llm
         /// until restart without deleting the stored key.</summary>
         public static bool SessionDisabled { get; set; }
 
-        /// <summary>Raised after a key is saved or cleared so UI indicators can update live.</summary>
-        public static event Action KeyChanged;
-
-        private static void RaiseKeyChanged() => KeyChanged?.Invoke();
-
         /// <summary>True when a key is stored and this session has not fallen back to the proxy.</summary>
         public static bool HasActiveKey => !SessionDisabled && GetKey() != null;
 
@@ -65,7 +59,6 @@ namespace Game.Scripts.Llm
             PlayerPrefs.SetString(PrefKey, SanitizeKey(key));
             PlayerPrefs.Save();
             SessionDisabled = false;
-            RaiseKeyChanged();
         }
 
         /// <summary>Returns the key with every character outside <c>[A-Za-z0-9_-]</c> removed.</summary>
@@ -102,7 +95,6 @@ namespace Game.Scripts.Llm
             PlayerPrefs.DeleteKey(PrefKey);
             PlayerPrefs.Save();
             SessionDisabled = false;
-            RaiseKeyChanged();
         }
     }
 }

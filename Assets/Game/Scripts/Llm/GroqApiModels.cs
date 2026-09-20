@@ -181,6 +181,8 @@ namespace Game.Scripts.Llm
     {
         /// <summary>The generated message content for this choice.</summary>
         public GroqMessageContent message;
+        /// <summary>Why the model stopped: "stop", "length" (hit max_completion_tokens), etc. Used to detect token-limit truncation.</summary>
+        public string finish_reason;
     }
 
     /// <summary>Wraps the text content of a model-generated message.</summary>

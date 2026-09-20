@@ -105,6 +105,22 @@ namespace Game.Scripts.Definitions
         /// <summary>True when this card exits via the continue path (reaction, petition, or chat) instead of left/right choices.</summary>
         public bool UsesContinueExit => isLlmReactionCard || isPetitionCard || isChatCard;
 
+        /// <summary>True when the petitioner is a generated commoner needing no assigned speaker or runtime SpeakerData.</summary>
+        public bool UsesGeneratedPersona => (isPetitionCard || isChatCard) && petitionerSource == PetitionerSource.GeneratedCommoner;
+
+#if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            // Generated commoners need no speaker: drop any stale assignment so no garbage
+            // character assets linger on petition cards.
+            if (UsesGeneratedPersona && speaker != null)
+            {
+                speaker = null;
+            }
+        }
+#endif
+
         /// <summary>True when no next card is reachable from this card's active exit path.</summary>
         public bool IsEnding => UsesContinueExit
             ? continueNextCard == null

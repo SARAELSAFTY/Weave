@@ -22,8 +22,8 @@ MonoBehaviour:
     arabic: "المستشار: «جلبت الضرائب الباهظة ذهباً وفيراً، لكن المقاومين يحشدون في الجبال. نيران التمرد توشك أن تندلع!»"
   dayAdvance: 1
   leftChoiceLocalized:
-    english: "Send inquisitors; purge the mountain dens."
-    arabic: "أرسل العيون والفرسان لتطهير مخابئ الجبال."
+    english: "Hear the merchant guild's concerns about the new levies."
+    arabic: "استمع إلى شكاوى نقابة التجار بشأن الرسوم الجديدة."
   leftResourceChange:
     values:
     - resource: {fileID: 11400000, guid: b891174f857049f44be00b474746951e, type: 2}
@@ -32,7 +32,7 @@ MonoBehaviour:
       value: -10
     - resource: {fileID: 11400000, guid: 10d39ca6ec17c4442b381bbfe0578b71, type: 2}
       value: 5
-  leftNextCard: {fileID: 11400000, guid: faf340748f6b6b872a9d5bce09203935, type: 2}
+  leftNextCard: {fileID: 11400000, guid: 380c7087d91a0c64bbd7c85712c9920a, type: 2}
   rightChoiceLocalized:
     english: "Offer amnesty to any rebel who lays down arms."
     arabic: "اعرض العفو العام على كل من يلقي السلاح."

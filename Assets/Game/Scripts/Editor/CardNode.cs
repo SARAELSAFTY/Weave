@@ -97,14 +97,7 @@ namespace Game.Scripts.Editor
 
         private VisualElement BuildBadges(CardData card, bool isStartCard)
         {
-            VisualElement badges = new VisualElement
-            {
-                style =
-                {
-                    flexDirection = FlexDirection.Row,
-                    alignItems = Align.Center
-                }
-            };
+            VisualElement badges = MakeBadgeRow();
 
             if (isStartCard)
             {
@@ -165,17 +158,7 @@ namespace Game.Scripts.Editor
 
         private VisualElement BuildBody(CardData card)
         {
-            VisualElement body = new VisualElement
-            {
-                style =
-                {
-                    paddingTop = 6,
-                    paddingBottom = 6,
-                    paddingLeft = 8,
-                    paddingRight = 8,
-                    backgroundColor = new StyleColor(new Color(0.16f, 0.17f, 0.20f))
-                }
-            };
+            VisualElement body = MakeBody(6, 6, new Color(0.16f, 0.17f, 0.20f));
 
             bodyContainer = body;
 
@@ -216,43 +199,55 @@ namespace Game.Scripts.Editor
                 }
             };
 
-            NarrativeDatabase db = parentGraphView?.Database;
-            List<SpeakerData> speakerList = db?.speakers ?? new List<SpeakerData>();
-
-            List<string> choices = new List<string> { "(No Speaker)" };
-            List<SpeakerData> choiceSpeakers = new List<SpeakerData> { null };
-            int selectedIndex = 0;
-            foreach (SpeakerData s in speakerList)
+            // Generated commoners need no speaker: show a read-only label instead of the popup
+            // so no garbage character can be assigned.
+            if (card.UsesGeneratedPersona)
             {
-                if (s == null)
-                {
-                    continue;
-                }
-
-                choices.Add(s.GetDisplayName(GameLanguage.English));
-                choiceSpeakers.Add(s);
-                if (card.speaker == s)
-                {
-                    selectedIndex = choices.Count - 1;
-                }
+                Label generatedLabel = new Label("Generated Commoner (no speaker)");
+                generatedLabel.style.fontSize = 10;
+                generatedLabel.style.height = 18;
+                row.Add(generatedLabel);
             }
-
-            PopupField<string> speakerPopup = new PopupField<string>(choices, selectedIndex);
-            speakerPopup.style.fontSize = 10;
-            speakerPopup.style.height = 18;
-            speakerPopup.RegisterValueChangedCallback(evt =>
+            else
             {
-                int newIdx = choices.IndexOf(evt.newValue);
-                SpeakerData newSpeaker = newIdx >= 0 && newIdx < choiceSpeakers.Count ? choiceSpeakers[newIdx] : null;
-                if (card.speaker != newSpeaker)
+                NarrativeDatabase db = parentGraphView?.Database;
+                List<SpeakerData> speakerList = db?.speakers ?? new List<SpeakerData>();
+
+                List<string> choices = new List<string> { "(No Speaker)" };
+                List<SpeakerData> choiceSpeakers = new List<SpeakerData> { null };
+                int selectedIndex = 0;
+                foreach (SpeakerData s in speakerList)
                 {
-                    Undo.RecordObject(card, "Assign Card Speaker");
-                    card.speaker = newSpeaker;
-                    EditorUtility.SetDirty(card);
-                    parentGraphView?.Populate(parentGraphView.Database);
+                    if (s == null)
+                    {
+                        continue;
+                    }
+
+                    choices.Add(s.GetDisplayName(GameLanguage.English));
+                    choiceSpeakers.Add(s);
+                    if (card.speaker == s)
+                    {
+                        selectedIndex = choices.Count - 1;
+                    }
                 }
-            });
-            row.Add(speakerPopup);
+
+                PopupField<string> speakerPopup = new PopupField<string>(choices, selectedIndex);
+                speakerPopup.style.fontSize = 10;
+                speakerPopup.style.height = 18;
+                speakerPopup.RegisterValueChangedCallback(evt =>
+                {
+                    int newIdx = choices.IndexOf(evt.newValue);
+                    SpeakerData newSpeaker = newIdx >= 0 && newIdx < choiceSpeakers.Count ? choiceSpeakers[newIdx] : null;
+                    if (card.speaker != newSpeaker)
+                    {
+                        Undo.RecordObject(card, "Assign Card Speaker");
+                        card.speaker = newSpeaker;
+                        EditorUtility.SetDirty(card);
+                        parentGraphView?.Populate(parentGraphView.Database);
+                    }
+                });
+                row.Add(speakerPopup);
+            }
 
             List<CardVisualTemplate> templateAssets = new List<CardVisualTemplate>();
             foreach (string guid in AssetDatabase.FindAssets("t:CardVisualTemplate"))
@@ -356,7 +351,9 @@ namespace Game.Scripts.Editor
 
         private static string BuildSummary(CardData card)
         {
-            string speaker = card.speaker != null ? card.speaker.GetDisplayName(GameLanguage.English) : "No Speaker";
+            string speaker = card.UsesGeneratedPersona
+                ? "Generated Commoner"
+                : card.speaker != null ? card.speaker.GetDisplayName(GameLanguage.English) : "No Speaker";
             string look = card.visualTemplate != null ? card.visualTemplate.name : "Default Look";
             string art = card.artMode == CardArtMode.EventImage ? "Art: Image"
                 : card.artMode == CardArtMode.None ? "Art: None"
@@ -537,6 +534,12 @@ namespace Game.Scripts.Editor
             }
 
             evt.menu.AppendSeparator();
+
+            // Generated commoners need no speaker; skip speaker assignment entirely.
+            if (Card.UsesGeneratedPersona)
+            {
+                return;
+            }
 
             NarrativeDatabase db = parentGraphView?.Database;
             if (db != null && db.speakers != null)

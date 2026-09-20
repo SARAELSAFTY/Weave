@@ -152,13 +152,25 @@ namespace Game.Scripts.Editor
         }
 
         // Draws the shared audience configuration (petition/chat): persona source, optional speaker, seed override, and continue exit.
+        // Generated commoners need no speaker assignment; any stale reference is cleared so no garbage character lingers.
         private void DrawAudienceFields(SerializedProperty petitionerSourceProp, SerializedProperty speakerProp,
             bool usesGeneratedPersona, SerializedProperty seedOverrideProp, string seedOverrideLabel)
         {
             EditorGUILayout.PropertyField(petitionerSourceProp, new GUIContent(
                 "Petitioner Source"));
 
-            if (!usesGeneratedPersona)
+            if (usesGeneratedPersona)
+            {
+                if (speakerProp != null && speakerProp.objectReferenceValue != null)
+                {
+                    CardData owner = (CardData)target;
+                    UnityEditor.Undo.RecordObject(owner, "Clear Unused Generated Speaker");
+                    speakerProp.objectReferenceValue = null;
+                }
+
+                EditorGUILayout.HelpBox("Generated commoner: no speaker needed. Name and persona come from the LLM at runtime.", UnityEditor.MessageType.Info);
+            }
+            else
             {
                 EditorGUILayout.PropertyField(speakerProp, new GUIContent("Speaker"));
             }

@@ -14,7 +14,7 @@ namespace Game.Scripts
 {
     /// <summary>Orchestrates the core game flow: card presentation, player choices, resource warnings, and run endings.</summary>
     /// <remarks>
-    /// Coordinates CardView, NarrativeRunner, ResourceWarningMonitor, PlayerHistoryTracker, PetitionFlowController,
+    /// Coordinates CardView, NarrativeRunner, ResourceWarningMonitor, PlayerHistoryTracker, AudienceFlowController,
     /// and CollapseEndingBuilder to drive a day-based card game where each choice advances a branching narrative.
     /// Supports LLM-generated speaker reactions and petition dialogues with turn limits.
     /// </remarks>
@@ -53,12 +53,12 @@ namespace Game.Scripts
         private bool inputEnabled;
         private bool runInProgress;
         private bool isPaused;
+        private int llmRequestGeneration;
         private NarrativeRunner narrativeRunner;
         private ResourceWarningMonitor resourceWarningMonitor;
         private bool showingResourceWarning;
         private CardData warningCardInstance;
-        private PetitionFlowController petitionFlow;
-        private ChatFlowController chatFlow;
+        private AudienceFlowController audienceFlow;
         private CollapseEndingBuilder collapseEndingBuilder;
 
         private LlmPromptTemplates Templates => narrativeDatabase != null ? narrativeDatabase.promptTemplates : null;
@@ -119,24 +119,13 @@ namespace Game.Scripts
             narrativeRunner.DayChanged += HandleDayChanged;
             historyTracker = new PlayerHistoryTracker(resourceState, narrativeRunner, narrativeDatabase.resourceCatalog);
             resourceWarningMonitor = new ResourceWarningMonitor(narrativeDatabase.resourceCatalog, resourceState);
-            petitionFlow = new PetitionFlowController(
+            audienceFlow = new AudienceFlowController(
                 cardView,
                 llmReactionClient,
                 llmSettings,
                 narrativeDatabase,
                 narrativeRunner,
                 resourceState,
-                historyTracker,
-                () => CurrentLanguage,
-                value => inputEnabled = value,
-                BeginPetitionConfirmAdvance,
-                delay => StartCoroutine(ReenablePetitionSubmitAfterDelay(delay)));
-            chatFlow = new ChatFlowController(
-                cardView,
-                llmReactionClient,
-                llmSettings,
-                narrativeDatabase,
-                narrativeRunner,
                 historyTracker,
                 () => CurrentLanguage,
                 value => inputEnabled = value,
@@ -181,8 +170,9 @@ namespace Game.Scripts
             }
         }
 
-        // Runtime-created ScriptableObjects (warning cards, generated endings, temp speakers) are not
+        // Runtime-created ScriptableObjects (warning cards, generated endings) are not
         // tracked by Unity's asset database and must be explicitly destroyed to avoid leaks.
+        // Generated commoner audiences no longer allocate a temp SpeakerData.
         private void OnDestroy()
         {
             if (narrativeRunner != null)
@@ -196,8 +186,7 @@ namespace Game.Scripts
                 warningCardInstance = null;
             }
 
-            petitionFlow?.CleanupPetitionSpeaker();
-            chatFlow?.CleanupChatSpeaker();
+            audienceFlow?.CleanupSpeaker();
             collapseEndingBuilder?.Cleanup();
         }
 
@@ -225,8 +214,8 @@ namespace Game.Scripts
             if (cardView != null)
             {
                 cardView.RestartRequested += RestartRun;
-                cardView.PetitionCommandSubmitted += HandlePetitionSubmitted;
-                cardView.PetitionConfirmRequested += HandlePetitionConfirmed;
+                cardView.PetitionCommandSubmitted += HandleAudienceSubmitted;
+                cardView.PetitionConfirmRequested += HandleAudienceConfirmed;
             }
 
             if (startScreenView != null)
@@ -248,8 +237,8 @@ namespace Game.Scripts
             if (cardView != null)
             {
                 cardView.RestartRequested -= RestartRun;
-                cardView.PetitionCommandSubmitted -= HandlePetitionSubmitted;
-                cardView.PetitionConfirmRequested -= HandlePetitionConfirmed;
+                cardView.PetitionCommandSubmitted -= HandleAudienceSubmitted;
+                cardView.PetitionConfirmRequested -= HandleAudienceConfirmed;
             }
 
             if (startScreenView != null)
@@ -264,6 +253,8 @@ namespace Game.Scripts
                 pauseMenuView.RestartRequested -= RestartRun;
                 pauseMenuView.ApiKeyRequested -= ShowByokPanel;
             }
+
+            StopAllCoroutines();
         }
 
         private void BeginRun()
@@ -371,7 +362,7 @@ namespace Game.Scripts
             if (result.HasError)
             {
                 Debug.LogError(result.error, this);
-                enabled = false;
+                EndRun(null, false, null);
                 yield break;
             }
 
@@ -453,15 +444,22 @@ namespace Game.Scripts
                 resourceWarningMonitor.OnWarningShown(resource);
             }
 
-            string gameStateSnapshot = GetReactionSnapshotOrDefault();
+            string gameStateSnapshot = audienceFlow.GetReactionSnapshot();
 
             string seed = SpeakerPromptBuilder.BuildWarningSituation(templates, resource.GetDisplayName(CurrentLanguage));
 
-            LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
+            llmRequestGeneration++;
+            int warningGeneration = llmRequestGeneration;
+            LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, audienceFlow.GetResourceCatalog(),
                 speaker, gameStateSnapshot, seed, CurrentLanguage,
                 LlmFallbackText.Warning(templates, CurrentLanguage),
                 line =>
                 {
+                    if (warningGeneration != llmRequestGeneration)
+                    {
+                        return;
+                    }
+
                     cardView.SetDescriptionText(line);
                     inputEnabled = true;
                 });
@@ -478,13 +476,13 @@ namespace Game.Scripts
             SpeakerData speaker = card.speaker;
             if (card.isChatCard)
             {
-                chatFlow?.ShowChatCard(card);
+                audienceFlow?.ShowAudienceCard(card);
                 return;
             }
 
             if (card.isPetitionCard)
             {
-                petitionFlow.ShowPetitionCard(card);
+                audienceFlow.ShowAudienceCard(card);
                 return;
             }
 
@@ -494,16 +492,23 @@ namespace Game.Scripts
                 cardView.ShowLlmReaction(card, speaker);
                 inputEnabled = false;
 
-                string gameStateSnapshot = GetReactionSnapshotOrDefault();
+                string gameStateSnapshot = audienceFlow.GetReactionSnapshot();
                 string sceneDescription = card.GetDescription(CurrentLanguage);
                 string reactionSeed = card.EffectiveReactionSeed(templates);
                 string seed = SpeakerPromptBuilder.BuildReactionSituation(sceneDescription, reactionSeed);
 
-                LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
+                llmRequestGeneration++;
+                int reactionGeneration = llmRequestGeneration;
+                LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, audienceFlow.GetResourceCatalog(),
                     speaker, gameStateSnapshot, seed, CurrentLanguage,
                     LlmFallbackText.Reaction(templates, CurrentLanguage),
                     line =>
                     {
+                        if (reactionGeneration != llmRequestGeneration)
+                        {
+                            return;
+                        }
+
                         cardView.SetDescriptionText(line);
                         inputEnabled = !card.IsEnding;
                     });
@@ -515,17 +520,12 @@ namespace Game.Scripts
             inputEnabled = !card.IsEnding;
         }
 
-        // Thin forwarders to the audience flow controllers; the card view can raise these events
-        // before Start() has constructed the controllers. The petition input field is shared by
-        // petition and chat audiences, so submissions route to whichever flow is active.
-        private void HandlePetitionSubmitted(string playerInput)
+        // Thin forwarders to the audience flow controller; the card view can raise these events
+        // before Start() has constructed the controller. The petition input field is shared by
+        // petition and chat audiences, so the flow serves whichever audience is active.
+        private void HandleAudienceSubmitted(string playerInput)
         {
-            if (chatFlow != null && chatFlow.HandleChatSubmitted(playerInput))
-            {
-                return;
-            }
-
-            petitionFlow?.HandlePetitionSubmitted(playerInput);
+            audienceFlow?.HandleAudienceSubmitted(playerInput);
         }
 
         private void ShowByokPanel()
@@ -533,15 +533,10 @@ namespace Game.Scripts
             byokPanelView?.Show();
         }
 
-        private void HandlePetitionConfirmed()
+        private void HandleAudienceConfirmed()
         {
-            // The confirm button doubles as the chat end-audience button; route it to the active flow.
-            if (chatFlow != null && chatFlow.HandleChatEndRequested())
-            {
-                return;
-            }
-
-            petitionFlow?.HandlePetitionConfirmed();
+            // The confirm button doubles as the chat end-audience button; the flow serves the active audience.
+            audienceFlow?.HandleAudienceConfirmed();
         }
 
         // Invoked by the petition flow after a confirmed proposal; advances the narrative like a normal choice.
@@ -558,7 +553,7 @@ namespace Game.Scripts
             if (result.HasError)
             {
                 Debug.LogError(result.error, this);
-                enabled = false;
+                EndRun(null, false, null);
                 yield break;
             }
 
@@ -576,20 +571,6 @@ namespace Game.Scripts
             }
 
             cardView.SetPetitionSubmitting(false);
-        }
-
-        private string GetReactionSnapshotOrDefault()
-        {
-            return GetSnapshotOrDefault(
-                llmSettings != null ? llmSettings.reactionHistoryCount : LlmSettings.DefaultReactionHistoryCount,
-                llmSettings != null ? llmSettings.pastPetitionChatCount : LlmSettings.DefaultPastPetitionChatCount);
-        }
-
-        private string GetSnapshotOrDefault(int narrativeHistoryEntryCount, int petitionTranscriptCount)
-        {
-            return historyTracker != null
-                ? historyTracker.GetSnapshot(narrativeHistoryEntryCount, petitionTranscriptCount, CurrentLanguage)
-                : FallbackStrings.KingdomStatusUnknown(CurrentLanguage);
         }
 
         private void HandleStepResult(NarrativeStepResult result)
@@ -613,14 +594,6 @@ namespace Game.Scripts
             ShowCurrentCard();
         }
 
-        // Resource catalog used by prompt building; null when the database or catalog is unassigned.
-        private IReadOnlyList<ResourceData> GetResourceCatalog()
-        {
-            return narrativeDatabase != null && narrativeDatabase.resourceCatalog != null
-                ? narrativeDatabase.resourceCatalog.resources
-                : null;
-        }
-
         private void HandleDayChanged()
         {
             RefreshDayDisplay();
@@ -636,6 +609,13 @@ namespace Game.Scripts
             isPaused = false;
             inputEnabled = false;
             runInProgress = false;
+            llmRequestGeneration++;
+
+            audienceFlow?.Cancel();
+            if (llmReactionClient != null)
+            {
+                llmReactionClient.CancelPendingRequests();
+            }
 
             Scene scene = SceneManager.GetActiveScene();
             if (!string.IsNullOrEmpty(scene.path))

@@ -100,6 +100,7 @@ namespace Game.Scripts.UI
         private bool isPetitionExhaustedPresentation;
         private CardData currentCardData;
         private SpeakerData currentSpeaker;
+        private string generatedSpeakerName;
         private string currentDynamicDescription;
         private TMP_Text petitionConfirmLabel;
 
@@ -292,15 +293,6 @@ namespace Game.Scripts.UI
             SetPetitionSubmitting(false);
         }
 
-        /// <summary>Hides the petition input root, preventing further player input for this petition.</summary>
-        public void DisablePetitionFurtherInput()
-        {
-            if (petitionInputRoot != null)
-            {
-                petitionInputRoot.SetActive(false);
-            }
-        }
-
         /// <summary>Replaces the card description with dynamically generated text (e.g., an LLM response).</summary>
         /// <param name="text">The new description text; null is treated as empty.</param>
         public void SetDescriptionText(string text)
@@ -313,6 +305,41 @@ namespace Game.Scripts.UI
         public void RefreshSpeakerName()
         {
             ApplySpeaker(currentSpeaker, currentCardData);
+        }
+
+        /// <summary>Shows a generated commoner name without needing a SpeakerData object.</summary>
+        /// <remarks>Generated petition audiences pass null as the speaker and report the model's
+        /// speakerName here. Blank or overlong glitch names are ignored or trimmed.</remarks>
+        /// <param name="speakerName">Model-supplied name; blank values are ignored.</param>
+        /// <returns>True when a new name is now displayed.</returns>
+        public bool SetGeneratedSpeakerName(string speakerName)
+        {
+            if (string.IsNullOrWhiteSpace(speakerName))
+            {
+                return false;
+            }
+
+            string trimmed = speakerName.Trim();
+            trimmed = System.Text.RegularExpressions.Regex.Replace(trimmed, @"\s+", " ");
+            if (trimmed.Length > 48)
+            {
+                trimmed = trimmed.Substring(0, 48).Trim();
+            }
+
+            if (trimmed.Length == 0)
+            {
+                return false;
+            }
+
+            generatedSpeakerName = trimmed;
+            ApplySpeaker(currentSpeaker, currentCardData);
+            return true;
+        }
+
+        /// <summary>Clears any generated commoner name; called when a new card is presented.</summary>
+        public void ClearGeneratedSpeakerName()
+        {
+            generatedSpeakerName = null;
         }
 
         /// <summary>Presents an ending card with its description, hides choice labels, and shows the restart button.</summary>
@@ -345,6 +372,7 @@ namespace Game.Scripts.UI
             currentDynamicDescription = dynamicDescription;
             currentCardData = cardData;
             currentSpeaker = speaker;
+            generatedSpeakerName = null;
             ResetCardPosition();
             restartButton.gameObject.SetActive(false);
             HidePetitionInput();
@@ -567,9 +595,11 @@ namespace Game.Scripts.UI
 
             ApplyPartSprite(cardArtImage, art);
 
-            // Generated personas start with a blank name until the model names them; hide the
-            // label rather than showing a placeholder subject line.
-            string displayName = speaker != null ? speaker.GetDisplayName(CurrentLanguage) : null;
+            // Generated commoners have no SpeakerData; their model-supplied name is shown directly.
+            // Until the model names them the label stays hidden rather than showing a placeholder.
+            string displayName = speaker != null
+                ? speaker.GetDisplayName(CurrentLanguage)
+                : generatedSpeakerName;
             if (!string.IsNullOrWhiteSpace(displayName))
             {
                 speakerNameText.gameObject.SetActive(true);

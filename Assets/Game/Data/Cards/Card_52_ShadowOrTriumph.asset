@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a58f704bd5e67641b99574144c55bc6, type: 3}
+  m_Name: Card_52_ShadowOrTriumph
+  m_EditorClassIdentifier: 
+  assetName: Card_52_ShadowOrTriumph
+  displayNameLocalized:
+    english: 
+    arabic: 
+  speaker: {fileID: 0}
+  descriptionLocalized:
+    english: "The realm is won. Tribute flows, the generals kneel — yet the throne room feels hollow. Will you vanish into the machinery of rule, or stand openly as its conqueror?"
+    arabic: "لقد كُسبت المملكة. الجزية تتدفق والجنرالات يركعون... ومع ذلك تبدو قاعة العرش جوفاء. هل تذوب في آلة الحكم، أم تقف معلناً كفاتحها؟"
+  dayAdvance: 1
+  leftChoiceLocalized:
+    english: "Withdraw behind the throne; let ministers rule in my name."
+    arabic: "أنسحب خلف العرش؛ ليحكم الوزراء باسمي."
+  leftResourceChange:
+    values:
+  leftNextCard: {fileID: 11400000, guid: 0c62e04ba200d12495d57e61aeb121d4, type: 2}
+  rightChoiceLocalized:
+    english: "Ride out to survey all I have conquered."
+    arabic: "أخرج لأتأمل كل ما فتحته."
+  rightResourceChange:
+    values:
+  rightNextCard: {fileID: 11400000, guid: cd1bad0e28d66cf1ddce9a0910135b41, type: 2}
+  isLlmReactionCard: 0
+  reactionSeedOverride: 
+  isPetitionCard: 0
+  petitionSeedOverride: 
+  petitionerSource: 0
+  isChatCard: 0
+  chatSeedOverride: 
+  continueNextCard: {fileID: 0}
+  artMode: 0
+  cardImage: {fileID: 0}
+  visualTemplate: {fileID: 0}

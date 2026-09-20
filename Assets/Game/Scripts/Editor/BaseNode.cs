@@ -91,6 +91,54 @@ namespace Game.Scripts.Editor
             return label;
         }
 
+        /// <summary>Creates an empty horizontal row for header badge labels.</summary>
+        /// <returns>A row container with centered items.</returns>
+        protected static VisualElement MakeBadgeRow()
+        {
+            return new VisualElement
+            {
+                style =
+                {
+                    flexDirection = FlexDirection.Row,
+                    alignItems = Align.Center
+                }
+            };
+        }
+
+        /// <summary>Creates a padded body container with the given background and optional width bounds.</summary>
+        /// <param name="paddingTop">Top padding in pixels.</param>
+        /// <param name="paddingBottom">Bottom padding in pixels.</param>
+        /// <param name="backgroundColor">Body background fill.</param>
+        /// <param name="minWidth">Minimum width in pixels, ignored when zero.</param>
+        /// <param name="maxWidth">Maximum width in pixels, ignored when zero.</param>
+        /// <returns>A styled body container.</returns>
+        protected static VisualElement MakeBody(float paddingTop, float paddingBottom, Color backgroundColor, float minWidth = 0f, float maxWidth = 0f)
+        {
+            VisualElement body = new VisualElement
+            {
+                style =
+                {
+                    paddingTop = paddingTop,
+                    paddingBottom = paddingBottom,
+                    paddingLeft = 8,
+                    paddingRight = 8,
+                    backgroundColor = new StyleColor(backgroundColor)
+                }
+            };
+
+            if (minWidth > 0f)
+            {
+                body.style.minWidth = minWidth;
+            }
+
+            if (maxWidth > 0f)
+            {
+                body.style.maxWidth = maxWidth;
+            }
+
+            return body;
+        }
+
         /// <summary>
         /// Adds a display-name label and an optional secondary asset-name label to the given container; the secondary label is omitted when it matches the display name.
         /// </summary>

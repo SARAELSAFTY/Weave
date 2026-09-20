@@ -37,13 +37,6 @@ namespace Game.Scripts.Editor
         // When set, the next Populate call places this newly-created asset at the viewport center instead of the grid fallback.
         private UnityEngine.Object pendingNewAsset;
 
-        // Returns true when the cached position already matches, so no-op saves skip undo registration.
-        private static bool HasUnchangedPosition<TAsset>(Dictionary<TAsset, Vector2> cache, TAsset asset, Vector2 position)
-            where TAsset : UnityEngine.Object
-        {
-            return asset != null && cache.TryGetValue(asset, out Vector2 existing) && existing == position;
-        }
-
         /// <summary>
         /// Updates or inserts a position entry in the given list and cache; returns false if the position is unchanged.
         /// </summary>
@@ -195,8 +188,7 @@ namespace Game.Scripts.Editor
             CreateSpeakerNodes();
             CreateResourceNodes();
 
-            // Defer clearing the guard so that any layout callbacks fired during element addition are also suppressed.
-            EditorApplication.delayCall += () => isPopulating = false;
+            isPopulating = false;
         }
 
         /// <summary>Clears in-memory position caches and reloads them from the database's serialized editor position lists.</summary>
@@ -205,6 +197,8 @@ namespace Game.Scripts.Editor
             positionsByCard.Clear();
             positionsBySpeaker.Clear();
             positionsByResource.Clear();
+
+            PruneDeletedAssetPositions();
 
             if (database?.editorGraphPositions != null)
             {
@@ -240,6 +234,54 @@ namespace Game.Scripts.Editor
             }
         }
 
+        // Drops position entries whose asset was deleted outside the graph, so nulls stop accumulating.
+        private void PruneDeletedAssetPositions()
+        {
+            if (database == null)
+            {
+                return;
+            }
+
+            bool pruned = false;
+            if (database.editorGraphPositions != null && database.editorGraphPositions.Any(e => e.card == null))
+            {
+                if (!pruned)
+                {
+                    Undo.RecordObject(database, "Prune Deleted Node Positions");
+                }
+
+                database.editorGraphPositions.RemoveAll(e => e.card == null);
+                pruned = true;
+            }
+
+            if (database.editorSpeakerPositions != null && database.editorSpeakerPositions.Any(e => e.speaker == null))
+            {
+                if (!pruned)
+                {
+                    Undo.RecordObject(database, "Prune Deleted Node Positions");
+                }
+
+                database.editorSpeakerPositions.RemoveAll(e => e.speaker == null);
+                pruned = true;
+            }
+
+            if (database.editorResourcePositions != null && database.editorResourcePositions.Any(e => e.resource == null))
+            {
+                if (!pruned)
+                {
+                    Undo.RecordObject(database, "Prune Deleted Node Positions");
+                }
+
+                database.editorResourcePositions.RemoveAll(e => e.resource == null);
+                pruned = true;
+            }
+
+            if (pruned)
+            {
+                EditorUtility.SetDirty(database);
+            }
+        }
+
         /// <summary>Creates and adds a <see cref="CardNode"/> for each card in the database, returning the ordered node list.</summary>
         private List<CardNode> CreateNodes(Dictionary<CardData, CardNode> nodesByCard)
         {
@@ -259,7 +301,10 @@ namespace Game.Scripts.Editor
 
                 bool isStartCard = database.startingCard == card;
                 CardNode node = new CardNode(card, isStartCard, this);
-                node.SetPosition(new Rect(ResolveNodePosition(card, i), DefaultNodeSize));
+                int column = i % GridColumns;
+                int row = i / GridColumns;
+                Vector2 gridPosition = new Vector2(column * GridSpacingX + 60, row * GridSpacingY + 60);
+                node.SetPosition(new Rect(ResolveNewOrSavedPosition(card, positionsByCard, SavePositionToDatabase, gridPosition), DefaultNodeSize));
 
                 AddElement(node);
                 nodeList.Add(node);
@@ -268,15 +313,6 @@ namespace Game.Scripts.Editor
             }
 
             return nodeList;
-        }
-
-        /// <summary>Returns the saved position for a card, or computes a grid-based fallback from its list index.</summary>
-        private Vector2 ResolveNodePosition(CardData card, int indexInList)
-        {
-            int column = indexInList % GridColumns;
-            int row = indexInList / GridColumns;
-            Vector2 gridPosition = new Vector2(column * GridSpacingX + 60, row * GridSpacingY + 60);
-            return ResolveNewOrSavedPosition(card, positionsByCard, SavePositionToDatabase, gridPosition);
         }
 
         /// <summary>Computes the center of the current viewport in content-space coordinates, used for placing newly created nodes.</summary>
@@ -294,7 +330,7 @@ namespace Game.Scripts.Editor
         private Vector2 ResolveNewOrSavedPosition<TAsset>(
             TAsset asset,
             Dictionary<TAsset, Vector2> savedPositions,
-            Action<TAsset, Vector2> savePosition,
+            Func<TAsset, Vector2, bool> savePosition,
             Vector2 fallbackPosition)
             where TAsset : UnityEngine.Object
         {
@@ -311,7 +347,6 @@ namespace Game.Scripts.Editor
                 return savedPosition;
             }
 
-            savePosition(asset, fallbackPosition);
             return fallbackPosition;
         }
 
@@ -381,18 +416,12 @@ namespace Game.Scripts.Editor
                 }
 
                 SpeakerNode speakerNode = new SpeakerNode(speaker);
-                Vector2 pos = ResolveSpeakerNodePosition(speaker, i);
+                Vector2 speakerFallback = new Vector2(-260, i * 210 + 60);
+                Vector2 pos = ResolveNewOrSavedPosition(speaker, positionsBySpeaker, SaveSpeakerPositionToDatabase, speakerFallback);
                 speakerNode.SetPosition(new Rect(pos, DefaultSpeakerNodeSize));
                 AddElement(speakerNode);
                 i++;
             }
-        }
-
-        /// <summary>Returns the saved position for a speaker, or a default left-column position based on list index.</summary>
-        private Vector2 ResolveSpeakerNodePosition(SpeakerData speaker, int indexInList)
-        {
-            Vector2 defaultPosition = new Vector2(-260, indexInList * 210 + 60);
-            return ResolveNewOrSavedPosition(speaker, positionsBySpeaker, SaveSpeakerPositionToDatabase, defaultPosition);
         }
 
         private static readonly Vector2 DefaultResourceNodeSize = new Vector2(240, 320);
@@ -414,18 +443,12 @@ namespace Game.Scripts.Editor
                 }
 
                 ResourceNode resourceNode = new ResourceNode(resource);
-                Vector2 pos = ResolveResourceNodePosition(resource, i);
+                Vector2 resourceFallback = new Vector2(-540, i * 340 + 60);
+                Vector2 pos = ResolveNewOrSavedPosition(resource, positionsByResource, SaveResourcePositionToDatabase, resourceFallback);
                 resourceNode.SetPosition(new Rect(pos, DefaultResourceNodeSize));
                 AddElement(resourceNode);
                 i++;
             }
-        }
-
-        /// <summary>Returns the saved position for a resource, or a default far-left-column position based on list index.</summary>
-        private Vector2 ResolveResourceNodePosition(ResourceData resource, int indexInList)
-        {
-            Vector2 defaultPosition = new Vector2(-540, indexInList * 340 + 60);
-            return ResolveNewOrSavedPosition(resource, positionsByResource, SaveResourcePositionToDatabase, defaultPosition);
         }
 
         /// <summary>Persists the positions of all moved graph elements (cards, speakers, resources) back to the database with undo support.</summary>
@@ -436,129 +459,174 @@ namespace Game.Scripts.Editor
                 return;
             }
 
+            bool anySaved = false;
             foreach (GraphElement element in movedElements)
             {
                 switch (element)
                 {
                     case CardNode cardNode when cardNode.Card != null:
-                        SavePositionToDatabase(cardNode.Card, cardNode.GetPosition().position);
+                        anySaved |= SavePositionToDatabase(cardNode.Card, cardNode.GetPosition().position);
                         break;
                     case SpeakerNode speakerNode when speakerNode.Speaker != null:
-                        SaveSpeakerPositionToDatabase(speakerNode.Speaker, speakerNode.GetPosition().position);
+                        anySaved |= SaveSpeakerPositionToDatabase(speakerNode.Speaker, speakerNode.GetPosition().position);
                         break;
                     case ResourceNode resourceNode when resourceNode.Data != null:
-                        SaveResourcePositionToDatabase(resourceNode.Data, resourceNode.GetPosition().position);
+                        anySaved |= SaveResourcePositionToDatabase(resourceNode.Data, resourceNode.GetPosition().position);
                         break;
                 }
             }
-        }
 
-        private void SavePositionToDatabase(CardData card, Vector2 position)
-        {
-            if (database == null || card == null)
+            if (anySaved)
             {
-                return;
-            }
-
-            if (HasUnchangedPosition(positionsByCard, card, position))
-            {
-                return;
-            }
-
-            database.editorGraphPositions ??= new List<NarrativeDatabase.CardGraphPosition>();
-            Undo.RecordObject(database, "Move Card Node");
-            bool changed = TrySavePosition(database.editorGraphPositions, positionsByCard, card, position,
-                e => e.card, (c, p) => new NarrativeDatabase.CardGraphPosition { card = c, position = p });
-            if (changed)
-            {
-                EditorUtility.SetDirty(database);
+                SchedulePositionAssetSave();
             }
         }
 
-        private void RemovePositionFromDatabase(CardData card)
+        // Collapses repeated move saves into one asset write at the end of the drag burst.
+        private static void SchedulePositionAssetSave()
         {
-            if (database?.editorGraphPositions == null || card == null)
-            {
-                return;
-            }
-
-            Undo.RecordObject(database, "Delete Card Node Position");
-            if (TryRemovePosition(database.editorGraphPositions, positionsByCard, card, e => e.card))
-            {
-                EditorUtility.SetDirty(database);
-            }
+            EditorApplication.delayCall -= SavePositionAssets;
+            EditorApplication.delayCall += SavePositionAssets;
         }
 
-        private void SaveSpeakerPositionToDatabase(SpeakerData speaker, Vector2 position)
+        private static void SavePositionAssets()
         {
-            if (database == null || speaker == null)
-            {
-                return;
-            }
-
-            if (HasUnchangedPosition(positionsBySpeaker, speaker, position))
-            {
-                return;
-            }
-
-            database.editorSpeakerPositions ??= new List<NarrativeDatabase.SpeakerGraphPosition>();
-            Undo.RecordObject(database, "Move Speaker Node");
-            bool changed = TrySavePosition(database.editorSpeakerPositions, positionsBySpeaker, speaker, position,
-                e => e.speaker, (s, p) => new NarrativeDatabase.SpeakerGraphPosition { speaker = s, position = p });
-            if (changed)
-            {
-                EditorUtility.SetDirty(database);
-            }
+            AssetDatabase.SaveAssets();
         }
 
-        private void RemoveSpeakerPositionFromDatabase(SpeakerData speaker)
+        private bool SaveAssetPosition<TAsset, TEntry>(
+            Func<List<TEntry>> getPositions,
+            Action<List<TEntry>> setPositions,
+            Dictionary<TAsset, Vector2> cache,
+            TAsset asset,
+            Vector2 position,
+            Func<TEntry, TAsset> getAsset,
+            Func<TAsset, Vector2, TEntry> makeEntry,
+            string undoName)
+            where TAsset : UnityEngine.Object
         {
-            if (database?.editorSpeakerPositions == null || speaker == null)
+            if (database == null || asset == null)
             {
-                return;
+                return false;
             }
 
-            Undo.RecordObject(database, "Delete Speaker Node Position");
-            if (TryRemovePosition(database.editorSpeakerPositions, positionsBySpeaker, speaker, e => e.speaker))
+            if (cache.TryGetValue(asset, out Vector2 existing) && existing == position)
+            {
+                return false;
+            }
+
+            List<TEntry> positions = getPositions();
+            if (positions == null)
+            {
+                positions = new List<TEntry>();
+                setPositions(positions);
+            }
+
+            Undo.RecordObject(database, undoName);
+            if (TrySavePosition(positions, cache, asset, position, getAsset, makeEntry))
             {
                 EditorUtility.SetDirty(database);
+                return true;
             }
+
+            return false;
         }
 
-        private void SaveResourcePositionToDatabase(ResourceData resource, Vector2 position)
+        private bool RemoveAssetPosition<TAsset, TEntry>(
+            List<TEntry> positions,
+            Dictionary<TAsset, Vector2> cache,
+            TAsset asset,
+            Func<TEntry, TAsset> getAsset,
+            string undoName)
+            where TAsset : UnityEngine.Object
         {
-            if (database == null || resource == null)
+            if (database == null || positions == null || asset == null)
             {
-                return;
+                return false;
             }
 
-            if (HasUnchangedPosition(positionsByResource, resource, position))
+            if (positions.FindIndex(e => getAsset(e) == asset) < 0)
             {
-                return;
+                return false;
             }
 
-            database.editorResourcePositions ??= new List<NarrativeDatabase.ResourceGraphPosition>();
-            Undo.RecordObject(database, "Move Resource Node");
-            bool changed = TrySavePosition(database.editorResourcePositions, positionsByResource, resource, position,
-                e => e.resource, (r, p) => new NarrativeDatabase.ResourceGraphPosition { resource = r, position = p });
-            if (changed)
+            Undo.RecordObject(database, undoName);
+            if (TryRemovePosition(positions, cache, asset, getAsset))
             {
                 EditorUtility.SetDirty(database);
+                return true;
             }
+
+            return false;
         }
 
-        private void RemoveResourcePositionFromDatabase(ResourceData resource)
+        private bool SavePositionToDatabase(CardData card, Vector2 position)
         {
-            if (database?.editorResourcePositions == null || resource == null)
-            {
-                return;
-            }
+            return SaveAssetPosition(
+                () => database.editorGraphPositions,
+                list => database.editorGraphPositions = list,
+                positionsByCard,
+                card,
+                position,
+                e => e.card,
+                (c, p) => new NarrativeDatabase.CardGraphPosition { card = c, position = p },
+                "Move Card Node");
+        }
 
-            Undo.RecordObject(database, "Delete Resource Node Position");
-            if (TryRemovePosition(database.editorResourcePositions, positionsByResource, resource, e => e.resource))
-            {
-                EditorUtility.SetDirty(database);
-            }
+        private bool RemovePositionFromDatabase(CardData card)
+        {
+            return RemoveAssetPosition(
+                database?.editorGraphPositions,
+                positionsByCard,
+                card,
+                e => e.card,
+                "Delete Card Node Position");
+        }
+
+        private bool SaveSpeakerPositionToDatabase(SpeakerData speaker, Vector2 position)
+        {
+            return SaveAssetPosition(
+                () => database.editorSpeakerPositions,
+                list => database.editorSpeakerPositions = list,
+                positionsBySpeaker,
+                speaker,
+                position,
+                e => e.speaker,
+                (s, p) => new NarrativeDatabase.SpeakerGraphPosition { speaker = s, position = p },
+                "Move Speaker Node");
+        }
+
+        private bool RemoveSpeakerPositionFromDatabase(SpeakerData speaker)
+        {
+            return RemoveAssetPosition(
+                database?.editorSpeakerPositions,
+                positionsBySpeaker,
+                speaker,
+                e => e.speaker,
+                "Delete Speaker Node Position");
+        }
+
+        private bool SaveResourcePositionToDatabase(ResourceData resource, Vector2 position)
+        {
+            return SaveAssetPosition(
+                () => database.editorResourcePositions,
+                list => database.editorResourcePositions = list,
+                positionsByResource,
+                resource,
+                position,
+                e => e.resource,
+                (r, p) => new NarrativeDatabase.ResourceGraphPosition { resource = r, position = p },
+                "Move Resource Node");
+        }
+
+        private bool RemoveResourcePositionFromDatabase(ResourceData resource)
+        {
+            return RemoveAssetPosition(
+                database?.editorResourcePositions,
+                positionsByResource,
+                resource,
+                e => e.resource,
+                "Delete Resource Node Position");
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -569,7 +637,7 @@ namespace Game.Scripts.Editor
             }
 
             Vector2 mousePos = evt.mousePosition;
-            Vector2 graphPos = contentViewContainer.WorldToLocal(mousePos);
+            Vector2 graphPos = this.ChangeCoordinatesTo(contentViewContainer, mousePos);
 
             evt.menu.AppendAction("Create Card", _ => window.CreateCardAt(graphPos));
             evt.menu.AppendAction("Create Speaker", _ => window.CreateSpeakerAt(graphPos));
@@ -867,11 +935,15 @@ namespace Game.Scripts.Editor
             {
                 Undo.RecordObject(database, "Clear Starting Card");
                 database.startingCard = null;
+                EditorUtility.SetDirty(database);
             }
 
-            Undo.RecordObject(database, "Remove Card From Database");
-            database.cards.Remove(cardToDelete);
-            EditorUtility.SetDirty(database);
+            if (database.cards.Contains(cardToDelete))
+            {
+                Undo.RecordObject(database, "Remove Card From Database");
+                database.cards.Remove(cardToDelete);
+                EditorUtility.SetDirty(database);
+            }
         }
     }
 }

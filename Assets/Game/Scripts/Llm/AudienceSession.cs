@@ -1,30 +1,43 @@
+using System;
 using System.Collections.Generic;
 
 namespace Game.Scripts.Llm
 {
-    /// <summary>Shared conversation state for one LLM audience: the system prompt plus the Groq message history.</summary>
-    /// <remarks>Subclasses add their audience-specific state on top (petition transcript, turn budget, proposals).
-    /// The opening line is recorded as the first assistant turn so every later request sees how the audience began.</remarks>
-    public abstract class AudienceSession
+    /// <summary>Conversation state for one LLM audience: system prompt, message history, turn budget, proposals, and transcript.</summary>
+    /// <remarks>Petition audiences use the budget, proposal, and transcript state; chat audiences run with
+    /// unlimited turns and plain-text turns only. The opening line is recorded as the first assistant
+    /// turn so every later request sees how the audience began.</remarks>
+    public class AudienceSession
     {
-        /// <summary>Full Groq conversation history (alternating user/assistant turns) sent with every submission.</summary>
         private readonly List<GroqApiMessage> history = new List<GroqApiMessage>();
-        /// <summary>System prompt built once per audience; reused verbatim for every request.</summary>
         private string systemPrompt;
+        private readonly List<string> transcript = new List<string>();
+        private string pendingPlayerInput;
 
-        /// <summary>True once the opening line has been recorded, so later requests include it in history.</summary>
         public bool HasOpening { get; private set; }
 
-        /// <summary>Stores the system prompt for the whole audience; call once before building any messages.</summary>
-        /// <param name="prompt">Complete system prompt assembled by <see cref="SpeakerPromptBuilder"/>.</param>
+        /// <summary>True when turns never run out; chat audiences set this, petition audiences do not.</summary>
+        public bool UnlimitedTurns { get; }
+        /// <summary>True when the audience ends with a proposal confirmation; false for plain-chat audiences.</summary>
+        public bool ExpectsProposal { get; }
+        public int TurnsRemaining { get; private set; }
+        public bool TurnsExhausted => !UnlimitedTurns && TurnsRemaining <= 0;
+
+        public PetitionResolution LastProposal { get; private set; }
+        public bool AwaitingConfirmation => LastProposal != null;
+
+        public AudienceSession(int turnBudget, bool unlimitedTurns, bool expectsProposal)
+        {
+            TurnsRemaining = turnBudget < 1 ? 1 : turnBudget;
+            UnlimitedTurns = unlimitedTurns;
+            ExpectsProposal = expectsProposal;
+        }
+
         public void Initialize(string prompt)
         {
             systemPrompt = prompt;
         }
 
-        /// <summary>Builds the message list for the opening line request: the system prompt plus the seed as the first user turn.</summary>
-        /// <param name="seed">Situational seed prompting the speaker to open the audience.</param>
-        /// <returns>A message list ready for the <see cref="LlmReactionClient"/> request methods.</returns>
         public List<GroqApiMessage> BuildOpeningMessages(string seed)
         {
             return new List<GroqApiMessage>
@@ -34,9 +47,6 @@ namespace Game.Scripts.Llm
             };
         }
 
-        /// <summary>Builds the complete message list for the next API call: stored system prompt, committed history, and the new ruler input.</summary>
-        /// <param name="playerInput">The ruler's latest input for this turn.</param>
-        /// <returns>A message list ready for the <see cref="LlmReactionClient"/> request methods.</returns>
         protected List<GroqApiMessage> BuildNextTurnMessages(string playerInput)
         {
             List<GroqApiMessage> messages = new List<GroqApiMessage>(history.Count + 2)
@@ -48,21 +58,76 @@ namespace Game.Scripts.Llm
             return messages;
         }
 
-        /// <summary>Commits the speaker's opening line as the first assistant turn so later requests know how the audience began.</summary>
-        /// <param name="rawOpening">Raw assistant message content stored verbatim in conversation history.</param>
         protected void RecordOpeningInHistory(string rawOpening)
         {
             history.Add(new GroqApiMessage { role = "assistant", content = rawOpening });
             HasOpening = true;
         }
 
-        /// <summary>Commits a completed audience turn to history as the next user/assistant pair.</summary>
-        /// <param name="playerInput">The ruler's input for this turn.</param>
-        /// <param name="assistantContent">Raw assistant message content stored verbatim in conversation history.</param>
         protected void RecordTurnInHistory(string playerInput, string assistantContent)
         {
             history.Add(new GroqApiMessage { role = "user", content = playerInput });
             history.Add(new GroqApiMessage { role = "assistant", content = assistantContent });
         }
+
+        public void RecordOpening(string rawOpening, string openingReaction)
+        {
+            RecordOpeningInHistory(rawOpening);
+            if (!string.IsNullOrWhiteSpace(openingReaction))
+            {
+                transcript.Add($"Petitioner: {openingReaction.Trim()}");
+            }
+        }
+
+        public void RecordOpening(string rawOpening)
+        {
+            RecordOpeningInHistory(rawOpening);
+        }
+
+        public List<GroqApiMessage> BuildMessagesForSubmission(string playerInput)
+        {
+            LastProposal = null;
+            pendingPlayerInput = playerInput;
+            return BuildNextTurnMessages(playerInput);
+        }
+
+        public List<GroqApiMessage> BuildTurnMessages(string playerInput)
+        {
+            return BuildNextTurnMessages(playerInput);
+        }
+
+        /// <param name="detectSpam">When true, only deducts a turn if the resolution is classified as spam.</param>
+        public void RecordReply(PetitionResolution resolution, string rawContent, bool detectSpam = false)
+        {
+            RecordTurnInHistory(pendingPlayerInput, rawContent);
+            transcript.Add($"Ruler: {pendingPlayerInput}");
+            pendingPlayerInput = null;
+
+            string reply = resolution != null && !string.IsNullOrWhiteSpace(resolution.reaction)
+                ? resolution.reaction
+                : null;
+            if (reply != null)
+            {
+                transcript.Add($"Petitioner: {reply}");
+            }
+
+            bool shouldDeduct = !UnlimitedTurns && (!detectSpam || (resolution != null && resolution.isSpam));
+            if (shouldDeduct)
+            {
+                TurnsRemaining = Math.Max(0, TurnsRemaining - 1);
+            }
+
+            if (resolution != null && resolution.IsProposal)
+            {
+                LastProposal = resolution;
+            }
+        }
+
+        public void RecordTurn(string playerInput, string reply)
+        {
+            RecordTurnInHistory(playerInput, reply);
+        }
+
+        public IReadOnlyList<string> GetTranscript() => transcript;
     }
 }

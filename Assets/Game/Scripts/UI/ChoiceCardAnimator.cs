@@ -140,6 +140,12 @@ namespace Game.Scripts.UI
             }
         }
 
+        private void OnDisable()
+        {
+            StopDismiss();
+            dismissing = false;
+        }
+
         private void Update()
         {
             if (dismissing || Mathf.Approximately(reveal, target))

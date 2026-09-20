@@ -75,6 +75,16 @@ namespace Game.Scripts.Llm
             IReadOnlyList<ResourceData> resources, SpeakerData speaker, string gameStateSnapshot,
             string seed, GameLanguage language, string fallbackText, Action<string> onLine)
         {
+            RequestSpeakerLine(client, templates, resources,
+                speaker != null ? speaker.llmPersonaPrompt : null,
+                gameStateSnapshot, seed, language, fallbackText, onLine);
+        }
+
+        /// <summary>Persona-string overload for generated commoners that have no SpeakerData.</summary>
+        public static void RequestSpeakerLine(LlmReactionClient client, LlmPromptTemplates templates,
+            IReadOnlyList<ResourceData> resources, string personaPrompt, string gameStateSnapshot,
+            string seed, GameLanguage language, string fallbackText, Action<string> onLine)
+        {
             if (client == null)
             {
                 Debug.LogWarning("[LlmFallbackText] LLM client is missing; showing fallback line.");
@@ -83,7 +93,7 @@ namespace Game.Scripts.Llm
             }
 
             string fullSystemPrompt = SpeakerPromptBuilder.BuildPersonaPrompt(
-                speaker, gameStateSnapshot, seed, templates, language, resources);
+                personaPrompt, gameStateSnapshot, seed, templates, language, resources);
             string userMessage = templates != null ? templates.singleTurnUserMessage : null;
 
             client.RequestReaction(fullSystemPrompt, userMessage, language, onLine, error =>

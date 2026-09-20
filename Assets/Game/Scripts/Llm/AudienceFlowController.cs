@@ -8,54 +8,39 @@ using UnityEngine;
 
 namespace Game.Scripts.Llm
 {
-    /// <summary>Shared skeleton for the audience flow controllers: constructor dependencies, speaker lifecycle
-    /// (defined or generated commoner), kingdom-state snapshots, resource-catalog access, failure cooldowns, and audience teardown.</summary>
-    /// <remarks>Each subclass runs one LLM audience on a card: <see cref="PetitionFlowController"/> adds the
-    /// resource state and the proposal/exhaustion logic, <see cref="ChatFlowController"/> adds plain chat turns.</remarks>
-    public abstract class AudienceFlowController
+    /// <summary>Runs one LLM audience on a petition or chat card: opening line, ruler submissions,
+    /// proposal confirmation or plain-chat end, turn exhaustion with a closing line, and failure convert.</summary>
+    /// <remarks>Constructed and owned by <see cref="GameManager"/>; narrative advancement after confirmation
+    /// and global choice input remain with GameManager, reached via the delegates passed to the constructor.
+    /// Card mode flags are read once in <see cref="ShowAudienceCard"/> and stored on the session;
+    /// nothing below re-reads them.</remarks>
+    public class AudienceFlowController
     {
-        protected readonly CardView cardView;
-        protected readonly LlmReactionClient llmReactionClient;
-        protected readonly LlmSettings llmSettings;
-        protected readonly NarrativeDatabase database;
-        protected readonly NarrativeRunner narrativeRunner;
-        protected readonly PlayerHistoryTracker historyTracker;
-        protected readonly Func<GameLanguage> currentLanguage;
-        protected readonly Action<bool> setInputEnabled;
-        protected readonly Action beginConfirmAdvance;
-        protected readonly Action<float> scheduleSubmitReenable;
+        private readonly CardView cardView;
+        private readonly LlmReactionClient llmReactionClient;
+        private readonly LlmSettings llmSettings;
+        private readonly NarrativeDatabase database;
+        private readonly NarrativeRunner narrativeRunner;
+        private readonly ResourceState resourceState;
+        private readonly PlayerHistoryTracker historyTracker;
+        private readonly Func<GameLanguage> currentLanguage;
+        private readonly Action<bool> setInputEnabled;
+        private readonly Action beginConfirmAdvance;
+        private readonly Action<float> scheduleSubmitReenable;
 
-        /// <summary>The speaker currently presenting the audience; a runtime commoner when generated.</summary>
-        protected SpeakerData currentSpeaker;
-        /// <summary>True when <see cref="currentSpeaker"/> was generated at runtime and must be destroyed on teardown.</summary>
-        protected bool currentSpeakerIsTemp;
+        private SpeakerData currentSpeaker;
+        private bool isGeneratedCommoner;
+        private AudienceSession currentSession;
 
-        /// <summary>The active conversation session for the current audience; null when no audience is running.</summary>
-        protected AudienceSession Session { get; set; }
+        private int generation;
 
-        /// <summary>Prompt templates from the narrative database; null when the database or templates are unassigned.</summary>
-        protected LlmPromptTemplates Templates => database != null ? database.promptTemplates : null;
-
-        /// <summary>Maximum absolute resource delta communicated to the model in petition prompts.</summary>
-        protected int PetitionResourceClampMagnitude =>
-            llmSettings != null ? llmSettings.petitionResourceClampMagnitude : LlmSettings.DefaultPetitionResourceClampMagnitude;
-
-        /// <summary>Recent ruler decisions included in reaction/chat snapshots.</summary>
-        protected int ReactionHistoryCount => llmSettings != null ? llmSettings.reactionHistoryCount : LlmSettings.DefaultReactionHistoryCount;
-
-        /// <summary>Prior petition turns carried forward in petition conversations.</summary>
-        protected int PetitionHistoryCount => llmSettings != null ? llmSettings.petitionHistoryCount : LlmSettings.DefaultPetitionHistoryCount;
-
-        /// <summary>Completed past petitions appended as additional context.</summary>
-        protected int PastPetitionChatCount => llmSettings != null ? llmSettings.pastPetitionChatCount : LlmSettings.DefaultPastPetitionChatCount;
-
-        /// <summary>Initializes the shared controller dependencies; called by subclass constructors.</summary>
-        protected AudienceFlowController(
+        public AudienceFlowController(
             CardView cardView,
             LlmReactionClient llmReactionClient,
             LlmSettings llmSettings,
             NarrativeDatabase database,
             NarrativeRunner narrativeRunner,
+            ResourceState resourceState,
             PlayerHistoryTracker historyTracker,
             Func<GameLanguage> currentLanguage,
             Action<bool> setInputEnabled,
@@ -67,6 +52,7 @@ namespace Game.Scripts.Llm
             this.llmSettings = llmSettings;
             this.database = database;
             this.narrativeRunner = narrativeRunner;
+            this.resourceState = resourceState;
             this.historyTracker = historyTracker;
             this.currentLanguage = currentLanguage;
             this.setInputEnabled = setInputEnabled;
@@ -74,61 +60,406 @@ namespace Game.Scripts.Llm
             this.scheduleSubmitReenable = scheduleSubmitReenable;
         }
 
-        /// <summary>Returns the card's assigned speaker, or creates a runtime commoner; sets <see cref="currentSpeakerIsTemp"/>.</summary>
-        /// <param name="card">Card being presented.</param>
-        /// <remarks>The caller must destroy generated speakers via <see cref="CleanupAudienceSpeaker"/>.</remarks>
-        protected SpeakerData ResolveSpeaker(CardData card)
+        /// <summary>Presents the audience card: resolves the speaker, opens a new session and requests the opening line.</summary>
+        /// <param name="card">Petition or chat card being presented; chat wins when both flags are set.</param>
+        public void ShowAudienceCard(CardData card)
         {
-            if (card.petitionerSource == PetitionerSource.DefinedSpeaker && card.speaker != null)
+            NextAudience();
+            bool isChat = card != null && card.isChatCard;
+            currentSpeaker = ResolveSpeaker(card);
+            LlmPromptTemplates templates = Templates;
+
+            if (isChat)
             {
-                currentSpeakerIsTemp = false;
-                return card.speaker;
+                cardView.ShowChat(card, currentSpeaker);
+                cardView.SetPetitionConfirmButtonLabel(LlmFallbackText.ChatEndLabel(templates, currentLanguage()));
+            }
+            else
+            {
+                cardView.ShowPetition(card, currentSpeaker);
+                cardView.SetPetitionConfirmButtonLabel(LlmFallbackText.PetitionConfirmLabel(templates, currentLanguage()));
             }
 
-            currentSpeakerIsTemp = true;
-            return TempSpeakerFactory.CreateCommoner(Templates);
-        }
+            setInputEnabled(false);
+            currentSession = new AudienceSession(
+                isChat ? 0 : (llmSettings != null ? llmSettings.ResolvePetitionTurnLimit() : LlmSettings.DefaultPetitionTurnLimit),
+                unlimitedTurns: isChat,
+                expectsProposal: !isChat);
+            string snapshot = GetSnapshotOrDefault(isChat ? ReactionHistoryCount : PetitionHistoryCount, isChat ? 0 : PastPetitionChatCount);
+            string seed = isChat ? card.EffectiveChatSeed(templates) : card.EffectivePetitionSeed(templates);
 
-        /// <summary>Destroys the temporary audience speaker, if one was generated.</summary>
-        protected void CleanupAudienceSpeaker()
-        {
-            if (currentSpeakerIsTemp && currentSpeaker != null)
+            if (llmReactionClient == null)
             {
-                UnityEngine.Object.Destroy(currentSpeaker);
+                Debug.LogWarning("[AudienceFlowController] llmReactionClient is missing; showing fallback opening line.", cardView);
+                DeliverAudienceOpening(isChat ? LlmFallbackText.Reaction(templates, currentLanguage()) : LlmFallbackText.PetitionOpening(templates, currentLanguage()), null, null);
+                return;
             }
 
-            currentSpeaker = null;
-            currentSpeakerIsTemp = false;
+            int openingGeneration = CurrentGeneration;
+            if (!isChat || isGeneratedCommoner)
+            {
+                string systemPrompt = isGeneratedCommoner
+                    ? SpeakerPromptBuilder.BuildPetitionTurnPrompt(
+                        Templates != null ? Templates.defaultCommonerPersona : string.Empty,
+                        snapshot,
+                        situationalPrompt: null,
+                        GetResourceCatalog(),
+                        PetitionResourceClampMagnitude,
+                        templates,
+                        currentLanguage())
+                    : SpeakerPromptBuilder.BuildPetitionTurnPrompt(
+                        currentSpeaker,
+                        snapshot,
+                        situationalPrompt: null,
+                        GetResourceCatalog(),
+                        PetitionResourceClampMagnitude,
+                        templates,
+                        currentLanguage());
+                currentSession.Initialize(systemPrompt);
+                List<GroqApiMessage> openingMessages = currentSession.BuildOpeningMessages(seed);
+                string fallbackLine = isChat
+                    ? LlmFallbackText.Reaction(templates, currentLanguage())
+                    : LlmFallbackText.PetitionOpening(templates, currentLanguage());
+                llmReactionClient.RequestPetitionTurn(
+                    openingMessages,
+                    currentLanguage(),
+                    (resolution, rawContent) =>
+                    {
+                        if (openingGeneration != CurrentGeneration)
+                        {
+                            return;
+                        }
+
+                        DeliverAudienceOpening(resolution.reaction, rawContent, resolution.speakerName);
+                    },
+                    error =>
+                    {
+                        if (openingGeneration != CurrentGeneration)
+                        {
+                            return;
+                        }
+
+                        Debug.LogWarning($"[AudienceFlowController] Audience opening request failed: {error}");
+                        DeliverAudienceOpening(fallbackLine, null, null);
+                    });
+                return;
+            }
+
+            string chatPrompt = SpeakerPromptBuilder.BuildChatTurnPrompt(currentSpeaker, snapshot, templates, currentLanguage());
+            currentSession.Initialize(chatPrompt);
+            llmReactionClient.RequestChatTurn(
+                currentSession.BuildOpeningMessages(seed),
+                currentLanguage(),
+                line =>
+                {
+                    if (openingGeneration != CurrentGeneration)
+                    {
+                        return;
+                    }
+
+                    DeliverAudienceOpening(line, line, null);
+                },
+                error =>
+                {
+                    if (openingGeneration != CurrentGeneration)
+                    {
+                        return;
+                    }
+
+                    Debug.LogWarning($"[AudienceFlowController] Audience opening request failed: {error}");
+                    DeliverAudienceOpening(LlmFallbackText.Reaction(templates, currentLanguage()), null, null);
+                });
         }
 
-        /// <summary>Ends the active audience, dropping the session and any temporary speaker.</summary>
-        protected void EndAudience()
+        public void HandleAudienceSubmitted(string playerInput)
         {
-            Session = null;
+            if (currentSession == null || !currentSession.HasOpening)
+            {
+                return;
+            }
+
+            if (currentSession.ExpectsProposal && currentSession.TurnsExhausted)
+            {
+                return;
+            }
+
+            if (llmReactionClient == null)
+            {
+                Debug.LogWarning("[AudienceFlowController] llmReactionClient is missing; audience turn cannot be sent.", cardView);
+                OnAudienceTurnFailed(LlmRequestError.NotConfigured, CurrentGeneration);
+                return;
+            }
+
+            cardView.SetPetitionSubmitting(true);
+
+            int requestGeneration = CurrentGeneration;
+            if (currentSession.ExpectsProposal)
+            {
+                List<GroqApiMessage> messages = currentSession.BuildMessagesForSubmission(playerInput);
+                llmReactionClient.RequestPetitionTurn(messages, currentLanguage(),
+                    (result, rawContent) => OnPetitionTurnResolved(result, rawContent, requestGeneration),
+                    error => OnAudienceTurnFailed(error, requestGeneration));
+                return;
+            }
+
+            List<GroqApiMessage> chatMessages = currentSession.BuildTurnMessages(playerInput);
+            llmReactionClient.RequestChatTurn(chatMessages, currentLanguage(), reply =>
+            {
+                if (requestGeneration != CurrentGeneration || currentSession == null)
+                {
+                    return;
+                }
+
+                currentSession.RecordTurn(playerInput, reply);
+                cardView.SetPetitionSubmitting(false);
+                cardView.ShowChatReply(reply);
+            }, error => OnAudienceTurnFailed(error, requestGeneration));
+        }
+
+        /// <summary>Handles the ruler confirming a proposal or ending a chat: applies resource deltas for proposals, then advances the narrative.</summary>
+        public void HandleAudienceConfirmed()
+        {
+            if (currentSession == null)
+            {
+                return;
+            }
+
+            if (currentSession.ExpectsProposal)
+            {
+                if (!currentSession.AwaitingConfirmation)
+                {
+                    return;
+                }
+
+                PetitionResolution proposal = currentSession.LastProposal;
+                PetitionApplyResult applyResult = PetitionResolutionApplier.Apply(
+                    proposal, database?.resourceCatalog, PetitionResourceClampMagnitude);
+
+                if (applyResult.resourceChange.HasValue)
+                {
+                    resourceState.Apply(applyResult.resourceChange.Value);
+                }
+
+                if (applyResult.historyTag != null && historyTracker != null)
+                {
+                    historyTracker.RecordHistoryTag(applyResult.historyTag);
+                }
+
+                if (historyTracker != null)
+                {
+                    historyTracker.RecordPetitionTranscript(currentSession.GetTranscript());
+                }
+            }
+
+            EndAudience();
+            cardView.SetPetitionSubmitting(true);
+            beginConfirmAdvance();
+        }
+
+        /// <summary>Cancels the active audience so late callbacks are ignored; call on restart or card change.</summary>
+        public void Cancel()
+        {
+            generation++;
+            EndAudience();
+        }
+
+        public void CleanupSpeaker()
+        {
             CleanupAudienceSpeaker();
         }
 
-        /// <summary>Returns the kingdom-state snapshot for prompts, or the fallback status line when no tracker exists.</summary>
-        /// <param name="narrativeHistoryEntryCount">Recent narrative history entries to include.</param>
-        /// <param name="petitionTranscriptCount">Recent petition transcripts to include.</param>
-        protected string GetSnapshotOrDefault(int narrativeHistoryEntryCount, int petitionTranscriptCount)
+        /// <summary>Identity of the current audience; request callbacks capture it and drop stale responses.</summary>
+        private int CurrentGeneration => generation;
+
+        /// <summary>Starts a new audience identity; call when presenting a card so prior callbacks are ignored.</summary>
+        private void NextAudience()
+        {
+            generation++;
+        }
+
+        private LlmPromptTemplates Templates => database != null ? database.promptTemplates : null;
+
+        private int PetitionResourceClampMagnitude =>
+            llmSettings != null ? llmSettings.petitionResourceClampMagnitude : LlmSettings.DefaultPetitionResourceClampMagnitude;
+
+        private int ReactionHistoryCount => llmSettings != null ? llmSettings.reactionHistoryCount : LlmSettings.DefaultReactionHistoryCount;
+
+        private int PetitionHistoryCount => llmSettings != null ? llmSettings.petitionHistoryCount : LlmSettings.DefaultPetitionHistoryCount;
+
+        private int PastPetitionChatCount => llmSettings != null ? llmSettings.pastPetitionChatCount : LlmSettings.DefaultPastPetitionChatCount;
+
+        /// <remarks>Generated commoners need no SpeakerData: null is returned and the default
+        /// commoner persona plus the model's speakerName string are used instead.</remarks>
+        private SpeakerData ResolveSpeaker(CardData card)
+        {
+            if (card != null && (card.isPetitionCard || card.isChatCard) &&
+                card.petitionerSource == PetitionerSource.GeneratedCommoner)
+            {
+                isGeneratedCommoner = true;
+                return null;
+            }
+
+            isGeneratedCommoner = false;
+            return card != null ? card.speaker : null;
+        }
+
+        private void CleanupAudienceSpeaker()
+        {
+            currentSpeaker = null;
+            isGeneratedCommoner = false;
+        }
+
+        private void EndAudience()
+        {
+            currentSession = null;
+            CleanupAudienceSpeaker();
+        }
+
+        public string GetSnapshotOrDefault(int narrativeHistoryEntryCount, int petitionTranscriptCount)
         {
             return historyTracker != null
                 ? historyTracker.GetSnapshot(narrativeHistoryEntryCount, petitionTranscriptCount, currentLanguage())
                 : FallbackStrings.KingdomStatusUnknown(currentLanguage());
         }
 
-        // Resource catalog used by prompt building; null when the database or catalog is unassigned.
-        protected IReadOnlyList<ResourceData> GetResourceCatalog()
+        /// <summary>Snapshot for single-turn reaction and warning prompts: recent decisions plus past petitions.</summary>
+        public string GetReactionSnapshot()
+        {
+            return GetSnapshotOrDefault(ReactionHistoryCount, PastPetitionChatCount);
+        }
+
+        public IReadOnlyList<ResourceData> GetResourceCatalog()
         {
             return database != null && database.resourceCatalog != null
                 ? database.resourceCatalog.resources
                 : null;
         }
 
+        // Defined speakers keep their curated localized display names; the model's speakerName
+        // must never clobber them (it once replaced e.g. "التاجر" with "Silvio, the Guild Master").
+        // Generated commoners have no SpeakerData, so the name is shown directly via CardView.
+        private void DeliverAudienceOpening(string openingLine, string rawHistoryContent, string speakerName)
+        {
+            if (currentSession == null)
+            {
+                return;
+            }
+
+            if (isGeneratedCommoner)
+            {
+                cardView.SetGeneratedSpeakerName(speakerName);
+            }
+
+            if (currentSession.ExpectsProposal)
+            {
+                string line = !string.IsNullOrWhiteSpace(openingLine) ? openingLine : string.Empty;
+                currentSession.RecordOpening(rawHistoryContent ?? line, line);
+                cardView.SetDescriptionText(line);
+                cardView.ShowPetitionInput();
+                cardView.UpdatePetitionDots(currentSession.TurnsRemaining);
+                return;
+            }
+
+            string chatLine = openingLine ?? string.Empty;
+            currentSession.RecordOpening(rawHistoryContent ?? chatLine);
+            cardView.ShowChatReply(chatLine);
+        }
+
+        private bool IsDetectSpamActive => llmSettings != null ? llmSettings.IsDetectSpamEnabled() : LlmKeyStore.HasActiveKey;
+
+        private void OnPetitionTurnResolved(PetitionResolution result, string rawContent, int requestGeneration)
+        {
+            if (requestGeneration != CurrentGeneration || currentSession == null)
+            {
+                return;
+            }
+
+            if (result == null || string.IsNullOrWhiteSpace(result.reaction))
+            {
+                OnAudienceTurnFailed(LlmRequestError.EmptyResponse, requestGeneration);
+                return;
+            }
+
+            currentSession.RecordReply(result, rawContent, IsDetectSpamActive);
+            cardView.SetPetitionSubmitting(false);
+
+            if (result.IsProposal)
+            {
+                cardView.ShowPetitionProposal(result.reaction);
+                cardView.UpdatePetitionDots(currentSession.TurnsRemaining);
+                return;
+            }
+
+            if (currentSession.TurnsExhausted)
+            {
+                CardData currentCard = narrativeRunner.CurrentCard;
+                SpeakerData speaker = currentSpeaker != null ? currentSpeaker : (currentCard != null ? currentCard.speaker : null);
+                HandlePetitionTurnsExhausted(currentCard, speaker, isGeneratedCommoner);
+                return;
+            }
+
+            cardView.ShowPetitionDeliberation(result.reaction);
+            cardView.UpdatePetitionDots(currentSession.TurnsRemaining);
+        }
+
+        private void HandlePetitionTurnsExhausted(CardData card, SpeakerData speaker, bool generatedCommoner = false)
+        {
+            cardView.UpdatePetitionDots(0);
+            cardView.SetPetitionSubmitting(true);
+
+            LlmPromptTemplates templates = Templates;
+            string seed = templates != null ? templates.petitionClosingSeedPrompt : string.Empty;
+
+            if (generatedCommoner)
+            {
+                LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
+                    Templates != null ? Templates.defaultCommonerPersona : string.Empty,
+                    GetSnapshotOrDefault(PetitionHistoryCount, PastPetitionChatCount), seed, currentLanguage(),
+                    LlmFallbackText.PetitionClosing(templates, currentLanguage()),
+                    closingLine => FinalizePetitionExhaustion(card, closingLine));
+                return;
+            }
+
+            LlmFallbackText.RequestSpeakerLine(llmReactionClient, templates, GetResourceCatalog(),
+                speaker, GetSnapshotOrDefault(PetitionHistoryCount, PastPetitionChatCount), seed, currentLanguage(),
+                LlmFallbackText.PetitionClosing(templates, currentLanguage()),
+                closingLine => FinalizePetitionExhaustion(card, closingLine));
+        }
+
+        private void FinalizePetitionExhaustion(CardData card, string closingLine)
+        {
+            historyTracker?.RecordPetitionTranscript(currentSession?.GetTranscript());
+            EndAudience();
+            cardView.SetPetitionSubmitting(false);
+            cardView.ConvertPetitionToNormalChoices(card, closingLine);
+            setInputEnabled(true);
+        }
+
+        private void OnAudienceTurnFailed(LlmRequestError error, int requestGeneration)
+        {
+            if (requestGeneration != CurrentGeneration || currentSession == null)
+            {
+                return;
+            }
+
+            if (!currentSession.ExpectsProposal)
+            {
+                OnAudienceFailed("Chat turn failed", error);
+                return;
+            }
+
+            Debug.LogWarning($"[AudienceFlowController] Petition turn failed, converting to choice: {error}");
+            CardData card = narrativeRunner.CurrentCard;
+            historyTracker?.RecordPetitionTranscript(currentSession.GetTranscript());
+            EndAudience();
+            cardView.SetPetitionSubmitting(false);
+            cardView.ConvertPetitionToNormalChoices(card, LlmFallbackText.PetitionClosing(Templates, currentLanguage()));
+            setInputEnabled(true);
+        }
+
         // Applies a brief cooldown before re-enabling the submit button to prevent rapid-fire retries
         // that could compound rate-limiting or error states.
-        protected void OnAudienceFailed(string failureDescription, LlmRequestError error)
+        private void OnAudienceFailed(string failureDescription, LlmRequestError error)
         {
             Debug.LogWarning($"[{GetType().Name}] {failureDescription}: {error}");
             bool isRateLimited = error == LlmRequestError.RateLimited;

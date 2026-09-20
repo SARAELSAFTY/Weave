@@ -55,6 +55,27 @@ namespace Game.Scripts.Llm
         /// single-sourcing the runtime const from the ScriptableObject would couple them, so both sides carry the note.</remarks>
         internal const string DefaultSingleTurnUserMessage = "Respond to the situation above.";
 
+        private readonly List<Coroutine> pendingRequests = new List<Coroutine>();
+
+        /// <summary>Stops every in-flight request, probe, and validation so stale callbacks never land after restart or card change.</summary>
+        public void CancelPendingRequests()
+        {
+            foreach (Coroutine pending in pendingRequests)
+            {
+                if (pending != null)
+                {
+                    StopCoroutine(pending);
+                }
+            }
+
+            pendingRequests.Clear();
+        }
+
+        private void OnDisable()
+        {
+            CancelPendingRequests();
+        }
+
         /// <summary>Sends a single-turn reaction request and returns the cleaned response text via callback.</summary>
         /// <param name="systemPrompt">System message defining character voice and format constraints.</param>
         /// <param name="singleTurnUserMessage">User message describing the situation to react to; may be null or empty.</param>
@@ -69,7 +90,21 @@ namespace Game.Scripts.Llm
                 return;
             }
 
-            StartCoroutine(RequestRoutine(systemPrompt, singleTurnUserMessage, language, onSuccess, onFailure, maxTokensOverride));
+            TrackRequest(RequestRoutine(systemPrompt, singleTurnUserMessage, language, onSuccess, onFailure, maxTokensOverride));
+        }
+
+        private Coroutine TrackRequest(IEnumerator routine)
+        {
+            Coroutine handle = null;
+            handle = StartCoroutine(RunTracked(routine, () => pendingRequests.Remove(handle)));
+            pendingRequests.Add(handle);
+            return handle;
+        }
+
+        private static IEnumerator RunTracked(IEnumerator routine, Action onDone)
+        {
+            yield return routine;
+            onDone?.Invoke();
         }
 
         /// <summary>Sends a multi-turn petition request with full conversation history and returns the parsed resolution.</summary>
@@ -85,7 +120,7 @@ namespace Game.Scripts.Llm
                 return;
             }
 
-            StartCoroutine(RequestPetitionRoutine(messages, language, onSuccess, onFailure, maxTokensOverride));
+            TrackRequest(RequestPetitionRoutine(messages, language, onSuccess, onFailure, maxTokensOverride));
         }
 
         /// <summary>Sends a multi-turn chat request with full conversation history and returns the cleaned plain-text reply.</summary>
@@ -101,7 +136,7 @@ namespace Game.Scripts.Llm
                 return;
             }
 
-            StartCoroutine(RequestChatRoutine(messages, language, onSuccess, onFailure, maxTokensOverride));
+            TrackRequest(RequestChatRoutine(messages, language, onSuccess, onFailure, maxTokensOverride));
         }
 
         private bool TryValidateConfig(Action<LlmRequestError> onFailure)
@@ -322,7 +357,7 @@ namespace Game.Scripts.Llm
                 return;
             }
 
-            StartCoroutine(ValidateApiKeyRoutine(candidateKey, onResult));
+            TrackRequest(ValidateApiKeyRoutine(candidateKey, onResult));
         }
 
         private IEnumerator ValidateApiKeyRoutine(string candidateKey, Action<ApiKeyValidationResult> onResult)
@@ -393,7 +428,7 @@ namespace Game.Scripts.Llm
             }
 
             probeInFlight = true;
-            StartCoroutine(ProbeSharedServiceRoutine());
+            TrackRequest(ProbeSharedServiceRoutine());
         }
 
         private IEnumerator ProbeSharedServiceRoutine()
@@ -554,11 +589,56 @@ namespace Game.Scripts.Llm
             return content.Trim('"', '\'', ' ');
         }
 
+        // Hard UI limit for the fixed card description box (610x280, autosize 18-55).
+        // Your screenshot case was 56 words / 284 chars and already overflowed, so the
+        // clamp sits below that at 280 chars. Prompt caps (55 words) are the primary
+        // fix; this only backstops a model that ignores them, cutting to the last
+        // complete sentence so the card never ends mid-word like "in a".
+        internal const int MaxPetitionReactionChars = 280;
+
+        internal static string ClampPetitionReaction(string reaction, int maxChars = MaxPetitionReactionChars)
+        {
+            if (string.IsNullOrEmpty(reaction) || reaction.Length <= maxChars)
+            {
+                return reaction;
+            }
+
+            string cut = reaction.Substring(0, maxChars);
+            int lastSentenceEnd = cut.LastIndexOfAny(new[] { '.', '!', '?', '\u061F' });
+            // Only use the sentence boundary if it keeps a substantial prefix;
+            // otherwise a hard cut with ellipsis is better than a 2-word stub.
+            if (lastSentenceEnd >= maxChars / 2)
+            {
+                return cut.Substring(0, lastSentenceEnd + 1).Trim();
+            }
+
+            return cut.TrimEnd() + "\u2026";
+        }
+
+        private static void WarnIfTruncatedByTokens(GroqResponse response, string requestKind)
+        {
+            try
+            {
+                string reason = response?.choices != null && response.choices.Length > 0
+                    ? response.choices[0]?.finish_reason
+                    : null;
+                if (string.Equals(reason, "length", StringComparison.OrdinalIgnoreCase))
+                {
+                    Debug.LogWarning($"[LlmReactionClient] {requestKind} hit max_completion_tokens (finish_reason=length) and may be cut off. " +
+                        "Raise LlmSettings.maxTokensPerResponse or shorten the prompt.");
+                }
+            }
+            catch
+            {
+            }
+        }
+
         private static string ParseResponse(string json, GameLanguage language)
         {
             try
             {
                 GroqResponse response = JsonUtility.FromJson<GroqResponse>(json);
+                WarnIfTruncatedByTokens(response, "Reaction request");
                 if (response?.choices != null && response.choices.Length > 0)
                 {
                     string content = response.choices[0]?.message?.content;
@@ -595,6 +675,7 @@ namespace Game.Scripts.Llm
             try
             {
                 GroqResponse response = JsonUtility.FromJson<GroqResponse>(json);
+                WarnIfTruncatedByTokens(response, "Petition request");
                 if (response?.choices != null && response.choices.Length > 0)
                 {
                     string content = response.choices[0]?.message?.content;
@@ -629,7 +710,8 @@ namespace Game.Scripts.Llm
                     {
                         // Same display cleanup as single-turn reactions: the reaction field is spoken dialogue,
                         // so strip stage directions and normalize whitespace regardless of the language.
-                        resolution.reaction = NormalizeWhitespaceAndQuotes(StripStageDirections(resolution.reaction));
+                        // Clamp last so an over-long model reply can never overflow the fixed card box mid-sentence.
+                        resolution.reaction = ClampPetitionReaction(NormalizeWhitespaceAndQuotes(StripStageDirections(resolution.reaction)));
 
                         if (language == GameLanguage.Arabic)
                         {

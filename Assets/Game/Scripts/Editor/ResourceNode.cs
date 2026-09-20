@@ -54,18 +54,7 @@ namespace Game.Scripts.Editor
 
         private static VisualElement BuildBody(ResourceData data)
         {
-            VisualElement body = new VisualElement
-            {
-                style =
-                {
-                    paddingTop = 6,
-                    paddingBottom = 8,
-                    paddingLeft = 8,
-                    paddingRight = 8,
-                    backgroundColor = new StyleColor(new Color(0.15f, 0.18f, 0.17f)),
-                    minWidth = 200
-                }
-            };
+            VisualElement body = MakeBody(6, 8, new Color(0.15f, 0.18f, 0.17f), minWidth: 200);
 
             AddIdentityLabels(body, data.GetDisplayName(GameLanguage.English), data.assetName);
 

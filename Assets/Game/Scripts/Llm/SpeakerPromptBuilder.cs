@@ -24,10 +24,28 @@ namespace Game.Scripts.Llm
             GameLanguage language = GameLanguage.English,
             IReadOnlyList<ResourceData> resources = null)
         {
+            return BuildPersonaPrompt(
+                speaker != null ? speaker.llmPersonaPrompt : null,
+                gameStateSnapshot,
+                situationalPrompt,
+                templates,
+                language,
+                resources);
+        }
+
+        /// <summary>Builds a persona prompt from a raw persona string (no SpeakerData needed for generated commoners).</summary>
+        public static string BuildPersonaPrompt(
+            string personaPrompt,
+            string gameStateSnapshot,
+            string situationalPrompt,
+            LlmPromptTemplates templates,
+            GameLanguage language = GameLanguage.English,
+            IReadOnlyList<ResourceData> resources = null)
+        {
             return new PromptComposer()
                 .AddRaw(templates != null ? templates.personaSystemInstructions : null)
                 .AddSection("Language Requirement", GetLanguageInstruction(templates, language))
-                .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
+                .AddSection("Persona", personaPrompt)
                 .AddSection("Situation", situationalPrompt)
                 .AddSection("State", gameStateSnapshot)
                 .AddSection("Terminology", BuildTerminologySection(resources, language))
@@ -52,10 +70,30 @@ namespace Game.Scripts.Llm
             LlmPromptTemplates templates,
             GameLanguage language = GameLanguage.English)
         {
+            return BuildPetitionTurnPrompt(
+                speaker != null ? speaker.llmPersonaPrompt : null,
+                gameStateSnapshot,
+                situationalPrompt,
+                validResources,
+                clampMagnitude,
+                templates,
+                language);
+        }
+
+        /// <summary>Builds a petition turn prompt from a raw persona string (no SpeakerData needed for generated commoners).</summary>
+        public static string BuildPetitionTurnPrompt(
+            string personaPrompt,
+            string gameStateSnapshot,
+            string situationalPrompt,
+            IReadOnlyList<ResourceData> validResources,
+            int clampMagnitude,
+            LlmPromptTemplates templates,
+            GameLanguage language = GameLanguage.English)
+        {
             return new PromptComposer()
                 .AddRaw(templates != null ? templates.petitionSystemInstructions : null)
                 .AddSection("Language Requirement", GetLanguageInstruction(templates, language))
-                .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
+                .AddSection("Persona", personaPrompt)
                 .AddSection("Situation", situationalPrompt)
                 .AddSection("State", gameStateSnapshot)
                 .AddSection("Resources", BuildResourcesSection(validResources, clampMagnitude, language))
@@ -83,10 +121,24 @@ namespace Game.Scripts.Llm
             LlmPromptTemplates templates,
             GameLanguage language = GameLanguage.English)
         {
+            return BuildChatTurnPrompt(
+                speaker != null ? speaker.llmPersonaPrompt : null,
+                gameStateSnapshot,
+                templates,
+                language);
+        }
+
+        /// <summary>Builds a chat turn prompt from a raw persona string (no SpeakerData needed for generated commoners).</summary>
+        public static string BuildChatTurnPrompt(
+            string personaPrompt,
+            string gameStateSnapshot,
+            LlmPromptTemplates templates,
+            GameLanguage language = GameLanguage.English)
+        {
             return new PromptComposer()
                 .AddRaw(templates != null ? templates.chatSystemInstructions : null)
                 .AddSection("Language Requirement", GetLanguageInstruction(templates, language))
-                .AddSection("Persona", speaker != null ? speaker.llmPersonaPrompt : null)
+                .AddSection("Persona", personaPrompt)
                 .AddSection("State", gameStateSnapshot)
                 .ToString();
         }

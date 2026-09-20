@@ -73,11 +73,10 @@ endings → restart), and routes input, pause, audience flows, and the AI settin
 | --- | --- |
 | `NarrativeRunner` | Graph traversal, choice resolution, resource deltas, day counter, startup graph validation, ending/collapse detection |
 | `ResourceState` / `ResourceWarningMonitor` | Clamped 0–100 resource values; 30% warning advisors; 0 = collapse |
-| `AudienceFlowController` (+ `PetitionFlowController` / `ChatFlowController`) | Shared audience lifecycle: dependency injection, speaker setup (defined or runtime-generated commoner), kingdom snapshot, teardown |
-| `AudienceSession` / `PetitionSession` / `ChatSession` | Turn history so each request carries full conversation context |
+| `AudienceFlowController` | Shared audience lifecycle: defined speaker or generated commoner (null speaker + default persona + model-supplied name string), kingdom snapshot, teardown |
+| `AudienceSession` | Turn history so each request carries full conversation context |
 | `LlmReactionClient` | Sole HTTP gateway (`UnityWebRequest` coroutines): direct Groq (BYOK) or shared proxy, key validation, health probe |
 | `PromptComposer` / `SpeakerPromptBuilder` / `LlmPromptTemplates` | System/user prompt assembly from persona seeds + kingdom state |
-| `TempSpeakerFactory` | Runtime-only commoner speakers named by the model mid-audience |
 | `CollapseEndingBuilder` | State-driven epilogue for resource collapse (generated, with authored fallback) |
 | `LlmFallbackText` / `LlmTextSanitizer` | Authored fallback strings; output cleanup (reasoning tags, stage directions, code fences, non-Arabic glyphs in Arabic mode) |
 | `LanguageManager` / `RtlTextHelper` | Language state; correct bidirectional shaping for Arabic |

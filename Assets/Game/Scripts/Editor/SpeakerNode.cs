@@ -51,14 +51,7 @@ namespace Game.Scripts.Editor
 
         private static VisualElement BuildBadges(SpeakerData speaker, bool hasPersona)
         {
-            VisualElement badges = new VisualElement
-            {
-                style =
-                {
-                    flexDirection = FlexDirection.Row,
-                    alignItems = Align.Center
-                }
-            };
+            VisualElement badges = MakeBadgeRow();
 
             if (hasPersona)
             {
@@ -70,19 +63,7 @@ namespace Game.Scripts.Editor
 
         private VisualElement BuildBody(SpeakerData speaker, bool hasPersona)
         {
-            VisualElement body = new VisualElement
-            {
-                style =
-                {
-                    paddingTop = 6,
-                    paddingBottom = 6,
-                    paddingLeft = 8,
-                    paddingRight = 8,
-                    backgroundColor = new StyleColor(new Color(0.16f, 0.14f, 0.19f)),
-                    minWidth = 160,
-                    maxWidth = 224
-                }
-            };
+            VisualElement body = MakeBody(6, 6, new Color(0.16f, 0.14f, 0.19f), minWidth: 160, maxWidth: 224);
 
             AddIdentityLabels(body, speaker.GetDisplayName(GameLanguage.English), speaker.assetName);
 

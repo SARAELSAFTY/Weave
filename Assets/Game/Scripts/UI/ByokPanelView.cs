@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Game.Scripts.Llm;
 using Game.Scripts.Localization;
 using TMPro;
@@ -56,6 +57,8 @@ namespace Game.Scripts.UI
         private const int KeyCharacterLimit = 64;
         private const string ConsoleKeysUrl = "https://console.groq.com/keys";
         private const string KeyPrefix = "gsk_";
+
+        private readonly Dictionary<Button, TMP_Text> buttonLabels = new Dictionary<Button, TMP_Text>();
 
         // Clipboard reads are unavailable in browsers; the paste button hides itself there.
         private static bool IsWebGl => Application.platform == RuntimePlatform.WebGLPlayer;
@@ -296,6 +299,11 @@ namespace Game.Scripts.UI
 
         private void FinishValidation(ApiKeyValidationResult result)
         {
+            if (checkButton == null || keyInputField == null)
+            {
+                return;
+            }
+
             checkButton.interactable = true;
             GameLanguage language = LanguageManager.CurrentLanguageOrDefault;
 
@@ -353,9 +361,19 @@ namespace Game.Scripts.UI
             RefreshMode();
         }
 
-        private static void SetButtonLabel(Button button, string label, GameLanguage language)
+        private void SetButtonLabel(Button button, string label, GameLanguage language)
         {
-            TMP_Text text = button != null ? button.GetComponentInChildren<TMP_Text>(true) : null;
+            if (button == null)
+            {
+                return;
+            }
+
+            if (!buttonLabels.TryGetValue(button, out TMP_Text text) || text == null)
+            {
+                text = button.GetComponentInChildren<TMP_Text>(true);
+                buttonLabels[button] = text;
+            }
+
             RtlTextHelper.SetText(text, label, language);
         }
 

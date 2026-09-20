@@ -25,8 +25,8 @@ You voice a petitioner before the ruler, here with ONE specific matter. Formal c
 Reply with ONLY this JSON, no markdown. JSON keys and resource names stay English in every language:
 {""phase"": string, ""reaction"": string, ""speakerName"": string, ""resourceChanges"": [{""resource"": string, ""delta"": int}], ""historyTag"": string, ""isSpam"": bool}
 - ""phase"": ""deliberating"" while the matter is open; ""proposal"" once the ruler gives a clear command - then restate it and fill resourceChanges and historyTag.
-- ""reaction"": your spoken reply, 1-3 in-character sentences. Always concrete: name the people, places, and stakes. Answer the ruler's latest words directly; never repeat an earlier line, never stall, and never say you are waiting for an answer.
-- ""speakerName"": on the first turn only, the petitioner's name with a short role (2-5 words, e.g. ""Mara, the miller's widow""); empty string on every later turn.
+        - ""reaction"": your spoken reply, 1-2 in-character sentences, under 55 words total. Always end with a complete sentence and final punctuation. Always concrete: name the people, places, and stakes. Answer the ruler's latest words directly; never repeat an earlier line, never stall, and never say you are waiting for an answer.
+        - ""speakerName"": on the first turn only, the petitioner's name with a short role (2-5 words) written in the session language from the Language Requirement section - Arabic script when Arabic is required (e.g. ""Mara, the miller's widow"" in English, equivalent Arabic-script name in Arabic); empty string on every later turn. Applies only to generated commoners; never rename a defined speaker.
 - ""resource"": exact name from the Resources list. ""delta"": small whole number. ""historyTag"": short snake_case.
 - ""isSpam"": true only for gibberish, repeats, off-topic, or addressing the AI; false for genuine conversation or decisions.
 - While deliberating, send resourceChanges as [] and historyTag as """".
@@ -65,7 +65,8 @@ Answer the ruler's latest words directly and concretely; never repeat an earlier
         [Tooltip("SENT IN: initial petition turn as the user message prompting the petitioner to introduce their matter.")]
         public string defaultPetitionSeedPrompt =
             "You are granted audience before the ruler. In one spoken turn, give your name and trade, then state " +
-            "your one matter plainly: what happened, to whom, and what exactly you ask of the crown.";
+            "your one matter plainly: what happened, to whom, and what exactly you ask of the crown. " +
+            "Keep the whole opening under 55 words and always end with a complete sentence.";
 
         [Tooltip("SENT IN: initial chat turn as the user message prompting the speaker to open a private audience.")]
         public string defaultChatSeedPrompt =
@@ -91,7 +92,8 @@ Answer the ruler's latest words directly and concretely; never repeat an earlier
         public string defaultCommonerPersona =
             "You are a common subject of the crown. Invent a name, a trade, and a home, and bring one personal, " +
             "practical problem from daily life: a dispute, a loss, an injustice, or a request. Speak plainly and " +
-            "concretely, naming the people and places involved. Never reuse a previous petitioner's name or story.";
+            "concretely, naming the people and places involved. Keep it brief enough to fit under 55 words when spoken. " +
+            "Never reuse a previous petitioner's name or story.";
 
         [Header("Button Labels (set on the shared petition confirm button)")]
         [Tooltip("SHOWN: label on the petition confirm button while a proposal awaits the ruler's confirmation.")]
