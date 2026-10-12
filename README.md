@@ -2,7 +2,7 @@
 
 A bilingual (English / Arabic) narrative card-strategy game built in **Unity `6000.0.79f1`** with real-time LLM character audiences, petitions, and dynamic advisor reactions.
 
-**Play the WebGL build (desktop & touch-screen supported):** **[debo0.itch.io/weave](https://debo0.itch.io/weave)**
+**Play the WebGL build (desktop & touch-screen supported):** **[abdullahmohieldin.itch.io/weave](https://abdullahmohieldin.itch.io/weave)**
 
 ---
 
@@ -176,18 +176,11 @@ Open **File → Build Profiles** (or **Build Settings**), select **WebGL**, and 
 
 ---
 
-## Credits & Third-Party Licenses
-
-### Development Team
-
-- **Sara El-Safty ([@SARAELSAFTY](https://github.com/SARAELSAFTY))** — AI / LLM integration & narrative prototyping
-- **Heba** — Character & card art
-- **Abdalla Mohieldin** — Gameplay programming, systems architecture, UI/UX, editor tooling, localization, and most of the implementation
-
-### Third-Party Assets & Notices
+## Licenses & Third-Party Notices
 
 - **Project Code & Original Content:** Licensed under the [Apache License 2.0](LICENSE).
 - **Music:** *"Breton"* by **Pufino** (sourced via [freetouse.com](https://freetouse.com/music) — free to use with creator attribution).
 - **Arabic Text Shaping:** [RTLTMPro](https://github.com/Nosuchstudios/RTLTMPro) by Nosuch Studios (Apache License 2.0).
 - **UI Chrome:** *Steampunk UI Pack* by Gentleland (Unity Asset Store EULA — vendored under `Assets/Gentleland`; do not redistribute standalone).
 - **Fonts:** *Amiri*, *Noto Sans Arabic*, *Cormorant Garamond*, and *Felipa* (SIL Open Font License 1.1 — see `OFL.txt` files alongside the font assets under `Assets/Game/Art/Fonts/`).
+- **Icons:** HUD and utility icons from Pngtree and Flaticon.
