@@ -28,6 +28,28 @@ export default {
       );
     }
 
+    if (env.RELAY_LIMITER) {
+      const clientIp = request.headers.get("cf-connecting-ip") || "anon";
+      const { success } = await env.RELAY_LIMITER.limit({ key: clientIp });
+      if (!success) {
+        return new Response(
+          JSON.stringify({
+            error: {
+              message: "Rate limit exceeded. Too many requests from this IP.",
+              type: "rate_limit_exceeded",
+            },
+          }),
+          {
+            status: 429,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+    }
+
     const MAX_BODY_BYTES = 20 * 1024;
     const contentLength = request.headers.get("Content-Length");
     if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {

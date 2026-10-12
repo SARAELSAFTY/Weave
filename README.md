@@ -14,7 +14,7 @@ In **Weave**, you rule a troubled kingdom as the newly crowned monarch, swiping 
 
 - **50-Card Branching Story Graph** — Authored narrative with 7 court speakers, multiple endings, resource collapse states, and best-run day tracking.
 - **Live LLM Encounters** — Dynamic advisor reactions, 30% resource warnings, multi-turn JSON-structured petitions (with spam detection enabled by default), free-form character chats, and state-driven collapse epilogues.
-- **Dual LLM Pathways** — Zero-setup play via a shared Cloudflare Worker relay (`proxy/`, 20 KB body cap) or direct **Bring Your Own Key (BYOK)** calls to Groq (`qwen/qwen3.8-27b`), with a 30 s health probe and authored fallbacks.
+- **Dual LLM Pathways** — Zero-setup play via a shared Cloudflare Worker relay (`proxy/`, 20 KB body cap, per-IP rate limit (30 requests/minute per Cloudflare location)) or direct **Bring Your Own Key (BYOK)** calls to Groq (`qwen/qwen3.8-27b`), with a 30 s health probe and authored fallbacks.
 - **Full English & Arabic Localization** — Instant in-game language switching with right-to-left (RTL) shaping via `RTLTMPro` and dedicated per-language SDF font stacks.
 - **Custom Node-Graph Editor** — Visual `UIElements`/`GraphView` authoring tool (`Weave → Card Graph`) with live validation badges (`START`, `LLM`, `PETITION`, `CHAT`, `ENDING`, `DEAD END`).
 - **Responsive Desktop & Touch Controls** — Smooth drag physics across mouse, touch, and keyboard, paired with a container-filling WebGL template (`WeaveResponsive`).

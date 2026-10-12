@@ -85,7 +85,7 @@ One gateway (`LlmReactionClient`), two pathways, both configurable from the in-g
 
 | Pathway | Request Path | Key Handling |
 | --- | --- | --- |
-| **Shared (default)** | Client → Cloudflare Worker → `api.groq.com/openai/v1/chat/completions` | Dev-owned key held as a Worker secret; never ships in the build. Enforces `POST`/`OPTIONS` and a 20 KB request body cap. |
+| **Shared (default)** | Client → Cloudflare Worker → `api.groq.com/openai/v1/chat/completions` | Dev-owned key held as a Worker secret; never ships in the build. Enforces `POST`/`OPTIONS`, a 20 KB request body cap, and a per-IP rate limit (30 requests/minute per Cloudflare location). |
 | **BYOK (Bring Your Own Key)** | Client → `api.groq.com` directly | Player-pasted [Groq API key](https://console.groq.com/keys) (starts with `gsk_`; free tier suffices), validated against `/openai/v1/models` without spending tokens, stored locally in device `PlayerPrefs`. |
 
 ### Behavioral Contracts

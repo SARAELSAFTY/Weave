@@ -22,8 +22,8 @@ Note: on this account `wrangler deploy` resets bindings, so re-run the
 ## What the worker enforces
 
 - Only `POST` / `OPTIONS`; body capped at 20 KB.
-- Groq rate-limit headers (`Retry-After`, `x-ratelimit-*`) are forwarded to the
-  client so the game can react to HTTP 429.
+- Per-IP rate limit of 30 requests per 60 seconds (`RELAY_LIMITER` Workers Rate Limiting binding, keyed by `cf-connecting-ip`). This limit is enforced per Cloudflare location and is approximate; exceeding it returns HTTP `429` before reading the request body or calling Groq.
+- Upstream HTTP status codes (including `429`) from Groq are forwarded to the client so `LlmReactionClient` can trigger its authored fallback path.
 
 Known trade-off: the worker URL ships inside the game build and is unauthenticated,
 so anyone who extracts it can spend this key's free quota. Players can avoid relying
