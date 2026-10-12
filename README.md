@@ -49,10 +49,6 @@ Each turn presents a card from the royal court. Preview resource impacts by drag
 - **[Git LFS](https://git-lfs.com)** (installed prior to cloning)
 - **Node.js + Wrangler** *(optional, only for deploying `proxy/`)*
 
-### Required Assets
-
-UI chrome sprites use **[SteampunkUI](https://assetstore.unity.com/packages/2d/gui/steampunkui-244170)** by **Gentleland** (free on the Unity Asset Store; omitted from git under the standard Asset Store EULA). After cloning, add **SteampunkUI** to your Unity account and import it via **Window → Package Manager → My Assets** into `Assets/Gentleland/`.
-
 ### Setup & Run
 
 1. Clone with Git LFS:
@@ -60,7 +56,7 @@ UI chrome sprites use **[SteampunkUI](https://assetstore.unity.com/packages/2d/g
    git lfs install
    git clone https://github.com/SARAELSAFTY/Weave.git
    ```
-2. Open the project in **Unity `6000.0.79f1`** (`RTLTMPro` resolves automatically via OpenUPM), then import **SteampunkUI** into `Assets/Gentleland/`.
+2. Open the project in **Unity `6000.0.79f1`** (`RTLTMPro` resolves automatically via OpenUPM).
 3. Open `Assets/Game/Scenes/Game.unity` and press **Play**.
 4. **API Key Options:** In the **AI Voice** panel on first launch (or from the menu), either use the **Shared Service** (via the Cloudflare Worker URL on `LlmReactionClient`) or select **Own Key** and paste a free [Groq API key](https://console.groq.com/keys) (`gsk_...`, stored in local `PlayerPrefs`). To self-host the relay, see [`proxy/README.md`](proxy/README.md).
 5. **WebGL Build:** Open **File → Build Profiles**, select **WebGL**, and build (`Assets/WebGLTemplates/WeaveResponsive` is preconfigured).
@@ -70,6 +66,7 @@ UI chrome sprites use **[SteampunkUI](https://assetstore.unity.com/packages/2d/g
 ```text
 Weave/
 ├── Assets/Game/                 # Core game assets, ScriptableObject data, Game.unity, and C# scripts
+├── Assets/Gentleland/           # SteampunkUI asset pack (UI chrome sprites)
 ├── Assets/WebGLTemplates/       # Custom responsive WebGL embed template (WeaveResponsive)
 ├── Packages/                    # Unity package manifest and lockfile (URP, Input System, RTLTMPro)
 ├── ProjectSettings/             # Unity project settings (pinned to 6000.0.79f1)
@@ -86,6 +83,7 @@ For the full directory breakdown, runtime component responsibilities, card node 
 - **Project Code & Original Content:** Licensed under the [Apache License 2.0](LICENSE).
 - **Music:** *"Breton"* by **Pufino** (sourced via [freetouse.com](https://freetouse.com/music) — free to use with creator attribution).
 - **Arabic Text Shaping:** [RTLTMPro](https://github.com/pnarimani/RTLTMPro) by pnarimani (MIT License).
-- **UI Chrome:** [SteampunkUI](https://assetstore.unity.com/packages/2d/gui/steampunkui-244170) by Gentleland (Standard Unity Asset Store EULA — import into `Assets/Gentleland/` from the Asset Store).
+- UI chrome: SteampunkUI by Gentleland (free on the Unity Asset Store; included under Assets/Gentleland, see the Asset Store license)
 - **Fonts:** *Amiri*, *Noto Sans Arabic*, *Cormorant Garamond*, and *Felipa* (SIL Open Font License 1.1 — see `OFL.txt` files under `Assets/Game/Art/Fonts/`).
 - **Icons:** HUD and utility icons from Pngtree and Flaticon.
+

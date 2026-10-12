@@ -118,7 +118,3 @@ Thumbs.db
 __pycache__/
 *.pyc
 
-# Third-party Unity Asset Store packages (import via Package Manager after cloning)
-Assets/Gentleland/
-Assets/Gentleland.meta
-
