@@ -68,6 +68,8 @@ Driven by `CardData` flags and edited visually in `Weave → Card Graph`:
 - **Reaction / Petition / Chat** — Single `continueNextCard` exit routed through the LLM flow (`isLlmReactionCard`, `isPetitionCard`, `isChatCard`).
 - **Ending** — Terminal card (`IsEnding` when no outgoing branch is assigned).
 
+![Custom Card Graph Editor and CardData Inspector](images/07-card-graph-editor.png)
+
 ### Resources & Court Speakers
 
 - **Resources (`Assets/Game/Data/Resources/`):**

@@ -4,7 +4,15 @@ A bilingual (English / Arabic) narrative card-strategy game built in **Unity `60
 
 **Play in browser (desktop & touch-screen):** **[abdullahmohieldin.itch.io/weave](https://abdullahmohieldin.itch.io/weave)**
 
-<!-- SCREENSHOTS: add after docs/images exists -->
+![Mid-swipe decision card in Weave](docs/images/01-choice-swipe.png)
+
+| Live AI Petition Audience | Dynamic Advisor Reaction |
+| :---: | :---: |
+| ![Live AI Petition Audience](docs/images/02-live-petition.png) | ![Dynamic Advisor Reaction](docs/images/03-advisor-reaction.png) |
+| **Arabic (RTL) Localization** | **Reign Ending Verdict** |
+| ![Arabic RTL Gameplay](docs/images/04-arabic-rtl.png) | ![Reign Ending Verdict](docs/images/05-reign-ending.png) |
+| **Shared Service & BYOK AI Settings** | **Custom Node-Graph Narrative Editor** |
+| ![AI Settings Modal](docs/images/06-ai-settings-byok.png) | ![Card Graph Editor](docs/images/07-card-graph-editor.png) |
 
 ## Overview
 
