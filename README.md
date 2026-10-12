@@ -180,7 +180,7 @@ Open **File → Build Profiles** (or **Build Settings**), select **WebGL**, and 
 
 - **Project Code & Original Content:** Licensed under the [Apache License 2.0](LICENSE).
 - **Music:** *"Breton"* by **Pufino** (sourced via [freetouse.com](https://freetouse.com/music) — free to use with creator attribution).
-- **Arabic Text Shaping:** [RTLTMPro](https://github.com/Nosuchstudios/RTLTMPro) by Nosuch Studios (Apache License 2.0).
+- **Arabic Text Shaping:** [RTLTMPro](https://github.com/pnarimani/RTLTMPro) by pnarimani (MIT License).
 - **UI Chrome:** *Steampunk UI Pack* by Gentleland (Unity Asset Store EULA — vendored under `Assets/Gentleland`; do not redistribute standalone).
 - **Fonts:** *Amiri*, *Noto Sans Arabic*, *Cormorant Garamond*, and *Felipa* (SIL Open Font License 1.1 — see `OFL.txt` files alongside the font assets under `Assets/Game/Art/Fonts/`).
 - **Icons:** HUD and utility icons from Pngtree and Flaticon.
