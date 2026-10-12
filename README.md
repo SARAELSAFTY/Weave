@@ -15,7 +15,7 @@ In **Weave**, you rule a troubled kingdom by swiping decision cards left or righ
 - **Free-Form Character Audiences** — Multi-turn open dialogue with key characters with no resource stakes, ending whenever you close the audience.
 - **Dynamic Collapse Epilogues** — If any resource hits 0, the responsible advisor delivers a state-driven epilogue reflecting your reign's history.
 
-Every LLM interaction has a curated, authored fallback in both English and Arabic, so the game remains **100% playable offline** with no API key and no network connection.
+Every LLM touchpoint includes authored fallback text in both English and Arabic, so runs can still progress when the LLM service is unreachable or no API key is configured.
 
 ---
 
@@ -127,7 +127,7 @@ One gateway (`LlmReactionClient`), two pathways, both configurable from the in-g
 
 | Pathway | Request Path | Key Handling |
 | --- | --- | --- |
-| **Shared (default)** | Client → Cloudflare Worker → `api.groq.com/openai/v1/chat/completions` | Dev-owned key held as a Worker secret; never ships in the build. Rate-limited, 20 KB body cap. |
+| **Shared (default)** | Client → Cloudflare Worker → `api.groq.com/openai/v1/chat/completions` | Dev-owned key held as a Worker secret; never ships in the build. Enforces `POST`/`OPTIONS` and a 20 KB request body cap. |
 | **BYOK (Bring Your Own Key)** | Client → `api.groq.com` directly | Player-pasted [Groq API key](https://console.groq.com/keys) (starts with `gsk_`; free tier suffices), validated against `/openai/v1/models` without spending tokens, stored locally in device `PlayerPrefs`. |
 
 ### Behavioral Contracts
@@ -168,7 +168,7 @@ Weave is fully localized in **English** and **Arabic**:
    ```
 2. Open the cloned folder in **Unity Hub** with Editor `6000.0.79f1` and let Unity import packages (`RTLTMPro` resolves automatically via OpenUPM).
 3. Open `Assets/Game/Scenes/Game.unity` and press **Play**.
-4. On first run, the **AI Voice** panel appears: choose the shared connection, paste your own free [Groq API key](https://console.groq.com/keys) (`gsk_...`), or continue offline. (Use **Edit → Clear All PlayerPrefs** in the Editor to reset first-run state or clear a saved key.)
+4. On first run, the **AI Voice** panel appears: select the shared service or paste your own free [Groq API key](https://console.groq.com/keys) (`gsk_...`), then press **Continue**. (When offline, keep the shared option selected and press **Continue** to play with authored fallbacks. Use **Edit → Clear All PlayerPrefs** in the Editor to reset first-run state or clear a saved key.)
 
 ### Building for WebGL
 
