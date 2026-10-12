@@ -159,6 +159,10 @@ Weave is fully localized in **English** and **Arabic**:
 - **[Git LFS](https://git-lfs.com)** — required before cloning so art, audio, and font binaries are pulled properly.
 - **Node.js + Wrangler** — optional, only needed if deploying changes to `proxy/`.
 
+### Required Assets
+
+The UI chrome sprites come from **[SteampunkUI](https://assetstore.unity.com/packages/2d/gui/steampunkui-244170)** by **Gentleland** (free on the Unity Asset Store, excluded from git under the standard Unity Asset Store EULA). After cloning, add **SteampunkUI** to your Unity account and import it via **Window → Package Manager → My Assets** into `Assets/Gentleland/` so all UI frames, buttons, and input fields in `Game.unity` resolve their sprites.
+
 ### Running in the Unity Editor
 
 1. Clone the repository with Git LFS enabled:
@@ -167,8 +171,9 @@ Weave is fully localized in **English** and **Arabic**:
    git clone https://github.com/SARAELSAFTY/Weave.git
    ```
 2. Open the cloned folder in **Unity Hub** with Editor `6000.0.79f1` and let Unity import packages (`RTLTMPro` resolves automatically via OpenUPM).
-3. Open `Assets/Game/Scenes/Game.unity` and press **Play**.
-4. On first run, the **AI Voice** panel appears: select the shared service or paste your own free [Groq API key](https://console.groq.com/keys) (`gsk_...`), then press **Continue**. (When offline, keep the shared option selected and press **Continue** to play with authored fallbacks. Use **Edit → Clear All PlayerPrefs** in the Editor to reset first-run state or clear a saved key.)
+3. Import **SteampunkUI** by Gentleland from the Unity Asset Store into `Assets/Gentleland/`.
+4. Open `Assets/Game/Scenes/Game.unity` and press **Play**.
+5. On first run, the **AI Voice** panel appears: select the shared service or paste your own free [Groq API key](https://console.groq.com/keys) (`gsk_...`), then press **Continue**. (When offline, keep the shared option selected and press **Continue** to play with authored fallbacks. Use **Edit → Clear All PlayerPrefs** in the Editor to reset first-run state or clear a saved key.)
 
 ### Building for WebGL
 
@@ -181,6 +186,7 @@ Open **File → Build Profiles** (or **Build Settings**), select **WebGL**, and 
 - **Project Code & Original Content:** Licensed under the [Apache License 2.0](LICENSE).
 - **Music:** *"Breton"* by **Pufino** (sourced via [freetouse.com](https://freetouse.com/music) — free to use with creator attribution).
 - **Arabic Text Shaping:** [RTLTMPro](https://github.com/pnarimani/RTLTMPro) by pnarimani (MIT License).
-- **UI Chrome:** *Steampunk UI Pack* by Gentleland (Unity Asset Store EULA — vendored under `Assets/Gentleland`; do not redistribute standalone).
+- **UI Chrome:** [SteampunkUI](https://assetstore.unity.com/packages/2d/gui/steampunkui-244170) by Gentleland (Standard Unity Asset Store EULA — not tracked in this repository; import into `Assets/Gentleland/` from the Asset Store).
 - **Fonts:** *Amiri*, *Noto Sans Arabic*, *Cormorant Garamond*, and *Felipa* (SIL Open Font License 1.1 — see `OFL.txt` files alongside the font assets under `Assets/Game/Art/Fonts/`).
 - **Icons:** HUD and utility icons from Pngtree and Flaticon.
+
